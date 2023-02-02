@@ -1,9 +1,9 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import java.io.Serializable;
 import java.util.List;
 
-import dao.QuestTasksDAO;
+import com.diemlife.dao.QuestTasksDAO;
 
 public class ExplorePageDTO implements Serializable {
 
@@ -20,4 +20,3 @@ public class ExplorePageDTO implements Serializable {
     }
 
 }
-*/

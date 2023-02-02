@@ -1,8 +1,8 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static utils.URLUtils.relativeTeamUrl;
+import static com.diemlife.utils.URLUtils.relativeTeamUrl;
 
 import java.io.Serializable;
 import java.util.List;
@@ -46,4 +46,3 @@ public class QuestTeamDTO implements Serializable {
     }
 
 }
-*/

@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -107,4 +107,3 @@ public class MilestoneDTO extends QuestTasks implements Serializable {
     }
 
 }
-*/
