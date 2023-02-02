@@ -13,7 +13,7 @@ import play.http.DefaultHttpErrorHandler;
 import play.libs.Json;
 import play.mvc.Http.RequestHeader;
 import play.mvc.Result;
-import services.OutgoingEmailService;
+import com.diemlife.services.OutgoingEmailService;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

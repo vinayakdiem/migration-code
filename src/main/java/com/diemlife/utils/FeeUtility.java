@@ -1,10 +1,10 @@
-/*package com.diemlife.utils;
+package com.diemlife.utils;
 
 import com.typesafe.config.Config;
-import constants.PaymentMode;
+import com.diemlife.constants.PaymentMode;
 import play.Logger;
-import services.StripeConnectService.ExportedCoupon;
-import services.StripeConnectService.ExportedProductVariant;
+import com.diemlife.services.StripeConnectService.ExportedCoupon;
+import com.diemlife.services.StripeConnectService.ExportedProductVariant;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -255,4 +255,3 @@ public class FeeUtility {
     }
 
 }
-*/

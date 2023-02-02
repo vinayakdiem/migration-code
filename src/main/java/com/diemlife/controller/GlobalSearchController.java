@@ -14,8 +14,8 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.UserProvider;
 import com.diemlife.utils.SearchResponse;
 
 import javax.inject.Inject;

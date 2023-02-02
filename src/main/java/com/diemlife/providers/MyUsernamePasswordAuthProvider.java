@@ -1,4 +1,4 @@
-package providers;
+package com.diemlife.providers;
 
 import com.feth.play.module.mail.Mailer.Mail.Body;
 import com.feth.play.module.mail.Mailer.MailerFactory;
@@ -7,13 +7,13 @@ import com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import constants.DeploymentEnvironments;
-import constants.JpaConstants;
-import controllers.routes;
-import dao.TokenActionHome;
-import dao.UserHome;
-import models.LinkedAccount;
-import models.User;
+import com.diemlife.constants.DeploymentEnvironments;
+import com.diemlife.constants.JpaConstants;
+import com.diemlife.controllers.routes;
+import com.diemlife.dao.TokenActionHome;
+import com.diemlife.dao.UserHome;
+import com.diemlife.models.LinkedAccount;
+import com.diemlife.models.User;
 import org.joda.time.LocalDateTime;
 import play.Application;
 import play.Logger;
@@ -29,8 +29,8 @@ import play.i18n.MessagesApi;
 import play.inject.ApplicationLifecycle;
 import play.mvc.Call;
 import play.mvc.Http.Context;
-import security.UsernamePasswordAuth;
-import services.AmazonSESService;
+import com.diemlife.security.UsernamePasswordAuth;
+import com.diemlife.services.AmazonSESService;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;

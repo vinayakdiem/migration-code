@@ -7,9 +7,9 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.QuestMapRouteService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.QuestMapRouteService;
+import com.diemlife.services.UserProvider;
 
 import javax.inject.Inject;
 import java.io.File;

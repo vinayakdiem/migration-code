@@ -2,7 +2,7 @@ package com.diemlife.controller;
 
 import com.typesafe.config.Config;
 
-import dto.ActivityDTO;
+import com.diemlife.dto.ActivityDTO;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,8 +10,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
-import models.Activity;
-import models.User;
+import com.diemlife.models.Activity;
+import com.diemlife.models.User;
 import play.db.Database;
 import play.db.NamedDatabase;
 import play.db.jpa.Transactional;
@@ -22,11 +22,11 @@ import play.mvc.Result;
 import play.data.Form;
 import play.data.FormFactory;
 
-import security.JwtSessionLogin;
+import com.diemlife.security.JwtSessionLogin;
 
 import forms.ActivityCommentForm;
-import services.ActivityService;
-import services.UserProvider;
+import com.diemlife.services.ActivityService;
+import com.diemlife.services.UserProvider;
 
 @JwtSessionLogin
 public class ActivityController extends Controller {

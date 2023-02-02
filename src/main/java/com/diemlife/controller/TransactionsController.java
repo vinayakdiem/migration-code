@@ -22,10 +22,10 @@ import play.i18n.MessagesApi;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.PaymentTransactionFacade;
-import services.TransactionsService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.PaymentTransactionFacade;
+import com.diemlife.services.TransactionsService;
+import com.diemlife.services.UserProvider;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;

@@ -9,8 +9,8 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Results;
-import services.PushNotificationService;
-import services.UserProvider;
+import com.diemlife.services.PushNotificationService;
+import com.diemlife.services.UserProvider;
 
 import javax.inject.Inject;
 import java.util.Optional;

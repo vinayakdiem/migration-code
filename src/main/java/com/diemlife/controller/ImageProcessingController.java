@@ -15,9 +15,9 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.ImageProcessingService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.ImageProcessingService;
+import com.diemlife.services.UserProvider;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;

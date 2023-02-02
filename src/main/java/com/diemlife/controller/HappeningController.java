@@ -34,12 +34,12 @@ import play.i18n.MessagesApi;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.LeaderboardService;
-import services.StripeConnectService;
-import services.StripeConnectService.ExportedProduct;
-import services.StripeConnectService.ExportedProductVariant;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.LeaderboardService;
+import com.diemlife.services.StripeConnectService;
+import com.diemlife.services.StripeConnectService.ExportedProduct;
+import com.diemlife.services.StripeConnectService.ExportedProductVariant;
+import com.diemlife.services.UserProvider;
 import com.diemlife.utils.TransactionResponse;
 
 import javax.annotation.Nullable;

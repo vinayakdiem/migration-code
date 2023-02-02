@@ -14,7 +14,7 @@ import static play.mvc.Results.notAcceptable;
 import static play.mvc.Results.notFound;
 import static play.mvc.Results.ok;
 import static play.mvc.Results.unauthorized;
-import static services.TaskGroupService.DEFAULT_TASK_GROUP_NAME;
+import static com.diemlife.services.TaskGroupService.DEFAULT_TASK_GROUP_NAME;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +47,12 @@ import play.data.FormFactory;
 import play.db.jpa.JPAApi;
 import play.libs.Json;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.LinkPreviewService;
-import services.MilestoneService;
-import services.QuestService;
-import services.TaskGroupService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.LinkPreviewService;
+import com.diemlife.services.MilestoneService;
+import com.diemlife.services.QuestService;
+import com.diemlife.services.TaskGroupService;
+import com.diemlife.services.UserProvider;
 
 public class QuestTaskController {
 

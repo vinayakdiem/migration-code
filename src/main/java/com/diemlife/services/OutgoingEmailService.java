@@ -48,8 +48,8 @@ import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.mvc.Http.RequestHeader;
-import services.StripeConnectService.ExportedProductVariant;
-import services.StripeConnectService.TicketsPurchaseOrder;
+import com.diemlife.services.StripeConnectService.ExportedProductVariant;
+import com.diemlife.services.StripeConnectService.TicketsPurchaseOrder;
 import com.diemlife.utils.TransactionBreakdown;
 
 import javax.activation.DataSource;

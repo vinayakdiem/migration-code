@@ -13,10 +13,10 @@ import play.db.jpa.JPAApi;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Result;
-import providers.MyUsernamePasswordAuthProvider;
-import providers.MyUsernamePasswordAuthUser;
-import security.JwtSessionLogin;
-import services.UserProvider;
+import com.diemlife.providers.MyUsernamePasswordAuthProvider;
+import com.diemlife.providers.MyUsernamePasswordAuthUser;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.UserProvider;
 import views.html.admin.users.userForm;
 import views.html.admin.users.userList;
 

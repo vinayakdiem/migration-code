@@ -14,9 +14,9 @@ import play.db.jpa.Transactional;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.NotificationService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.NotificationService;
+import com.diemlife.services.UserProvider;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;

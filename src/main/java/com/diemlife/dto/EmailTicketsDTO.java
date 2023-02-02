@@ -8,7 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.diemlife.models.Quests;
 import com.diemlife.models.UserEmailPersonal;
 
-import services.StripeConnectService.ExportedProductVariant;
+import com.diemlife.services.StripeConnectService.ExportedProductVariant;
 
 public class EmailTicketsDTO extends EmailDTO {
 

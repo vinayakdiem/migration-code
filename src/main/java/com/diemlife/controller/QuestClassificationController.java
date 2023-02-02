@@ -10,8 +10,8 @@ import play.db.jpa.Transactional;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import services.QuestCategoryService;
-import services.UserProvider;
+import com.diemlife.services.QuestCategoryService;
+import com.diemlife.services.UserProvider;
 
 import javax.inject.Inject;
 import java.util.List;

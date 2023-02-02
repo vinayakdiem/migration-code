@@ -11,9 +11,9 @@ import play.mvc.Controller;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.Request;
 import play.mvc.Result;
-import security.JwtSessionLogin;
-import services.BrandConfigService;
-import services.UserProvider;
+import com.diemlife.security.JwtSessionLogin;
+import com.diemlife.services.BrandConfigService;
+import com.diemlife.services.UserProvider;
 import com.diemlife.utils.CsvUtils;
 import com.diemlife.utils.EndpointSecurityUtils;
 

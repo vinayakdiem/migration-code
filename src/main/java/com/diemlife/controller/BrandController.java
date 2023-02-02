@@ -21,10 +21,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import providers.MyUsernamePasswordAuthUser;
-import security.JwtSessionLogin;
+import com.diemlife.providers.MyUsernamePasswordAuthUser;
+import com.diemlife.security.JwtSessionLogin;
 
-import services.UserProvider;
+import com.diemlife.services.UserProvider;
 
 @JwtSessionLogin
 public class BrandController extends Controller {

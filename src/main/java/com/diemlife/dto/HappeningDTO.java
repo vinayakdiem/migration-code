@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -14,9 +14,9 @@ import com.diemlife.models.StripeAccount;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import services.HappeningRegisterStatusService;
-import services.StripeConnectService;
-import services.StripeConnectService.ExportedProduct;
+import com.diemlife.services.HappeningRegisterStatusService;
+import com.diemlife.services.StripeConnectService;
+import com.diemlife.services.StripeConnectService.ExportedProduct;
 
 public class HappeningDTO implements Serializable {
 
@@ -92,4 +92,3 @@ public class HappeningDTO implements Serializable {
         }
     }
 }
-*/
