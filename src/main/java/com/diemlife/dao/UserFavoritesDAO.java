@@ -1,7 +1,7 @@
-package dao;
+package com.diemlife.dao;
 
-import models.User;
-import models.UserFavorites;
+import com.diemlife.models.User;
+import com.diemlife.models.UserFavorites;
 import play.Logger;
 
 import javax.persistence.EntityManager;

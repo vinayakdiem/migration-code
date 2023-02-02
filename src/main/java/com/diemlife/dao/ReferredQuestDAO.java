@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import exceptions.RequiredParameterMissingException;
 import models.Happening;

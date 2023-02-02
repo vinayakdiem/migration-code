@@ -1,9 +1,9 @@
-package dao;
+package com.diemlife.dao;
 
-import constants.FriendRequestDirection;
-import constants.UserRelationshipStatus;
+import com.diemlife.constants.FriendRequestDirection;
+import com.diemlife.constants.UserRelationshipStatus;
 import exceptions.RequiredParameterMissingException;
-import models.UserRelationship;
+import com.diemlife.models.UserRelationship;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import play.Logger;
@@ -20,12 +20,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static constants.FriendRequestDirection.approved;
-import static constants.FriendRequestDirection.received;
-import static constants.FriendRequestDirection.sent;
-import static constants.UserRelationshipStatus.ACCEPTED;
-import static constants.UserRelationshipStatus.NONE;
-import static constants.UserRelationshipStatus.PENDING;
+import static com.diemlife.constants.FriendRequestDirection.approved;
+import static com.diemlife.constants.FriendRequestDirection.received;
+import static com.diemlife.constants.FriendRequestDirection.sent;
+import static com.diemlife.constants.UserRelationshipStatus.ACCEPTED;
+import static com.diemlife.constants.UserRelationshipStatus.NONE;
+import static com.diemlife.constants.UserRelationshipStatus.PENDING;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

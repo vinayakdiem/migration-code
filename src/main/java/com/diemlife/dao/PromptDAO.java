@@ -1,9 +1,9 @@
-package dao;
+package com.diemlife.dao;
 
-import constants.PromptType.PromptEventType;
-import models.PromptUser;
-import models.Quests;
-import models.User;
+import com.diemlife.constants.PromptType.PromptEventType;
+import com.diemlife.models.PromptUser;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;

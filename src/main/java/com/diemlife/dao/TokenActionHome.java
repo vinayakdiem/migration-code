@@ -1,9 +1,9 @@
-package dao;
+package com.diemlife.dao;
 
 // Generated Jul 4, 2015 5:57:00 PM by Hibernate Tools 4.3.1
 
-import models.TokenAction;
-import models.User;
+import com.diemlife.models.TokenAction;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;

@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

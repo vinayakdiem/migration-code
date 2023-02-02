@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import com.google.common.collect.ImmutableMap;
 import com.vividsolutions.jts.geom.Coordinate;

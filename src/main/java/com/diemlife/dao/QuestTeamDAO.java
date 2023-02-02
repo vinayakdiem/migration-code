@@ -1,10 +1,10 @@
-package dao;
+package com.diemlife.dao;
 
-import models.QuestTeam;
-import models.QuestTeam2;
-import models.QuestTeamMember;
-import models.Quests;
-import models.User;
+import com.diemlife.models.QuestTeam;
+import com.diemlife.models.QuestTeam2;
+import com.diemlife.models.QuestTeamMember;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;

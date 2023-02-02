@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.QuestMapRouteTrack;
+import com.diemlife.models.QuestMapRouteTrack;
 
 import javax.persistence.EntityManager;
 

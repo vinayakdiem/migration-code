@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.QuestMapView;
+import com.diemlife.models.QuestMapView;
 
 import javax.persistence.EntityManager;
 

@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.QuestEdge;
+import com.diemlife.models.QuestEdge;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

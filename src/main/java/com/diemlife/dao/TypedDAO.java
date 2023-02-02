@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.IdentifiedEntity;
+import com.diemlife.models.IdentifiedEntity;
 import play.Logger;
 
 import javax.persistence.EntityManager;

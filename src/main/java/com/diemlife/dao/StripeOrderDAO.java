@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 

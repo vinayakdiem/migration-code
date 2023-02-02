@@ -1,7 +1,7 @@
-package dao;
+package com.diemlife.dao;
 
-import dto.PaymentPersonalInfoDTO;
-import models.PersonalInfo;
+import com.diemlife.dto.PaymentPersonalInfoDTO;
+import com.diemlife.models.PersonalInfo;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;

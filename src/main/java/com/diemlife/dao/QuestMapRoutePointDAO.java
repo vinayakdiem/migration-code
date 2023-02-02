@@ -1,7 +1,7 @@
-package dao;
+package com.diemlife.dao;
 
-import dto.GPXQuestMapRoutePointsDTO;
-import models.QuestMapRoutePoints;
+import com.diemlife.dto.GPXQuestMapRoutePointsDTO;
+import com.diemlife.models.QuestMapRoutePoints;
 
 import javax.persistence.EntityManager;
 import java.util.List;

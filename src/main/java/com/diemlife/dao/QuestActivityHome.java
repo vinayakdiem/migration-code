@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import acl.QuestsListWithACL;
 import constants.QuestActivityStatus;

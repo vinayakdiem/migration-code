@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.UserPaymentFee;
+import com.diemlife.models.UserPaymentFee;
 import play.db.jpa.JPAApi;
 
 

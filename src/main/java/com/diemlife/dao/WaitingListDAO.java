@@ -1,6 +1,6 @@
-package dao;
+package com.diemlife.dao;
 
-import models.WaitingList;
+import com.diemlife.models.WaitingList;
 import play.Logger;
 
 import javax.persistence.EntityManager;

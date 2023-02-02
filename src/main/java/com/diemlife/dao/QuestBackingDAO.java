@@ -1,7 +1,7 @@
-package dao;
+package com.diemlife.dao;
 
-import models.QuestBacking;
-import models.User;
+import com.diemlife.models.QuestBacking;
+import com.diemlife.models.User;
 
 import javax.persistence.EntityManager;
 import java.util.Collections;

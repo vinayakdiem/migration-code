@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import constants.QuestUserFlagKey;
 import models.QuestUserFlag;

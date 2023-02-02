@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import dto.UserWithFiendStatusDTO;
 import exceptions.RequiredParameterMissingException;

@@ -1,4 +1,4 @@
-package dao;
+package com.diemlife.dao;
 
 import constants.LeaderboardMemberStatus;
 import models.Address;
