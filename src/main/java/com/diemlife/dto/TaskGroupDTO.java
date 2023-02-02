@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,4 +38,3 @@ public class TaskGroupDTO implements Serializable {
         return taskGroupDTO;
     }
 }
-*/

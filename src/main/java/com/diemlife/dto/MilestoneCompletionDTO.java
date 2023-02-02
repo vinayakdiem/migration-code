@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -39,4 +39,3 @@ public class MilestoneCompletionDTO implements Serializable {
     }
 
 }
-*/

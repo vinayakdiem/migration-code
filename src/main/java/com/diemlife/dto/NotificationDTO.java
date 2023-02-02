@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 
@@ -51,4 +51,3 @@ public class NotificationDTO implements Serializable {
     }
 
 }
-*/

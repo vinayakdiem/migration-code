@@ -1,4 +1,4 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -42,4 +42,3 @@ public class QuestCategoryDTO implements Serializable {
         return categories.stream().map(c -> toDTO(c, link)).filter(Objects::nonNull).collect(toList());
     }
 }
-*/

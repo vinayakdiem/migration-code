@@ -1,6 +1,6 @@
-/*package com.diemlife.dto;
+package com.diemlife.dto;
 
-import static constants.QuestMemberStatus.Unknown;
+import static com.diemlife.constants.QuestMemberStatus.Unknown;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.upperCase;
@@ -115,4 +115,3 @@ public class QuestMemberDTO implements Serializable {
     }
 
 }
-*/
