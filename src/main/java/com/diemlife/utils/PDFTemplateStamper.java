@@ -1,4 +1,4 @@
-/*package com.diemlife.utils;
+package com.diemlife.utils;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
@@ -111,4 +111,3 @@ public class PDFTemplateStamper {
     }
 
 }
-*/

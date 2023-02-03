@@ -10,7 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.db.jpa.Transactional;
-import plugins.S3Plugin;
+import com.diemlife.plugins.S3Plugin;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;

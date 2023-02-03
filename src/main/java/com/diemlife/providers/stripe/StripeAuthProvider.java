@@ -9,7 +9,7 @@
 //import play.Application;
 //import play.Logger;
 //import play.libs.ws.WSResponse;
-//import plugins.StripeServicePlugin;
+//import com.diemlife.plugins.StripeServicePlugin;
 //
 ///**
 // * Created by andrewcoleman on 11/29/16.
