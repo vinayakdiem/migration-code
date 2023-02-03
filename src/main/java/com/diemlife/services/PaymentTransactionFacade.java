@@ -11,7 +11,7 @@ import com.diemlife.dao.StripeCustomerDAO;
 import com.diemlife.dto.FundraisingLinkDTO;
 import com.diemlife.dto.FundraisingTotalDTO;
 import com.diemlife.dto.SubscriptionListDTO;
-import exceptions.RequiredParameterMissingException;
+import com.diemlife.exceptions.RequiredParameterMissingException;
 import com.diemlife.models.PaymentTransaction;
 import com.diemlife.models.RecurringQuestBackingTransaction;
 import com.diemlife.models.StripeAccount;

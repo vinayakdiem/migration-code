@@ -1,10 +1,10 @@
 package com.diemlife.services;
 
 import com.diemlife.dto.PersonalInfoDTO;
-import exceptions.StripeApiCallException;
+import com.diemlife.exceptions.StripeApiCallException;
 import com.diemlife.models.StripeAccount;
 import com.diemlife.models.StripeCustomer;
-import models.User;
+import com.diemlife.models.User;
 import play.Logger;
 
 import static java.lang.String.format;

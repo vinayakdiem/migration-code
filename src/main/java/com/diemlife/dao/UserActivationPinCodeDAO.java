@@ -1,8 +1,8 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
-import models.User;
-import models.UserActivationPinCode;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.User;
+import com.diemlife.models.UserActivationPinCode;
 
 import javax.persistence.EntityManager;
 import java.util.Calendar;

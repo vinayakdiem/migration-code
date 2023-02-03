@@ -1,11 +1,11 @@
 package com.diemlife.dao;
 
-import dto.UserWithFiendStatusDTO;
-import exceptions.RequiredParameterMissingException;
-import models.QuestCommentLike;
-import models.QuestComments;
-import models.Quests;
-import models.User;
+import com.diemlife.dto.UserWithFiendStatusDTO;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.QuestCommentLike;
+import com.diemlife.models.QuestComments;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;

@@ -1,7 +1,7 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
-import models.QuestImage;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.QuestImage;
 import play.Logger;
 
 import javax.persistence.EntityManager;

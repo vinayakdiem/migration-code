@@ -10,7 +10,7 @@ import com.diemlife.dto.MilestoneCompletionDTO;
 import com.diemlife.dto.MilestoneDTO;
 import com.diemlife.dto.QuestLiteDTO;
 import com.diemlife.dto.TaskGroupDTO;
-import exceptions.RequiredParameterMissingException;
+import com.diemlife.exceptions.RequiredParameterMissingException;
 import forms.QuestActionPointForm;
 import com.diemlife.models.EmbeddedVideo;
 import com.diemlife.models.QuestTaskCompletionHistory;

@@ -1,11 +1,11 @@
-package dao;
+package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
+import com.diemlife.exceptions.RequiredParameterMissingException;
 import forms.TasksGroupForm;
-import models.QuestTasks;
-import models.QuestTasksGroup;
-import models.Quests;
-import models.User;
+import com.diemlife.models.QuestTasks;
+import com.diemlife.models.QuestTasksGroup;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;

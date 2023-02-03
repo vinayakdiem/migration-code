@@ -6,7 +6,7 @@ import com.diemlife.dao.QuestTasksDAO;
 import com.diemlife.dao.QuestTasksGroupDAO;
 import com.diemlife.dao.QuestsDAO;
 import com.diemlife.dto.AllPillarsCount;
-import exceptions.QuestOperationForbiddenException;
+import com.diemlife.exceptions.QuestOperationForbiddenException;
 import forms.TasksGroupManageEditForm;
 import forms.TaskCreateForm;
 import com.diemlife.models.ActivityRecord;

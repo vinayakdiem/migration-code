@@ -2,7 +2,7 @@ package com.diemlife.dao;
 
 import com.diemlife.constants.FriendRequestDirection;
 import com.diemlife.constants.UserRelationshipStatus;
-import exceptions.RequiredParameterMissingException;
+import com.diemlife.exceptions.RequiredParameterMissingException;
 import com.diemlife.models.UserRelationship;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

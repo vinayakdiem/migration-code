@@ -47,7 +47,7 @@ import com.diemlife.dto.UserSearchDTO;
 import com.diemlife.dto.UserToInviteDTO;
 import com.diemlife.dto.UserWithFiendStatusDTO;
 import com.diemlife.dto.WhoIAmDTO;
-import exceptions.QuestOperationForbiddenException;
+import com.diemlife.exceptions.QuestOperationForbiddenException;
 import forms.AttributeValueForm;
 import forms.CommentAddForm;
 import forms.MilestoneToggleForm;

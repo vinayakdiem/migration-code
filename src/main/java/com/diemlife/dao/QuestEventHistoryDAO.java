@@ -1,9 +1,9 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
+import com.diemlife.exceptions.RequiredParameterMissingException;
 import forms.QuestActionPointForm;
-import models.QuestEventHistory;
-import models.QuestEvents;
+import com.diemlife.models.QuestEventHistory;
+import com.diemlife.models.QuestEvents;
 import play.Logger;
 
 import javax.persistence.EntityManager;

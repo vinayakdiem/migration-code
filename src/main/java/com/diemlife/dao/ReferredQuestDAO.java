@@ -1,8 +1,8 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
-import models.Happening;
-import models.ReferredQuest;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.Happening;
+import com.diemlife.models.ReferredQuest;
 
 import javax.persistence.EntityManager;
 import java.util.List;

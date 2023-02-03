@@ -2,7 +2,7 @@ package com.diemlife.controller;
 
 import com.typesafe.config.Config;
 import com.diemlife.dto.SystemFailureDTO;
-import exceptions.StripeApiCallException;
+import com.diemlife.exceptions.StripeApiCallException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import play.Environment;
 import play.Logger;

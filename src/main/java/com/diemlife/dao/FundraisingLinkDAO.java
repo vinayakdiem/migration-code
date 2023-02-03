@@ -1,13 +1,13 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
-import models.BrandConfig;
-import models.FundraisingLink;
-import models.FundraisingTransaction;
-import models.QuestSEO;
-import models.Quests;
-import models.User;
-import models.UserSEO;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.BrandConfig;
+import com.diemlife.models.FundraisingLink;
+import com.diemlife.models.FundraisingTransaction;
+import com.diemlife.models.QuestSEO;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+import com.diemlife.models.UserSEO;
 import play.db.jpa.JPAApi;
 
 import javax.inject.Inject;

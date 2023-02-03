@@ -1,7 +1,7 @@
 package com.diemlife.services;
 
 import com.diemlife.dao.StripeCustomerDAO;
-import exceptions.StripeApiCallException;
+import com.diemlife.exceptions.StripeApiCallException;
 import com.diemlife.models.StripeAccount;
 import com.diemlife.models.StripeCustomer;
 import com.diemlife.models.StripeEntity;

@@ -9,7 +9,7 @@ import com.diemlife.constants.DeploymentEnvironments;
 import com.diemlife.dao.LinkedAccountHome;
 import com.diemlife.dao.TokenActionHome;
 import com.diemlife.dao.UserHome;
-import exceptions.StripeApiCallException;
+import com.diemlife.exceptions.StripeApiCallException;
 import com.diemlife.models.LinkedAccount;
 import com.diemlife.models.StripeAccount;
 import com.diemlife.models.StripeCustomer;

@@ -1,8 +1,8 @@
 package com.diemlife.dao;
 
-import exceptions.RequiredParameterMissingException;
-import models.StripeCustomer;
-import models.StripeEntity;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.StripeCustomer;
+import com.diemlife.models.StripeEntity;
 import play.Logger;
 
 import javax.persistence.DiscriminatorValue;

@@ -1,9 +1,9 @@
-/*package com.diemlife.utils;
+package com.diemlife.utils;
 
 import com.stripe.exception.StripeException;
 import com.stripe.model.HasId;
 import com.stripe.model.StripeCollection;
-import dto.CollectionRequestDTO;
+import com.diemlife.dto.CollectionRequestDTO;
 import play.Logger;
 
 import java.util.ArrayList;
@@ -80,4 +80,3 @@ public class StripeUtils {
     }
 
 }
-*/

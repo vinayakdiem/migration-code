@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.typesafe.config.Config;
 
 import com.diemlife.dto.TaskGroupDTO;
-import exceptions.QuestOperationForbiddenException;
+import com.diemlife.exceptions.QuestOperationForbiddenException;
 import forms.TaskMoveForm;
 import forms.TasksGroupForm;
 import forms.TasksGroupManageForm;
