@@ -3,7 +3,7 @@ package com.diemlife.services;
 import com.diemlife.constants.AccountStatus;
 import com.diemlife.dao.StripeCustomerDAO;
 import com.diemlife.dao.UserHome;
-import jwt.JwtSessionUser;
+import com.diemlife.jwt.JwtSessionUser;
 import com.diemlife.models.StripeEntity;
 import com.diemlife.models.User;
 import play.Logger;

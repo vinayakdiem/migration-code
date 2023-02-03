@@ -1,6 +1,6 @@
 package com.diemlife.security;
 
-import jwt.JwtSessionUser;
+import com.diemlife.jwt.JwtSessionUser;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Action;

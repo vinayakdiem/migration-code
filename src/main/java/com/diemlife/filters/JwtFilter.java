@@ -2,7 +2,7 @@ package com.diemlife.filters;
 
 import akka.stream.Materializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jwt.JwtSessionUser;
+import com.diemlife.jwt.JwtSessionUser;
 import play.Logger;
 import play.mvc.Filter;
 import play.mvc.Http;
