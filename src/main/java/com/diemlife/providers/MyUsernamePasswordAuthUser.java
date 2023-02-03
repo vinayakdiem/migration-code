@@ -4,8 +4,8 @@ import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.NameIdentity;
 import forms.AdminEditForm;
 import forms.RegistrationForm;
-import providers.MyUsernamePasswordAuthProvider.MySignup;
-import security.PasswordHasher;
+import com.diemlife.providers.MyUsernamePasswordAuthProvider.MySignup;
+import com.diemlife.security.PasswordHasher;
 
 public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser implements NameIdentity {
 

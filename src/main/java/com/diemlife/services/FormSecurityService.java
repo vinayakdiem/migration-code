@@ -2,8 +2,8 @@ package com.diemlife.services;
 
 import com.diemlife.models.LinkedAccount;
 import com.diemlife.models.User;
-import providers.MyUsernamePasswordAuthProvider;
-import security.PasswordHasher;
+import com.diemlife.providers.MyUsernamePasswordAuthProvider;
+import com.diemlife.security.PasswordHasher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
