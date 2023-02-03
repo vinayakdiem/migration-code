@@ -6,7 +6,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import lib.BootstrapSelectKeyValue;
+import com.diemlife.lib.BootstrapSelectKeyValue;
 import com.diemlife.models.SecurityRole;
 
 public class RoleSelect {

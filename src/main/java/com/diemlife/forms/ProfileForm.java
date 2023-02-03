@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lib.AddressConverter;
-import lib.GoogleResponse;
-import lib.GoogleResult;
+import com.diemlife.lib.AddressConverter;
+import com.diemlife.lib.GoogleResponse;
+import com.diemlife.lib.GoogleResult;
 import play.Logger;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
