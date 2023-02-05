@@ -6,6 +6,7 @@ import com.github.slugify.Slugify;
 import com.typesafe.config.Config;
 import com.diemlife.constants.DeploymentEnvironments;
 import com.diemlife.constants.ImageType;
+import com.diemlife.constants.Util;
 import com.diemlife.dao.ExploreCategoriesDAO;
 import com.diemlife.dao.HappeningDAO;
 import com.diemlife.dao.QuestBackingDAO;
@@ -410,7 +411,7 @@ public class QuestController extends Controller {
         final Quests quest = findById(questId, entityManager);
         if (quest.getUser().getId().equals(user.getId())) {
             isAllowed.set(true);
-        } else if (!isEmpty(quest.getAdmins())) {
+        } else if (Util.isEmpty(quest.getAdmins())) {
             quest.getAdmins().forEach(admin -> {
                 if (admin.getId().equals(user.getId())) {
                     isAllowed.set(true);

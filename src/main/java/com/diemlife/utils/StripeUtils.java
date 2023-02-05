@@ -1,20 +1,20 @@
 package com.diemlife.utils;
 
-import com.stripe.exception.StripeException;
-import com.stripe.model.HasId;
-import com.stripe.model.StripeCollection;
-import com.diemlife.dto.CollectionRequestDTO;
-import play.Logger;
+import static com.google.common.collect.Iterables.getLast;
+import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.google.common.collect.Iterables.getLast;
-import static java.lang.String.format;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import com.diemlife.constants.Util;
+import com.diemlife.dto.CollectionRequestDTO;
+import com.stripe.exception.StripeException;
+import com.stripe.model.HasId;
+import com.stripe.model.StripeCollection;
+
+import play.Logger;
 
 *//**
  * Created by andrewcoleman on 1/22/17.
@@ -55,7 +55,7 @@ public class StripeUtils {
                 return;
             }
             final List<T> data = collection.getData();
-            if (isNotEmpty(data)) {
+            if (!Util.isEmpty(data)) {
                 result.addAll(data);
             }
             if (isTrue(collection.getHasMore())) {

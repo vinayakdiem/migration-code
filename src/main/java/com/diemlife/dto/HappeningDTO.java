@@ -1,13 +1,13 @@
 package com.diemlife.dto;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.diemlife.constants.Util;
 import com.diemlife.models.Happening;
 import com.diemlife.models.HappeningAddOn;
 import com.diemlife.models.StripeAccount;
@@ -61,7 +61,7 @@ public class HappeningDTO implements Serializable {
         if (happening != null && isNotBlank(happening.stripeProductId)) {
             product = service.retrieveProduct(merchant, happening.stripeProductId);
         }
-        if (happening != null && isNotEmpty(happening.addOns)) {
+        if (happening != null && !Util.isEmpty(happening.addOns)) {
             addOns = addOns.stream().map(addOn -> addOn.withStripeInfo(merchant, service)).collect(toList());
         }
         return this;

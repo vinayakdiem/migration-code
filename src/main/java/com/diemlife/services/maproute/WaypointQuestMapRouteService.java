@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import com.diemlife.constants.Util;
 import com.diemlife.dao.QuestMapRouteWaypointDAO;
 import com.diemlife.dao.QuestTasksDAO;
 import com.diemlife.dao.QuestTasksGroupDAO;
@@ -28,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 public class WaypointQuestMapRouteService {
 
@@ -45,11 +45,11 @@ public class WaypointQuestMapRouteService {
      */
     public void processingWptQuestMapRoute(final GPX gpxFile, final Integer questId, final QuestMapRoute questMapRoute, final EntityManager entityManager) {
         this.questMapRouteWaypointDAO = new QuestMapRouteWaypointDAO(entityManager);
-        if (isNotEmpty(gpxFile.getWaypoints())) {
+        if (!Util.isEmpty(gpxFile.getWaypoints())) {
             final List<QuestMapRouteWaypoint> questMapRouteWaypoints = parsingGpxFile(gpxFile, questMapRoute);
 
             final List<QuestTasks> questTasks = QuestTasksDAO.getQuestTasksByQuestIdAndWaypointIsNotNull(questId, null, entityManager);
-            if (isNotEmpty(questTasks)) {
+            if (!Util.isEmpty(questTasks)) {
                 updateWaypointByGpxAndSave(questId, questMapRoute, questTasks, questMapRouteWaypoints, entityManager);
             } else {
                 saveWaypointByGpx(questMapRouteWaypoints, questMapRoute, questId, entityManager);

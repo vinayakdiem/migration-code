@@ -1,5 +1,6 @@
 package com.diemlife.services;
 
+import com.diemlife.constants.Util;
 import com.diemlife.dao.ContentReportDAO;
 import com.diemlife.dao.QuestBackingDAO;
 import com.diemlife.dao.QuestCommentsDAO;
@@ -27,8 +28,6 @@ import static com.diemlife.dao.UserRelationshipDAO.checkForFriendshipStatus;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.junit.platform.commons.util.StringUtils.isNotBlank;
@@ -115,7 +114,7 @@ public class CommentsService {
     }
 
     private List<UserWithFiendStatusDTO> commentMentions(final QuestComments comment, final User sessionUser) {
-        if (comment != null && isEmpty(comment.getDeleted()) && isNotEmpty(comment.getComments())) {
+        if (comment != null && isEmpty(comment.getDeleted()) && !Util.isEmpty(comment.getComments())) {
             final String[] tokens = trimToEmpty(comment.getComments())
                     .replaceAll("[\\r\\n]", " ")
                     .split("\\s+");

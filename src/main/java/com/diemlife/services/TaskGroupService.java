@@ -1,5 +1,6 @@
 package com.diemlife.services;
 
+import com.diemlife.constants.Util;
 import com.diemlife.dao.ActivityDAO;
 import com.diemlife.dao.AsPillarDAO;
 import com.diemlife.dao.QuestTasksDAO;
@@ -37,7 +38,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static com.diemlife.utils.QuestSecurityUtils.canManageTasksInQuest;
 
@@ -201,7 +201,7 @@ public class TaskGroupService {
 
     private QuestTasksGroup getByIndexOrCreateDefault(final Integer questId, final Integer groupOwnerId, final User user, final Integer groupIndex) {
         final List<QuestTasksGroup> groups = QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(questId, user.getId(), jpaApi.em());
-        if (isEmpty(groups)) {
+        if (Util.isEmpty(groups)) {
             return createDefaultGroup(user, groupOwnerId, questId, DEFAULT_TASK_GROUP_NAME);
         }
         if (groupIndex == null || groupIndex < 0 || groupIndex >= groups.size()) {
@@ -277,13 +277,13 @@ public class TaskGroupService {
         final QuestTasksGroup group = em.find(QuestTasksGroup.class, groupId);
         final Quests quest = QuestsDAO.findById(group.getQuestId(), em);
         final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
-        if (canManageTasksInQuest(quest, user, activity) && isEmpty(group.getQuestTasks())) {
+        if (canManageTasksInQuest(quest, user, activity) && Util.isEmpty(group.getQuestTasks())) {
             Logger.info(format("TaskGroupService::removeGroup - Removing empty task group with ID %s", groupId));
 
             em.remove(group);
 
             return group;
-        } else if (isNotEmpty(group.getQuestTasks())) {
+        } else if (!Util.isEmpty(group.getQuestTasks())) {
             throw new QuestOperationForbiddenException(format("Task group with ID %s in Quest with ID %s is not empty", group, quest.getId()));
         } else {
             throw new QuestOperationForbiddenException(format("User '%s' is not allowed to remove task groups in Quest with ID %s", user.getEmail(), quest.getId()));

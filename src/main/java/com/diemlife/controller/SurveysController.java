@@ -1,6 +1,7 @@
 package com.diemlife.controller;
 
 import com.diemlife.constants.PromptType;
+import com.diemlife.constants.Util;
 import com.diemlife.dao.PromptDAO;
 import com.diemlife.dto.QuestMemberDTO;
 import forms.SurveyResultsForm;
@@ -33,8 +34,6 @@ import java.util.Optional;
 import static com.diemlife.constants.QuestMemberStatus.Doer;
 import static com.diemlife.dao.UserHome.getUserQuestActivityByQuestId;
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.ArrayUtils.isEmpty;
-import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 @JwtSessionLogin
 public class SurveysController extends Controller {
@@ -90,7 +89,7 @@ public class SurveysController extends Controller {
                     jo.put("promptEvent", pu.getPromptEvent());
                     jo.put("type", PromptType.idToTag(pu.getMsgType()));
                     jo.put("promptText", pu.getMsg());
-                    if (isNotEmpty(pu.getPromptOptions())) {
+                    if (!Util.isEmpty(pu.getPromptOptions())) {
                         jo.put("promptOptions", new JSONArray(asList(pu.getPromptOptions())));
                     }
                     ja.put(jo);

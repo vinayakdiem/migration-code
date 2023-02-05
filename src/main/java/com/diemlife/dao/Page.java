@@ -3,7 +3,7 @@ package com.diemlife.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import com.diemlife.constants.Util;
 
 public class Page<T> extends AbstractPage<List<T>> {
 
@@ -14,7 +14,7 @@ public class Page<T> extends AbstractPage<List<T>> {
     }
 
     public Page<T> withData(final List<T> data) {
-        if (isNotEmpty(data)) {
+        if (!Util.isEmpty(data)) {
             this.data.addAll(data);
         }
         return this;

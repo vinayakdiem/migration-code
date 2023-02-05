@@ -22,6 +22,7 @@ import com.diemlife.constants.QuestActivityStatus;
 import com.diemlife.constants.QuestCreatorTypes;
 import com.diemlife.constants.QuestMode;
 import com.diemlife.constants.UserRelationshipStatus;
+import com.diemlife.constants.Util;
 import com.diemlife.constants.VideoProvider;
 import com.diemlife.dao.*;
 import com.diemlife.dto.AllPillarsCount;
@@ -174,8 +175,6 @@ import static com.diemlife.models.QuestEvents.QUEST_CREATE;
 import static com.diemlife.models.QuestEvents.QUEST_EDIT;
 import static com.diemlife.models.QuestEvents.QUEST_EDIT_NEW;
 import static com.diemlife.models.QuestEvents.QUEST_SAVE;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.BooleanUtils.isNotFalse;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
@@ -350,10 +349,10 @@ public class Application extends Controller {
         if (isNotBlank(bwCompatibilityEmail)) {
             allEmails.add(bwCompatibilityEmail);
         }
-        if (isNotEmpty(emails)) {
+        if (!Util.isEmpty(emails)) {
             allEmails.addAll(emails);
         }
-        if (isEmpty(allEmails) || allEmails.size() > MAX_SHARE_QUEST_EMAILS) {
+        if (Util.isEmpty(allEmails) || allEmails.size() > MAX_SHARE_QUEST_EMAILS) {
             return badRequest();
         }
 
@@ -874,7 +873,7 @@ public class Application extends Controller {
 
     private int getFriendsCount(final @NotNull User user, final EntityManager em) {
         final List<Integer> friendIds = UserRelationshipDAO.getCurrentFriendsByUserId(user.getId(), em);
-        return isEmpty(friendIds) ? 0 : friendIds.size();
+        return Util.isEmpty(friendIds) ? 0 : friendIds.size();
     }
 
     @Deprecated
@@ -1057,7 +1056,7 @@ public class Application extends Controller {
                 lon = (_lon == null) ? null : _lon.doubleValue();
             }
 
-            if (isNotEmpty(form.getAttributes())) {
+            if (!Util.isEmpty(form.getAttributes())) {
                 AttributesDAO attDao = AttributesDAO.getInstance();
 
                 // Save realtime quest results
@@ -1296,7 +1295,7 @@ public class Application extends Controller {
         final PaymentTransactionDAO transactionDao = new PaymentTransactionDAO(em);
         final List<RecurringQuestBackingTransaction> subscriptions = transactionDao
                 .getSubscriptionsForQuestAndBeneficiary(quest.getId(), user.getId());
-        if (isNotEmpty(subscriptions)) {
+        if (!Util.isEmpty(subscriptions)) {
             subscriptions.forEach(subscriptionTransaction -> {
                 final String id = subscriptionTransaction.stripeTransactionId;
                 final StripeAccount beneficiary = subscriptionTransaction.to;
@@ -2141,7 +2140,7 @@ public class Application extends Controller {
                 .withReplies(commentsService.getCommentReplies(addedComment, user))
                 .withImage((questImage == null) ? null : QuestImageDTO.toDTO(questImage));
 
-        if (isNotEmpty(result.mentions)) {
+        if (!Util.isEmpty(result.mentions)) {
             result.mentions.forEach(mention -> notificationService.addMentionNotification(
                     mention.id,
                     user.getId(),
@@ -2226,7 +2225,7 @@ public class Application extends Controller {
                 .withReplies(commentsService.getCommentReplies(editedComment, user))
                 .withImage(((questImage == null) ? null : QuestImageDTO.toDTO(questImage)));
 
-        final List<UserWithFiendStatusDTO> addedMentions = isEmpty(result.mentions)
+        final List<UserWithFiendStatusDTO> addedMentions = Util.isEmpty(result.mentions)
                 ? emptyList()
                 : result.mentions
                 .stream()
@@ -2235,7 +2234,7 @@ public class Application extends Controller {
                         .noneMatch(existingMention -> existingMention.id.equals(mention.id)))
                 .collect(toList());
 
-        if (isNotEmpty(addedMentions)) {
+        if (!Util.isEmpty(addedMentions)) {
             addedMentions.forEach(addedMention -> notificationService.addMentionNotification(
                     addedMention.id,
                     user.getId(),
@@ -3014,7 +3013,7 @@ public class Application extends Controller {
         }
         Logger.info(format("New Quest [%s] created by user [%s]", quest.getId(), user.getId()));
 
-        if (isNotEmpty(form.getQuestTasks())) {
+        if (!Util.isEmpty(form.getQuestTasks())) {
             createQuestTasksGroups(quest, user, form.getTasksGroups(), form.getQuestTasksGroupName());
             createQuestTasks(quest, user, form.getQuestTasks());
         }

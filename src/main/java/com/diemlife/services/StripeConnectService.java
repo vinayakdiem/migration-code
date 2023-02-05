@@ -42,6 +42,7 @@ import com.stripe.param.AccountCreateParams.Company.Address;
 import com.stripe.param.AccountCreateParams.TosAcceptance;
 import com.typesafe.config.Config;
 import com.diemlife.constants.PaymentMode;
+import com.diemlife.constants.Util;
 import com.diemlife.dao.QuestsDAO;
 import com.diemlife.dao.StripeOrderDAO;
 import com.diemlife.dto.ChargeCreationDTO;
@@ -399,7 +400,7 @@ public class StripeConnectService {
             return NullBankAccount.INSTANCE;
         }
         final List<PaymentSource> bankAccounts = customerBankAccounts.getData();
-        if (isEmpty(bankAccounts)) {
+        if (Util.isEmpty(bankAccounts)) {
             return NullBankAccount.INSTANCE;
         } else {
             final PaymentSource bankAccount = bankAccounts.iterator().next();
@@ -416,7 +417,7 @@ public class StripeConnectService {
             return NullBankAccount.INSTANCE;
         }
         final List<ExternalAccount> bankAccounts = customerBankAccounts.getData();
-        if (isEmpty(bankAccounts)) {
+        if (Util.isEmpty(bankAccounts)) {
             return NullBankAccount.INSTANCE;
         } else {
             final ExternalAccount bankAccount = bankAccounts.iterator().next();
@@ -453,7 +454,7 @@ public class StripeConnectService {
 
     public void deleteExistingCreditCard(final StripeCustomer customer, final String lastFour) throws StripeApiCallException {
         final List<Card> cards = getCustomerCreditCards(getCustomer(customer), lastFour);
-        if (isEmpty(cards)) {
+        if (Util.isEmpty(cards)) {
             throw new IllegalStateException(format("Stripe customer [%s] doesn't have any credit card with last 4 digits of [%s]", customer.stripeCustomerId, lastFour));
         }
         cards.forEach(card -> {
@@ -946,7 +947,7 @@ public class StripeConnectService {
                 }
             case CreditCard:
                 final List<Card> cards = getCustomerCreditCards(getCustomer(buyer), paymentMethod.lastFour);
-                if (isEmpty(cards)) {
+                if (Util.isEmpty(cards)) {
                     throw new IllegalStateException(format("Customer [%s] doesn't have any saved credit card ending with '%s'", buyer.stripeCustomerId, paymentMethod.lastFour));
                 }
                 return cards.iterator().next().getId();
@@ -973,7 +974,7 @@ public class StripeConnectService {
                 return createToken(merchant, newCreditCardTokenRequest);
             case CreditCard:
                 final List<Card> cards = getCustomerCreditCards(getCustomer(buyer), paymentMethod.lastFour);
-                if (isEmpty(cards)) {
+                if (Util.isEmpty(cards)) {
                     throw new IllegalStateException(format("Customer [%s] doesn't have any saved credit card ending with '%s'", buyer.stripeCustomerId, paymentMethod.lastFour));
                 }
 
@@ -1010,7 +1011,7 @@ public class StripeConnectService {
                                                                      final String token) throws StripeApiCallException, PaymentModeAlreadyExistsException {
         final Customer stripeCustomer = getCustomer(customer);
         final PaymentSourceCollection existingBankAccounts = getCustomerBankAccounts(stripeCustomer);
-        if (!isEmpty(existingBankAccounts.getData())) {
+        if (!Util.isEmpty(existingBankAccounts.getData())) {
             throw new PaymentModeAlreadyExistsException(customer, existingBankAccounts.getData().iterator().next());
         }
 
@@ -1041,7 +1042,7 @@ public class StripeConnectService {
                                                                              final String token) throws StripeApiCallException, PaymentModeAlreadyExistsException {
         final Account account = getAccount(customer);
         final ExternalAccountCollection bankAccounts = getConnectedAccountBankAccounts(account);
-        if (!isEmpty(bankAccounts.getData())) {
+        if (!Util.isEmpty(bankAccounts.getData())) {
             throw new PaymentModeAlreadyExistsException(customer, bankAccounts.getData().iterator().next());
         }
 

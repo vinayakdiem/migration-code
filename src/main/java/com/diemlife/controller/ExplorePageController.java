@@ -3,6 +3,7 @@ package com.diemlife.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import com.diemlife.constants.DeploymentEnvironments;
+import com.diemlife.constants.Util;
 import com.diemlife.dao.HappeningDAO;
 import com.diemlife.dao.Page;
 import com.diemlife.dao.QuestActivityHome;
@@ -44,7 +45,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 
 @JwtSessionLogin
@@ -100,9 +100,9 @@ public class ExplorePageController extends Controller {
         checkNotNull(startPosition, "startPosition");
         checkNotNull(endPosition, "endPosition"); // leaving this in for now, we may end up using it
 
-        if (isNotEmpty(keyword)) {
+        if (!Util.isEmpty(keyword)) {
             quests = QuestsDAO.getQuestsBySearchCriteria(keyword, entityManager).getList(user);
-        } else if (isNotEmpty(classification)) {
+        } else if (!Util.isEmpty(classification)) {
             quests = categoryService.findSimilarQuests(classification, startPosition, user);
         } else {
             quests = QuestActivityHome.getQuestsNotInProgressForUserPaginated(user, startPosition, endPosition - startPosition, categorySearch, null, null, entityManager).getList(user);

@@ -22,6 +22,7 @@ import com.typesafe.config.Config;
 import com.diemlife.constants.DeploymentEnvironments;
 import com.diemlife.constants.MailingTags;
 import com.diemlife.constants.QuestMode;
+import com.diemlife.constants.Util;
 import com.diemlife.dto.EmailTicketsDTO;
 import com.diemlife.dto.FundraisingLinkDTO;
 import com.diemlife.dto.StripeShippingDTO;
@@ -83,7 +84,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static org.apache.commons.lang3.CharEncoding.UTF_8;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -639,7 +639,7 @@ public class OutgoingEmailService {
             }
             email.setFrom(addresses.from);
             email.setSubject(subject);
-            email.setBoolHasAttachments(isNotEmpty(emailContent.attachments));
+            email.setBoolHasAttachments(!Util.isEmpty(emailContent.attachments));
             if (isNotBlank(emailContent.text)) {
                 email.setMsg(emailContent.text);
             }
@@ -650,7 +650,7 @@ public class OutgoingEmailService {
             Logger.error(format("Cannot configure email to [%s]", addresses.to), e);
         }
 
-        if (isNotEmpty(emailContent.attachments)) {
+        if (!Util.isEmpty(emailContent.attachments)) {
             Arrays.stream(emailContent.attachments).forEach(attachment -> {
                 final DataSource ds = new ByteArrayDataSource(attachment.data, attachment.type);
                 try {

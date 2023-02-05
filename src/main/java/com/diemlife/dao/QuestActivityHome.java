@@ -15,6 +15,9 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
+import com.diemlife.constants.Util;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -311,7 +314,7 @@ public class QuestActivityHome {
             if (user != null) {
                 query.setParameter("userId", user.getId());
             }
-            if (!isEmpty(pillars)) {
+            if (!Util.isEmpty(pillars)) {
                 query.setParameter("pillars", pillars);
             }
             if (!isBlank(category)) {
@@ -320,7 +323,7 @@ public class QuestActivityHome {
             if (!isBlank(place)) {
                 query.setParameter("place", place);
             }
-            if (!isEmpty(userFriendsWithBrands)) {
+            if (!Util.isEmpty(userFriendsWithBrands)) {
                 query.setParameter("userFriendsWithBrands", userFriendsWithBrands);
             }
 
@@ -391,7 +394,7 @@ public class QuestActivityHome {
             Query query = em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = 'IN_PROGRESS' " +
                     "AND qa.userId NOT IN :userId AND qa.userId IN (:friends) ORDER BY qa.addedDate DESC");
             query.setParameter("userId", userId);
-            query.setParameter("friends", isEmpty(friends) ? singletonList(Integer.MIN_VALUE) : friends);
+            query.setParameter("friends", Util.isEmpty(friends) ? singletonList(Integer.MIN_VALUE) : friends);
             query.setHint("org.hibernate.cacheable", true);
             query.setHint("org.hibernate.readOnly", true);
             query.setFirstResult(offset);

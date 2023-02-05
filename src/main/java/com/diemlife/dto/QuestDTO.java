@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import com.diemlife.constants.Util;
 import com.diemlife.models.QuestSEO;
 import com.diemlife.models.Quests;
 import com.diemlife.models.StripeAccount;
@@ -143,7 +144,7 @@ public class QuestDTO implements QuestSEO, Serializable {
     }
 
     public static List<QuestDTO> listToDTO(final List<Quests> quests) {
-        if (isEmpty(quests)) {
+        if (Util.isEmpty(quests)) {
             return emptyList();
         }
         return quests.stream().map(QuestDTO::toDTO).filter(Objects::nonNull).collect(toList());

@@ -18,6 +18,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.persistence.EntityManager;
+
+import com.diemlife.constants.Util;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -28,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 public class LeaderboardDAO {
 
@@ -272,8 +274,8 @@ public class LeaderboardDAO {
                 .setParameter("questId", quest.getId())
                 .setParameter("personalId", personalInfo.getId())
                 .getResultList();
-        if (isNotEmpty(existingWithUser) || isNotEmpty(existingWithPersonal)) {
-            final LeaderboardMember existing = isNotEmpty(existingWithUser)
+        if (!Util.isEmpty(existingWithUser) || !Util.isEmpty(existingWithPersonal)) {
+            final LeaderboardMember existing = !Util.isEmpty(existingWithUser)
                     ? existingWithUser.iterator().next()
                     : existingWithPersonal.iterator().next();
             existing.setQuest(quest);

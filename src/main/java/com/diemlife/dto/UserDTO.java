@@ -7,6 +7,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import java.util.List;
 import java.util.Objects;
 
+import com.diemlife.constants.Util;
 import com.diemlife.models.User;
 import com.diemlife.models.UserSEO;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -65,7 +66,7 @@ public class UserDTO extends WhoIAmDTO implements UserSEO {
     }
 
     public static List<UserDTO> listToDTO(final List<User> users) {
-        if (isEmpty(users)) {
+        if (Util.isEmpty(users)) {
             return emptyList();
         }
         return users.stream().map(UserDTO::toDTO).filter(Objects::nonNull).collect(toList());

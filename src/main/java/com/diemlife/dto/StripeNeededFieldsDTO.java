@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.diemlife.constants.StripeRequiredFields;
+import com.diemlife.constants.Util;
 
 import lombok.Data;
 
@@ -26,7 +27,7 @@ public class StripeNeededFieldsDTO {
     }
 
     public static List<StripeNeededFieldsDTO> listToDTO(final List<String> fields) {
-        if (isEmpty(fields)) {
+        if (Util.isEmpty(fields)) {
             return emptyList();
         }
 

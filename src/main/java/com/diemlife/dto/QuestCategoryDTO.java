@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import com.diemlife.constants.Util;
 import com.diemlife.models.QuestCategory;
 
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class QuestCategoryDTO implements Serializable {
     }
 
     public static List<QuestCategoryDTO> listToDTO(final List<QuestCategory> categories, final String link) {
-        if (isEmpty(categories)) {
+        if (Util.isEmpty(categories)) {
             return emptyList();
         }
         return categories.stream().map(c -> toDTO(c, link)).filter(Objects::nonNull).collect(toList());

@@ -9,6 +9,7 @@ import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.FirstLastNameIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
+import com.diemlife.constants.Util;
 import com.diemlife.dto.QuestMemberDTO;
 import com.diemlife.dto.UserToInviteDTO;
 import forms.ParticipantInfoForm;
@@ -565,7 +566,7 @@ public class UserHome {
     }
 
     public static List<User> getUsersByIds(List<Integer> userIds, EntityManager em) {
-        if (isEmpty(userIds)) {
+        if (Util.isEmpty(userIds)) {
             return emptyList();
         }
         try {
