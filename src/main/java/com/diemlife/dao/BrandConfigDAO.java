@@ -1,30 +1,32 @@
 package com.diemlife.dao;
 
-import models.BrandConfig;
-import models.QuestBrandConfig;
-import models.QuestBrandConfig.QuestBrandConfigId;
-import models.Quests;
-import models.User;
-import play.db.jpa.JPAApi;
-
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.BrandConfig;
+import com.diemlife.models.QuestBrandConfig;
+import com.diemlife.models.QuestBrandConfig.QuestBrandConfigId;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+
+@Repository
 public class BrandConfigDAO {
 
-    private final JPAApi jpaApi;
-
-    public BrandConfigDAO(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
-
+	@PersistenceContext
+	private EntityManager entityManager;
+  
     public List<BrandConfig> getLandingBrands() {
-        return jpaApi.em()
+        return entityManager
                 .createQuery("SELECT bc FROM BrandConfig bc WHERE bc.onLanding = TRUE ORDER BY bc.landingOrder", BrandConfig.class)
                 .getResultList();
     }
 
     public BrandConfig findBrandConfigBySiteUrl(final String siteUrl) {
-        return jpaApi.em()
+        return entityManager
                 .createQuery("SELECT bc FROM BrandConfig bc WHERE bc.siteUrl = :siteUrl", BrandConfig.class)
                 .setParameter("siteUrl", siteUrl)
                 .getResultList()
@@ -34,14 +36,14 @@ public class BrandConfigDAO {
     }
 
     public List<QuestBrandConfig> findAllQuestBrandConfigsByUser(final User user) {
-        return jpaApi.em()
+        return entityManager
                 .createQuery("SELECT qbc FROM QuestBrandConfig qbc WHERE qbc.id.userId = :userId", QuestBrandConfig.class)
                 .setParameter("userId", user.getId())
                 .getResultList();
     }
 
     public List<QuestBrandConfig> findAllQuestBrandConfigsByQuest(final Quests quest) {
-        return jpaApi.em()
+        return entityManager
                 .createQuery("SELECT qbc FROM QuestBrandConfig qbc WHERE qbc.id.questId = :questId", QuestBrandConfig.class)
                 .setParameter("questId", quest.getId())
                 .getResultList();
@@ -51,7 +53,7 @@ public class BrandConfigDAO {
         if (id == null || id.getQuestId() == null || id.getUserId() == null) {
             return false;
         }
-        return jpaApi.em()
+        return entityManager
                 .createQuery("SELECT COUNT(qbc) FROM QuestBrandConfig qbc WHERE qbc.id.questId = :questId AND qbc.id.userId = :userId", Long.class)
                 .setParameter("questId", id.getQuestId())
                 .setParameter("userId", id.getUserId())
@@ -70,7 +72,7 @@ public class BrandConfigDAO {
         questBrandConfig.setBrandConfig(brandConfig);
         questBrandConfig.setEnabled(true);
 
-        jpaApi.em().persist(questBrandConfig);
+        entityManager.persist(questBrandConfig);
     }
 
 }

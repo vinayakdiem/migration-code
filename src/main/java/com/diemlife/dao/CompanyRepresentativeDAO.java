@@ -1,15 +1,14 @@
 package com.diemlife.dao;
 
-import models.Brand;
-import models.CompanyRepresentative;
-import models.CompanyRole;
-import models.User;
-import play.db.jpa.JPAApi;
+import org.springframework.stereotype.Repository;
 
+import com.diemlife.models.Brand;
+import com.diemlife.models.CompanyRepresentative;
+import com.diemlife.models.User;
+
+@Repository
 public class CompanyRepresentativeDAO extends TypedSingletonDAO<CompanyRepresentative>{
-    public CompanyRepresentativeDAO(JPAApi jpaApi) {
-        super(jpaApi);
-    }
+    
 
     public CompanyRepresentative createCompanyRepresentative(String email, User user, Brand company, String stripeCustomerId){
         final CompanyRepresentative companyRepresentative = new CompanyRepresentative();

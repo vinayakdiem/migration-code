@@ -1,19 +1,21 @@
 package com.diemlife.dao;
 
-import models.Address;
-import models.Brand;
-import play.db.jpa.JPAApi;
-
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.Address;
+import com.diemlife.models.Brand;
+
+
+@Repository
 public class BrandDAO extends TypedSingletonDAO<Brand> {
 
-	public BrandDAO(JPAApi jpaApi) {
-		super(jpaApi);
-	}
+	@PersistenceContext
+	private EntityManager em;
 
 	public Brand getBrand(String name) {
-		EntityManager em = jpaApi.em();
 		return em.createQuery("Select c from Company c where c.name = :name", Brand.class)
 				.setParameter("name", name)
 				.getResultList()
@@ -23,7 +25,6 @@ public class BrandDAO extends TypedSingletonDAO<Brand> {
 	}
 
 	public Brand getBrandFromId(Long companyId) {
-		EntityManager em = jpaApi.em();
 		return em.createQuery("Select c from Company c where c.id = :id", Brand.class)
 				.setParameter("id", companyId)
 				.getResultList()

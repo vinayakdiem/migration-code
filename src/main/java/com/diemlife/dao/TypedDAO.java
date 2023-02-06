@@ -1,20 +1,23 @@
 package com.diemlife.dao;
 
-import com.diemlife.models.IdentifiedEntity;
-import play.Logger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.IdentifiedEntity;
+
+import play.Logger;
+
+@Repository
 public abstract class TypedDAO<T extends IdentifiedEntity> {
 
-    protected final EntityManager entityManager;
-
-    protected TypedDAO(final EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public <ST extends T> ST save(final ST entity, final Class<ST> type) {
         if (entity.getId() == null) {

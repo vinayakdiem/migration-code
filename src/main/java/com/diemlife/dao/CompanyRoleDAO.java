@@ -1,18 +1,21 @@
 package com.diemlife.dao;
 
-import models.Brand;
-import models.CompanyRepresentative;
-import models.CompanyRole;
-import models.User;
-import play.db.jpa.JPAApi;
-
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.Brand;
+import com.diemlife.models.CompanyRole;
+import com.diemlife.models.User;
+
+
+@Repository
 public class CompanyRoleDAO extends TypedSingletonDAO<CompanyRole> {
-    public CompanyRoleDAO(JPAApi jpaApi) {
-        super(jpaApi);
-    }
-
+   
+	@PersistenceContext
+	private EntityManager em;
+	
     public CompanyRole createRole(Brand company, User user, String role) {
         final CompanyRole representative = new CompanyRole();
         representative.setCompany(company);
@@ -23,7 +26,6 @@ public class CompanyRoleDAO extends TypedSingletonDAO<CompanyRole> {
     }
 
     public CompanyRole getCompanyRoleForUser(User user) {
-        EntityManager em = jpaApi.em();
         return em.createQuery("Select c from CompanyRole c where c.user = :user", CompanyRole.class)
                 .setParameter("user", user)
                 .getResultList()

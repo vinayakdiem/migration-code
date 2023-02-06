@@ -1,24 +1,34 @@
 package com.diemlife.dao;
 
-// Generated Jul 4, 2015 5:57:00 PM by Hibernate Tools 4.3.1
-
-import com.feth.play.module.pa.user.AuthUser;
-import models.LinkedAccount;
-import models.User;
-import play.Logger;
-
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.LinkedAccount;
+import com.diemlife.models.User;
+
+// Generated Jul 4, 2015 5:57:00 PM by Hibernate Tools 4.3.1
+
+//FIXME Raj
+//import com.feth.play.module.pa.user.AuthUser;
+
+import play.Logger;
 
 /**
  * Home object for domain model class LinkedAccount.
  * @see models.LinkedAccount
  * @author Hibernate Tools
  */
+@Repository
 public class LinkedAccountHome {
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
-	public void persist(LinkedAccount transientInstance, EntityManager entityManager) {
+	public void persist(LinkedAccount transientInstance) {
 
 		try {
 			entityManager.persist(transientInstance);
@@ -112,11 +122,13 @@ public class LinkedAccountHome {
 		return this.merge(linkedAccount, entityManager);
 	}
 
-	public void update(LinkedAccount linkedAccount, AuthUser authUser, EntityManager entityManager) {
+	//FIXME Raj
+	/*public void update(LinkedAccount linkedAccount, AuthUser authUser, EntityManager entityManager) {
 
 		linkedAccount.setProviderKey(authUser.getProvider());
 		linkedAccount.setProviderUserId(authUser.getId());
 
 		this.merge(linkedAccount, entityManager);
 	}
+*/
 }

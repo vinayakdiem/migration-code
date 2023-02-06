@@ -1,13 +1,5 @@
 package com.diemlife.dao;
 
-import models.ExploreCategories;
-import models.QuestCategory;
-import models.Quests;
-import org.apache.commons.lang3.StringUtils;
-import play.Logger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,14 +8,31 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.ExploreCategories;
+import com.diemlife.models.QuestCategory;
+import com.diemlife.models.Quests;
+
+import play.Logger;
+
+@Repository
 public class ExploreCategoriesDAO {
 
-    public static List<ExploreCategories> findEnabledExploreCategories(final EntityManager em) {
+	@PersistenceContext
+	EntityManager em;
+	
+    public List<ExploreCategories> findEnabledExploreCategories() {
         return em.createQuery("SELECT ec FROM ExploreCategories ec WHERE ec.included = TRUE ORDER BY ec.order", ExploreCategories.class)
                 .getResultList();
     }
 
-    public static List<ExploreCategories> addExploreCategoriesOfExistQuests(EntityManager em) {
+    public List<ExploreCategories> addExploreCategoriesOfExistQuests() {
 
         List<ExploreCategories> exploreCategoriesList = new ArrayList<>();
 
@@ -62,7 +71,7 @@ public class ExploreCategoriesDAO {
         return exploreCategoriesList;
     }
 
-    private static String prepareExploreCategory(final String category) {
+    private String prepareExploreCategory(final String category) {
 
         String exploreCategory = "";
         String[] categories = StringUtils.split(category, '/');
@@ -79,7 +88,7 @@ public class ExploreCategoriesDAO {
         }
     }
 
-    public static ExploreCategories addExploreCategory(ExploreCategories category, EntityManager em) {
+    public ExploreCategories addExploreCategory(ExploreCategories category, EntityManager em) {
         if (category.getId() == null) {
             try {
                 em.persist(category);
@@ -94,7 +103,7 @@ public class ExploreCategoriesDAO {
         }
     }
 
-    private static boolean isCategoryExists(String category, EntityManager em) {
+    private boolean isCategoryExists(String category, EntityManager em) {
         try {
             Long exploreCategories = em.createQuery("SELECT COUNT (ep) FROM ExploreCategories ep WHERE ep.category=:category", Long.class)
                     .setParameter("category", category)
@@ -106,7 +115,7 @@ public class ExploreCategoriesDAO {
         return false;
     }
 
-    public static List<ExploreCategories> findAllExploreCategories(EntityManager em) {
+    public List<ExploreCategories> findAllExploreCategories(EntityManager em) {
         try {
             return em.createQuery("SELECT ec FROM ExploreCategories ec", ExploreCategories.class)
                     .getResultList();

@@ -6,16 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.amazonaws.geo.GeoDataManager;
-import com.amazonaws.geo.GeoDataManagerConfiguration;
-import com.amazonaws.geo.model.GeoPoint;
-import com.amazonaws.geo.model.PutPointRequest;
-import com.amazonaws.geo.model.PutPointResult;
-import com.amazonaws.geo.model.QueryRadiusRequest;
-import com.amazonaws.geo.model.QueryRadiusResult;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
-
+import com.diemlife.com.amazonaws.geo.GeoDataManager;
+import com.diemlife.com.amazonaws.geo.GeoDataManagerConfiguration;
+import com.diemlife.com.amazonaws.geo.model.GeoPoint;
+import com.diemlife.com.amazonaws.geo.model.PutPointRequest;
+import com.diemlife.com.amazonaws.geo.model.PutPointResult;
+import com.diemlife.com.amazonaws.geo.model.QueryRadiusRequest;
+import com.diemlife.com.amazonaws.geo.model.QueryRadiusResult;
 import com.typesafe.config.Config;
 
 import play.Logger;
@@ -66,10 +65,12 @@ public class ActivityGeoDAO {
             GeoPoint geoPoint = new GeoPoint(lat, lon);
             QueryRadiusRequest queryRadiusRequest = new QueryRadiusRequest(geoPoint, radius);
 
-            List<QueryResult> queryResult;
+            List<QueryResult> queryResult=null;;
             try {
                 QueryRadiusResult queryRadiusResult = this.geoDataManager.queryRadius(queryRadiusRequest);
-                queryResult = queryRadiusResult.getQueryResults();
+               //FIXME Raj
+                
+                //queryResult = queryRadiusResult.getQueryResults();
             } catch (Exception e) {
                 Logger.error("getActivityByGeo - unable to query for level: " + level, e);
                 return result;

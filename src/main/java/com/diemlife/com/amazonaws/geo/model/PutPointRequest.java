@@ -17,10 +17,10 @@ package com.diemlife.com.amazonaws.geo.model;
 
 import java.util.HashMap;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.PutRequest;
 import com.diemlife.com.amazonaws.geo.GeoDataManagerConfiguration;
-import com.diemlife.com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.diemlife.com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-import com.diemlife.com.amazonaws.services.dynamodbv2.model.PutRequest;
 
 /**
  * Put point request. The request must specify a geo point and a range key value. You can modify PutItemRequest to

@@ -18,7 +18,7 @@ package com.diemlife.com.amazonaws.geo;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.diemlife.com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
 public class GeoDataManagerConfiguration {
 

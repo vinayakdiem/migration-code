@@ -1,19 +1,23 @@
 package com.diemlife.dao;
 
-import models.ContentReport;
-import models.Quests;
-import models.User;
-
-import javax.persistence.EntityManager;
-import java.util.List;
-
 import static java.util.Collections.emptyList;
 
-public class ContentReportDAO extends TypedDAO<ContentReport> {
+import java.util.List;
 
-    public ContentReportDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.ContentReport;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+
+@Repository
+public class ContentReportDAO extends TypedDAO<ContentReport> {
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
     public List<ContentReport> getSpecificQuestReportsByUser(final Quests accused, final User reporter) {
         if (reporter == null || reporter.getId() == null) {

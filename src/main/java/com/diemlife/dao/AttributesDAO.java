@@ -1,21 +1,20 @@
 package com.diemlife.dao;
 
-import models.Attribute;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-
-import play.Logger;
 
 import javax.persistence.EntityManager;
 
-import constants.ActivityUnit;
+import com.diemlife.constants.ActivityUnit;
+import com.diemlife.models.Attribute;
+
+import play.Logger;
 
 
 public class AttributesDAO {

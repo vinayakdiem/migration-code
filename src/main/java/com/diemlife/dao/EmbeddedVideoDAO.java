@@ -1,14 +1,17 @@
 package com.diemlife.dao;
 
-import models.EmbeddedVideo;
-
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.EmbeddedVideo;
+
+@Repository
 public class EmbeddedVideoDAO extends TypedDAO<EmbeddedVideo> {
 
-    public EmbeddedVideoDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public EmbeddedVideo findByURL(final String url) {
         return entityManager.createQuery("SELECT ev FROM EmbeddedVideos ev WHERE ev.url LIKE :url", EmbeddedVideo.class)

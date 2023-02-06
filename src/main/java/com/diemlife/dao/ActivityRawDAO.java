@@ -1,14 +1,12 @@
 package com.diemlife.dao;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
-
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.diemlife.constants.ActivityEventType;
+import com.diemlife.constants.ActivityUnit;
+import com.diemlife.models.ActivityRaw;
 import com.typesafe.config.Config;
-
-import constants.ActivityEventType;
-import constants.ActivityUnit;
-import models.ActivityRaw;
 
 import play.Logger;
 

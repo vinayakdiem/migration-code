@@ -15,6 +15,7 @@
 	<description>Diemlife Project</description>
 	<properties>
 		<java.version>1.8</java.version>
+		<tomcat.version>9.0.37</tomcat.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -29,7 +30,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		 <!-- Tomcat Database Connection Pooling package -->
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
@@ -46,6 +47,13 @@
 		    <artifactId>commons-lang3</artifactId>
 		    <version>3.12.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+		<dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk</artifactId>
+		    <version>1.11.1019</version>
+		</dependency>
+		
 		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -131,6 +139,12 @@
 	    <groupId>org.springframework.kafka</groupId>
 	    <artifactId>spring-kafka</artifactId>
 	    <version>3.0.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
+	<dependency>
+	    <groupId>org.apache.lucene</groupId>
+	    <artifactId>lucene-core</artifactId>
+	    <version>9.2.0</version>
 	</dependency>
 		
 	</dependencies>

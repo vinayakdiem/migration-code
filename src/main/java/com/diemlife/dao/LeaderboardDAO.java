@@ -1,37 +1,39 @@
 package com.diemlife.dao;
 
-import constants.LeaderboardMemberStatus;
-import models.Address;
-import models.Happening;
-import models.LeaderboardAttribute;
-import models.LeaderboardMember;
-import models.LeaderboardMember2;
-import models.LeaderboardScore;
-import models.PersonalInfo;
-import models.Quests;
-import models.QuestLeaderboard;
-import models.User;
-import play.Logger;
+import static java.util.Collections.emptyList;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
-import javax.persistence.EntityManager;
-
-import com.diemlife.constants.Util;
-
 import java.util.Date;
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Collections.emptyList;
+import javax.persistence.EntityManager;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.constants.LeaderboardMemberStatus;
+import com.diemlife.constants.Util;
+import com.diemlife.models.Address;
+import com.diemlife.models.Happening;
+import com.diemlife.models.LeaderboardAttribute;
+import com.diemlife.models.LeaderboardMember;
+import com.diemlife.models.LeaderboardMember2;
+import com.diemlife.models.LeaderboardScore;
+import com.diemlife.models.PersonalInfo;
+import com.diemlife.models.QuestLeaderboard;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+
+import play.Logger;
+
+@Repository
 public class LeaderboardDAO {
 
     private final EntityManager entityManager;

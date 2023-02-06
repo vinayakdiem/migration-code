@@ -1,9 +1,9 @@
 package com.diemlife.dao;
 
-import models.FundraisingLink;
-import models.FundraisingTransaction;
-import models.Quests;
-import models.User;
+import com.diemlife.models.FundraisingLink;
+import com.diemlife.models.FundraisingTransaction;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 
 public interface FundraisingLinkRepository {
 

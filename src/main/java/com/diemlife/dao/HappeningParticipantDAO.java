@@ -1,16 +1,16 @@
 package com.diemlife.dao;
 
-import models.HappeningParticipant;
+import java.math.BigInteger;
+import java.util.List;
 
 import javax.persistence.EntityManager;
-import java.util.List;
-import java.math.BigInteger;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.HappeningParticipant;
+
+@Repository
 public class HappeningParticipantDAO extends TypedDAO<HappeningParticipant> {
-
-    public HappeningParticipantDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
 
     public List<HappeningParticipant> findByHappeningId(final Long eventId) {
         return entityManager.createQuery("" +

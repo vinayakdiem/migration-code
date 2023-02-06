@@ -1,9 +1,24 @@
 package com.diemlife.dao;
 
-import acl.QuestEntityWithACL;
-import constants.GlobalSearchMode;
-import models.Quests;
-import models.User;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.lowerCase;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.apache.lucene.search.BooleanClause.Occur.MUST;
+import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
+import static com.diemlife.utils.URLUtils.seoFriendlyPublicQuestPath;
+import static com.diemlife.utils.URLUtils.seoFriendlyUserProfilePath;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
@@ -14,27 +29,17 @@ import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.acl.QuestEntityWithACL;
+import com.diemlife.constants.GlobalSearchMode;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+import com.diemlife.utils.SearchResponse;
+
 import play.Logger;
-import utils.SearchResponse;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.lowerCase;
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.apache.lucene.search.BooleanClause.Occur.MUST;
-import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
-import static utils.URLUtils.seoFriendlyPublicQuestPath;
-import static utils.URLUtils.seoFriendlyUserProfilePath;
-
+@Repository
 public class GlobalSearchDAO {
 
     public static Page<SearchResponse> searchGlobally(final String query,

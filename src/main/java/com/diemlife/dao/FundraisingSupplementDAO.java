@@ -1,16 +1,16 @@
 package com.diemlife.dao;
 
-import models.FundraisingSupplement;
-import play.Logger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import java.util.List;
-
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+
+import com.diemlife.models.FundraisingSupplement;
+
+import play.Logger;
 
 public class FundraisingSupplementDAO {
 

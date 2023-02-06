@@ -1,5 +1,17 @@
 package com.diemlife.dao;
 
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import com.diemlife.exceptions.RequiredParameterMissingException;
 import com.diemlife.models.BrandConfig;
 import com.diemlife.models.FundraisingLink;
@@ -8,25 +20,13 @@ import com.diemlife.models.QuestSEO;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import com.diemlife.models.UserSEO;
-import play.db.jpa.JPAApi;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.persistence.NoResultException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.lowerCase;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
-@Singleton
+@Repository
 public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> implements FundraisingLinkRepository {
 
-    @Inject
-    public FundraisingLinkDAO(final JPAApi jpaApi) {
-        super(jpaApi);
-    }
+	@PersistenceContext
+	EntityManager em;
 
     public FundraisingLink startFundraisingForQuest(final Quests quest,
                                                     final User doer,
@@ -89,7 +89,7 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
         if (quest == null) {
             throw new RequiredParameterMissingException("quest");
         }
-        return jpaApi.em().createQuery(
+        return em.createQuery(
                 "SELECT fl " +
                         "FROM FundraisingLinks fl " +
                         "WHERE fl.quest.id = :questId " +
@@ -103,7 +103,7 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
         if (user == null) {
             throw new RequiredParameterMissingException("user");
         }
-        return jpaApi.em().createQuery(
+        return em.createQuery(
                 "SELECT fl " +
                         "FROM FundraisingLinks fl " +
                         "WHERE fl.fundraiser.id = :userId " +
@@ -126,15 +126,15 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
     }
 
     public boolean existsWithCampaignName(final String campaignName) {
-        return jpaApi.withTransaction((em) -> em
+        return (em
                 .createQuery("SELECT COUNT(fl) FROM FundraisingLinks fl WHERE LOWER(fl.campaignName) LIKE :campaignName", Long.class)
-                .setParameter("campaignName", lowerCase(campaignName))
+                .setParameter("campaignName", (campaignName).toLowerCase())
                 .getSingleResult()) > 0;
     }
 
     public boolean existsWithQuestAndFundraiserUser(final QuestSEO quest, final UserSEO fundraiser) {
         checkRequiredParameters(quest, fundraiser);
-        return jpaApi.em()
+        return em
                 .createQuery("" +
                         "SELECT COUNT(fl) " +
                         "FROM FundraisingLinks fl " +
@@ -152,8 +152,7 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
         if (doerId == null) {
             throw new RequiredParameterMissingException("doerId");
         }
-        return jpaApi.withTransaction(em -> {
-            try {
+            
                 return em.createQuery(
                         "SELECT fl " +
                                 "FROM FundraisingLinks fl " +
@@ -164,10 +163,6 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
                         .setParameter("questId", questId)
                         .setParameter("userId", doerId)
                         .getSingleResult();
-            } catch (final NoResultException e) {
-                return null;
-            }
-        });
     }
 
     private void checkRequiredParameters(final QuestSEO quest, final UserSEO doer) {
@@ -178,4 +173,5 @@ public class FundraisingLinkDAO extends TypedSingletonDAO<FundraisingLink> imple
             throw new RequiredParameterMissingException("doer");
         }
     }
+
 }

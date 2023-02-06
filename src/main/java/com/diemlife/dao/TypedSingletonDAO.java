@@ -2,21 +2,20 @@ package com.diemlife.dao;
 
 import com.diemlife.models.IdentifiedEntity;
 import play.Logger;
-import play.db.jpa.JPAApi;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 
-public abstract class TypedSingletonDAO<T extends IdentifiedEntity> {
+import org.springframework.stereotype.Repository;
 
-    protected final JPAApi jpaApi;
+@Repository
+public class TypedSingletonDAO<T extends IdentifiedEntity> {
 
-    protected TypedSingletonDAO(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
+	@PersistenceContext
+	private EntityManager em;
 
     public <ST extends T> ST save(final ST entity, final Class<ST> type) {
-        final EntityManager em = jpaApi.em();
         if (entity.getId() == null) {
             try {
                 em.persist(entity);
@@ -32,12 +31,10 @@ public abstract class TypedSingletonDAO<T extends IdentifiedEntity> {
     }
 
     public <ST extends T> ST load(final Long id, final Class<ST> type) {
-        final EntityManager em = jpaApi.em();
         return em.find(type, id);
     }
 
     public <ST extends T> void delete(final ST entity) {
-        final EntityManager em = jpaApi.em();
         em.remove(entity);
     }
 

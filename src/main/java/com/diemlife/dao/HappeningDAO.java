@@ -1,29 +1,32 @@
 package com.diemlife.dao;
 
-import constants.QuestActivityStatus;
-import models.Happening;
-import play.Logger;
+import static com.diemlife.constants.QuestActivityStatus.COMPLETE;
+import static com.diemlife.constants.QuestActivityStatus.IN_PROGRESS;
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.time.DateUtils.truncate;
+
+import java.util.Calendar;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.validation.constraints.NotNull;
-import java.util.Calendar;
-import java.util.List;
 
-import static constants.QuestActivityStatus.COMPLETE;
-import static constants.QuestActivityStatus.IN_PROGRESS;
-import static java.lang.String.format;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.time.DateUtils.truncate;
+import org.springframework.stereotype.Repository;
 
+import com.diemlife.constants.QuestActivityStatus;
+import com.diemlife.models.Happening;
+
+import play.Logger;
+
+@Repository
 public class HappeningDAO extends TypedDAO<Happening> {
 
-    public HappeningDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+    
 
     public Happening getHappeningByQuestId(final Integer questId) {
         if (questId == null) {

@@ -1,15 +1,24 @@
 package com.diemlife.dao;
 
-import models.ExplorePlaces;
-import play.Logger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.ExplorePlaces;
+
+import play.Logger;
+
+@Repository
 public class ExplorePlacesDAO {
 
-    public static boolean doesPlaceExist(String place, EntityManager em) {
+	@PersistenceContext
+	EntityManager em;
+	
+    public boolean doesPlaceExist(String place, EntityManager em) {
         try {
             Long explorePlace = em.createQuery("SELECT COUNT (ep) FROM ExplorePlaces ep WHERE ep.place=:place", Long.class)
                     .setParameter("place", place)
@@ -21,7 +30,7 @@ public class ExplorePlacesDAO {
         return false;
     }
 
-    public static List<ExplorePlaces> findAllExplorePlaces(EntityManager em) {
+    public List<ExplorePlaces> findAllExplorePlaces(EntityManager em) {
         List<ExplorePlaces> explorePlaces = null;
         try {
             explorePlaces = em.createQuery("SELECT ep FROM ExplorePlaces ep WHERE ep.included = true ORDER BY ep.order", ExplorePlaces.class)
