@@ -1,18 +1,38 @@
 package com.diemlife.dao;
 
-import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import static com.diemlife.constants.QuestMode.PACE_YOURSELF;
+import static com.diemlife.constants.QuestMode.TEAM;
+import static com.diemlife.dao.QuestActivityHome.getQuestActivityForQuestIdAndUser;
+import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.MD;
+import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.SM;
+import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.XS;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang.BooleanUtils.toBoolean;
+import static org.apache.commons.lang3.StringUtils.upperCase;
+
+import java.text.NumberFormat;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceException;
+import javax.persistence.TypedQuery;
+
 import com.diemlife.constants.QuestMode;
 import com.diemlife.constants.VideoProvider;
 import com.diemlife.dto.QuestListDetailDTO;
 import com.diemlife.dto.QuestTaskGeometryDTO;
 import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.EmbeddedVideoForm;
-import forms.QuestActionPointForm;
-import forms.TaskCreateForm;
+import com.diemlife.forms.EmbeddedVideoForm;
+import com.diemlife.forms.QuestActionPointForm;
+import com.diemlife.forms.TaskCreateForm;
 import com.diemlife.models.ActivityRecord;
 import com.diemlife.models.ActivityRecordList;
 import com.diemlife.models.EmbeddedVideo;
@@ -24,27 +44,13 @@ import com.diemlife.models.QuestTasksGroup;
 import com.diemlife.models.QuestTeamMember;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
+import com.google.common.collect.ImmutableMap;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
 import play.Logger;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
-import java.text.NumberFormat;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.diemlife.constants.QuestMode.PACE_YOURSELF;
-import static com.diemlife.constants.QuestMode.TEAM;
-import static com.diemlife.dao.QuestActivityHome.getQuestActivityForQuestIdAndUser;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toMap;
-import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.MD;
-import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.SM;
-import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.XS;
-import static org.apache.commons.lang.BooleanUtils.toBoolean;
-import static org.apache.commons.lang3.StringUtils.upperCase;
 
 /**
  * Created by acoleman1 on 6/5/17.

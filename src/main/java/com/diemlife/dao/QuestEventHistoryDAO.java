@@ -1,34 +1,42 @@
 package com.diemlife.dao;
 
-import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.QuestActionPointForm;
-import com.diemlife.models.QuestEventHistory;
-import com.diemlife.models.QuestEvents;
-import play.Logger;
+import static java.lang.String.format;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import static java.lang.String.format;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.forms.QuestActionPointForm;
+import com.diemlife.models.QuestEventHistory;
+import com.diemlife.models.QuestEvents;
+
+import play.Logger;
+
+@Repository
 public class QuestEventHistoryDAO {
+	
+	@PersistenceContext
+	private EntityManager em;
 
-    public static void addEventHistory(final Integer questId,
+    public void addEventHistory(final Integer questId,
                                        final Integer userId,
                                        final QuestEvents questEvent,
-                                       final Integer origQuestId,
-                                       final EntityManager em) {
-        addEventHistory(questId, userId, questEvent, origQuestId, null, em);
+                                       final Integer origQuestId) {
+        addEventHistory(questId, userId, questEvent, origQuestId, null);
     }
 
-    public static void addEventHistory(final Integer questId,
+    public void addEventHistory(final Integer questId,
                                        final Integer userId,
                                        final QuestEvents questEvent,
                                        final Integer origQuestId,
-                                       final QuestActionPointForm point,
-                                       final EntityManager em) {
+                                       final QuestActionPointForm point
+                                       ) {
         if (questId == null) {
             throw new RequiredParameterMissingException("questId");
         }

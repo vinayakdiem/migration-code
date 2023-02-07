@@ -1,7 +1,12 @@
 package com.diemlife.dao;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import com.diemlife.models.UserPaymentFee;
-import play.db.jpa.JPAApi;
+
 
 
 /**
@@ -10,25 +15,20 @@ import play.db.jpa.JPAApi;
  *
  * @author SYushchenko
  */
+
+@Repository
 public class UserPaymentFeeDAO {
 
-    private final JPAApi jpaApi;
-
-    /**
-     * Constructor with parameters
-     *
-     * @param jpaApi {@link JPAApi}
-     */
-    public UserPaymentFeeDAO(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
-
+  
+	@PersistenceContext
+	private EntityManager em;
+	
     /**
      * Find {@link UserPaymentFee} by user id
      * @param userId user id
      * @return {@link UserPaymentFee}
      */
     public UserPaymentFee getUserPaymentFeeByUserId(final long userId) {
-        return jpaApi.em().find(UserPaymentFee.class, userId);
+        return em.find(UserPaymentFee.class, userId);
     }
 }

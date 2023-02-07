@@ -1,36 +1,46 @@
 package com.diemlife.services;
 
-import java.util.Date;
-import com.typesafe.config.Config;
-
-import com.diemlife.constants.ActivityEventType;
-import com.diemlife.constants.ActivityUnit;
-import com.diemlife.dao.*;
-import com.diemlife.dto.ActivityDTO;
-import com.diemlife.dto.AllPillarsCount;
-import models.*;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+
 import javax.persistence.EntityManager;
 
-import play.db.Database;
-import play.db.NamedDatabase;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.diemlife.constants.ActivityEventType;
+import com.diemlife.constants.ActivityUnit;
+import com.diemlife.dao.ActivityDAO;
+import com.diemlife.dao.ActivityGeoDAO;
+import com.diemlife.dao.ActivityRawDAO;
+import com.diemlife.dao.ActivityRecordDAO;
+import com.diemlife.dao.AsActivityDAO;
+import com.diemlife.dao.QuestTasksDAO;
+import com.diemlife.dao.QuestTeamDAO;
+import com.diemlife.dao.QuestsDAO;
+import com.diemlife.dao.UserHome;
+import com.diemlife.dto.ActivityDTO;
+import com.diemlife.dto.AllPillarsCount;
+import com.diemlife.models.Activity;
+import com.diemlife.models.ActivityRaw;
+import com.diemlife.models.ActivityRecord;
+import com.diemlife.models.AsActivity;
+import com.diemlife.models.QuestTasks;
+import com.diemlife.models.QuestTeam2;
+import com.diemlife.models.Quests2;
+import com.diemlife.models.User2;
+
 import play.Logger;
-import play.db.jpa.JPAApi;
 
-import static java.lang.Integer.valueOf;
-
-@Singleton
+@Service
 public class ActivityService {
 
     private static final int QUERY_LIMIT_DEFAULT = 15;
@@ -48,20 +58,15 @@ public class ActivityService {
     // 10000 km
     private static double LEVEL2_RADIUS_METERS_MAX = 10000000;
 
+    @Autowired
     private ActivityRawDAO arDao;
+   
+    @Autowired
     private ActivityDAO aDao;
-    private ActivityGeoDAO agDao;
-    private Database dbRo;
-    private final JPAApi jpaApi;
     
-    @Inject
-    public ActivityService(Config conf, @NamedDatabase("ro") Database dbRo, final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-        this.arDao = new ActivityRawDAO(conf);
-        this.aDao = new ActivityDAO(conf);
-        this.agDao = new ActivityGeoDAO(conf);
-        this.dbRo = dbRo;
-    }
+    @Autowired
+    private ActivityGeoDAO agDao;
+  
 
     public List<Activity> getActivity(String uid) {
         return aDao.get(uid);
@@ -180,9 +185,9 @@ public class ActivityService {
             Long questId = activity.getQuestId();
             activityDto.setQuestId(questId);
             activityDto.setTaskId(activity.getTaskId());
-            final EntityManager em = this.jpaApi.em();
+           
             if (activity.getQuestId() != null && activity.getTaskId() != null) {
-                final List<QuestTasks> filteredTask = QuestTasksDAO.getQuestTasks(activity.getQuestId().intValue(), em) == null ?
+                final List<QuestTasks> filteredTask = QuestTasksDAO.getQuestTasks(activity.getQuestId().intValue()) == null ?
                         null :
                         QuestTasksDAO.getQuestTasks(activity.getQuestId().intValue(), em).stream()
                                 .filter(t -> t.getId() == activity.getTaskId().intValue())

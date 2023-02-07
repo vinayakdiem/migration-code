@@ -11,11 +11,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.stereotype.Repository;
+
 import com.diemlife.models.QuestCategory;
 
 import play.Logger;
 
 
+@Repository
 public class QuestCategoryDAO extends TypedDAO<QuestCategory> {
 
     private static final String QUEST_ID = "questId";
