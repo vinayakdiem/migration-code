@@ -9,6 +9,9 @@ import com.diemlife.constants.ImageType;
 import com.diemlife.models.S3File;
 import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
 import play.data.DynamicForm;
 import play.data.FormFactory;
@@ -35,14 +38,11 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * A component used for resizing images prior to uploading for storage
  */
+@Service
 public class ImageProcessingService {
 
-    private final FormFactory formFactory;
-
-    @Inject
-    public ImageProcessingService(FormFactory formFactory) {
-        this.formFactory = checkNotNull(formFactory, "formFactory");
-    }
+	@Autowired
+    private FormFactory formFactory;
 
     public static class ImageResult {
         private byte[] data;
@@ -104,15 +104,16 @@ public class ImageProcessingService {
                     }
                     content = imgRes.getData();
 
-                    String dimensionName = dimension.isAddSuffix() ? dimension.name().toLowerCase() : "";
-                    s3File.setName(dimensionName);
-                    s3File.setContentData(new ByteArrayInputStream(content));
-                    s3File.setContentLength(content.length);
-                    s3File.setImgWidth(imgRes.getWidth());
-                    s3File.setImgHeight(imgRes.getHeight());
-                    s3File.setContentType(convertedContentType);
+                  //FIXME Vinayak
+//                    String dimensionName = dimension.isAddSuffix() ? dimension.name().toLowerCase() : "";
+//                    s3File.setName(dimensionName);
+//                    s3File.setContentData(new ByteArrayInputStream(content));
+//                    s3File.setContentLength(content.length);
+//                    s3File.setImgWidth(imgRes.getWidth());
+//                    s3File.setImgHeight(imgRes.getHeight());
+//                    s3File.setContentType(convertedContentType);
 
-                    Logger.debug("getFileFromRequest - adding variant: " + s3File.getName());
+//                    Logger.debug("getFileFromRequest - adding variant: " + s3File.getName());
 
                     differentDimensionsImages.add(s3File);
                 }
@@ -148,17 +149,18 @@ public class ImageProcessingService {
                     final byte[] base64Content = imgRes.getData();
 
                     //String imageName = FilenameUtils.removeExtension(fileContent.getFilename());
-                    String dimensionName = dimension.isAddSuffix() ? dimension.name().toLowerCase() : "";
-                    String extension = FilenameUtils.getExtension(fileContent.getFilename());
-
-                    s3File.setName(dimensionName + "." + extension);
-                    s3File.setContentData(new ByteArrayInputStream(base64Content));
-                    s3File.setContentLength(base64Content.length);
-                    s3File.setImgWidth(imgRes.getWidth());
-                    s3File.setImgHeight(imgRes.getHeight());
-                    s3File.setContentType(convertedContentType);
-
-                    Logger.debug("getFileFromRequest - adding variant: " + s3File.getName());
+                  //FIXME Vinayak
+//                    String dimensionName = dimension.isAddSuffix() ? dimension.name().toLowerCase() : "";
+//                    String extension = FilenameUtils.getExtension(fileContent.getFilename());
+//
+//                    s3File.setName(dimensionName + "." + extension);
+//                    s3File.setContentData(new ByteArrayInputStream(base64Content));
+//                    s3File.setContentLength(base64Content.length);
+//                    s3File.setImgWidth(imgRes.getWidth());
+//                    s3File.setImgHeight(imgRes.getHeight());
+//                    s3File.setContentType(convertedContentType);
+//
+//                    Logger.debug("getFileFromRequest - adding variant: " + s3File.getName());
 
                     differentDimensionsImages.add(s3File);
                 }
@@ -175,35 +177,44 @@ public class ImageProcessingService {
     }
 
     public ImageResult processImage(File file, ImageDimensions imageDimension, String contentType) {
-        try {
-            return from(file, imageDimension, contentType);
-        } catch (ImageProcessingException | IOException e) {
-            Logger.error("processImage - Unable to process image file: " + file.getAbsolutePath() + ", " + e.toString());
+    	//FIXME Vinayak
+//        try {
+//            return from(file, imageDimension, contentType);
+//        } catch (ImageProcessingException | IOException e) {
+//            Logger.error("processImage - Unable to process image file: " + file.getAbsolutePath() + ", " + e.toString());
             return null;
-        }
+//        }
     }
 
-    private ImageResult from(File file, ImageDimensions imageDimension, String contentType) throws IOException, ImageProcessingException {
-        BufferedImage image = ImageIO.read(file);
-        if (image == null) {
-            Logger.error("from - image read returned null, this likely not an image file: " + file.getAbsolutePath());
-            return null;
-        }
+    private ImageResult from(File file, ImageDimensions imageDimension, String contentType) { 
+    		
+    	//FIXME Vinayak
+//    	throws IOException, ImageProcessingException {
+//        BufferedImage image = ImageIO.read(file);
+//        if (image == null) {
+//            Logger.error("from - image read returned null, this likely not an image file: " + file.getAbsolutePath());
+//            return null;
+//        }
 
-        image = resizeAndFormatImage(image, file, imageDimension);
+      //FIXME Vinayak
+//        image = resizeAndFormatImage(image, file, imageDimension);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         
         String convertedContentType = ImageUtils.contentTypeToImageIoType(contentType);
         Logger.debug("from - writing image as type: " + convertedContentType);
 
-        ImageIO.write(image, convertedContentType, byteArrayOutputStream);
+      //FIXME Vinayak
+//        ImageIO.write(image, convertedContentType, byteArrayOutputStream);
 
-        byteArrayOutputStream.flush();
+//        byteArrayOutputStream.flush();
         byte[] bytes = byteArrayOutputStream.toByteArray();
-        byteArrayOutputStream.close();
+//        byteArrayOutputStream.close();
 
-        return new ImageResult(bytes, image.getWidth(), image.getHeight());
+
+       return null;
+      //FIXME Vinayak
+//        return new ImageResult(bytes, image.getWidth(), image.getHeight());
     }
 
     public ImageResult resizeByteArray(byte[] content, ImageDimensions imageDimension, String contentType) {
@@ -216,83 +227,92 @@ public class ImageProcessingService {
 
             Logger.debug("resizeByteArray - type before resize: " + ImageUtils.getImageTypeString(imageFromBytes));
 
-            BufferedImage bufferedImage = Scalr.resize(ImageIO.read(new ByteArrayInputStream(content)),
-                    Scalr.Method.QUALITY,
-                    imageDimension.getWidth(), imageDimension.getHeight());
+          //FIXME Vinayak
+//            BufferedImage bufferedImage = Scalr.resize(ImageIO.read(new ByteArrayInputStream(content)),
+//                    Scalr.Method.QUALITY,
+//                    imageDimension.getWidth(), imageDimension.getHeight());
 
-            Logger.debug("resizeByteArray - type after resize: " + ImageUtils.getImageTypeString(bufferedImage));
-
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//            Logger.debug("resizeByteArray - type after resize: " + ImageUtils.getImageTypeString(bufferedImage));
+//
+//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             // Note: this was previously assuming a jpeg always.  I pray other things don't depend on us always saving a jpeg in the S3
             String convertedContentType = ImageUtils.contentTypeToImageIoType(contentType);
             Logger.debug("resizeByteArray - writing img as type: " + convertedContentType);
-
-            ImageIO.write(bufferedImage, convertedContentType, byteArrayOutputStream);
-
-            byteArrayOutputStream.flush();
-            byte[] bytes = byteArrayOutputStream.toByteArray();
-            byteArrayOutputStream.close();
-
-            return new ImageResult(bytes, bufferedImage.getWidth(), bufferedImage.getHeight());
+          //FIXME Vinayak
+//            ImageIO.write(bufferedImage, convertedContentType, byteArrayOutputStream);
+//
+//            byteArrayOutputStream.flush();
+//            byte[] bytes = byteArrayOutputStream.toByteArray();
+//            byteArrayOutputStream.close();
+//
+//            return new ImageResult(bytes, bufferedImage.getWidth(), bufferedImage.getHeight());
+            return null;
         } catch (IOException e) {
             Logger.error("resizeByteArray - couldn't process image: " + e.toString());
             return null;
         }
     }
 
-    private BufferedImage resizeAndFormatImage(BufferedImage image, File file, ImageDimensions imageDimension) throws IOException, ImageProcessingException {
+    private BufferedImage resizeAndFormatImage(BufferedImage image, File file, ImageDimensions imageDimension) {
+  //FIXME Vinayak
+//    		throws IOException, ImageProcessingException {
         
         Logger.debug("resizeAndFormatImage - type before resize: " + ImageUtils.getImageTypeString(image));
 
         //scaling the image to be IMAGE_SIZE x IMAGE_SIZE
-        BufferedImage scaledImage = Scalr.resize(image,
-                Scalr.Method.QUALITY,
-                imageDimension.getWidth(), imageDimension.getHeight());
-
-        Logger.debug("resizeAndFormatImage - type after resize: " + ImageUtils.getImageTypeString(scaledImage));
-
-        Metadata metadata = ImageMetadataReader.readMetadata(file);
-        ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+      //FIXME Vinayak
+//        BufferedImage scaledImage = Scalr.resize(image,
+//                Scalr.Method.QUALITY,
+//                imageDimension.getWidth(), imageDimension.getHeight());
+//
+//        Logger.debug("resizeAndFormatImage - type after resize: " + ImageUtils.getImageTypeString(scaledImage));
+//
+//        Metadata metadata = ImageMetadataReader.readMetadata(file);
+//        ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
 
         int orientation = 0;
         try {
-            orientation = exifIFD0Directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+        	//FIXME Vinayak
+//            orientation = exifIFD0Directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
         } catch (Exception ex) {
             Logger.warn("no EXIF information found for image: {}", file.getName());
         }
 
-        switch (orientation) {
-            case 1:
-                break;
-            case 2: // Flip X
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_HORZ);
-                break;
-            case 3: // PI rotation
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_180);
-                break;
-            case 4: // Flip Y
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_VERT);
-                break;
-            case 5: // - PI/2 and Flip X
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_HORZ);
-                break;
-            case 6: // -PI/2 and -width
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
-                break;
-            case 7: // PI/2 and Flip
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_VERT);
-                break;
-            case 8: // PI / 2
-                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_270);
-                break;
-            default:
-                break;
-        }
+      //FIXME Vinayak
+//        switch (orientation) {
+//            case 1:
+//                break;
+//            case 2: // Flip X
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_HORZ);
+//                break;
+//            case 3: // PI rotation
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_180);
+//                break;
+//            case 4: // Flip Y
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_VERT);
+//                break;
+//            case 5: // - PI/2 and Flip X
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_HORZ);
+//                break;
+//            case 6: // -PI/2 and -width
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
+//                break;
+//            case 7: // PI/2 and Flip
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_90);
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.FLIP_VERT);
+//                break;
+//            case 8: // PI / 2
+//                scaledImage = Scalr.rotate(scaledImage, Scalr.Rotation.CW_270);
+//                break;
+//            default:
+//                break;
+//        }
 
-        return scaledImage;
+      //FIXME Vinayak
+        return null;
+//        return scaledImage;
     }
 
 }

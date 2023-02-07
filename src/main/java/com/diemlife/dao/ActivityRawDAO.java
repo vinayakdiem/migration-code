@@ -67,7 +67,7 @@ public class ActivityRawDAO extends DynamoDAO {
     private static final String RANGE_KEY = ID_IDTYPE_SEQUENCE;
 
     // note: also used by ActivityDAO
-    public static String selectId(String idType, String username, Long teamId, Long questId) {
+    public String selectId(String idType, String username, Long teamId, Long questId) {
         String ret;
         switch (idType) {
             case IDTYPE_QUEST:
@@ -85,7 +85,7 @@ public class ActivityRawDAO extends DynamoDAO {
         return ret;
     }
 
-    private static String constructRangeKey(String id, String idType, int sequence) {
+    private String constructRangeKey(String id, String idType, int sequence) {
         StringBuilder sb = new StringBuilder();
         sb.append(id);
         sb.append('_');

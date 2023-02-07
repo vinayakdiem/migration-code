@@ -3,6 +3,9 @@ package com.diemlife.dao;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.models.AsActivity;
 import com.diemlife.models.AsPillar;
@@ -12,10 +15,13 @@ import play.Logger;
 /**
  * Created by Raj on 8/13/22.
  */
+@Repository
 public class AsPillarDAO {
+	
+	@PersistenceContext
+	EntityManager em;
 
-
-    public void persist(AsActivity transientInstance, EntityManager em) {
+    public void persist(AsActivity transientInstance) {
 
         try {
             em.persist(transientInstance);
@@ -24,7 +30,7 @@ public class AsPillarDAO {
         }
     }
 
-    public static AsPillar findById(Integer id, EntityManager em) {
+    public AsPillar findById(Integer id) {
         try {
         	AsPillar asPillar = em.find(AsPillar.class, id);
             if (asPillar != null) {
@@ -37,7 +43,7 @@ public class AsPillarDAO {
     }
     
     
-    public static List<AsPillar> findAllPillars(EntityManager em) {
+    public List<AsPillar> findAllPillars() {
         try {
         	
         	return  em.createQuery("SELECT asp FROM AsPillar asp").getResultList();

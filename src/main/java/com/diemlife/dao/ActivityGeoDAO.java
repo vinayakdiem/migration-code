@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.PersistenceContext;
+
 import org.springframework.stereotype.Repository;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -23,8 +25,8 @@ import play.Logger;
 
 @Repository
 public class ActivityGeoDAO {
-    
-    private static class ActivityGeoLevelDAO extends DynamoDAO {
+	
+    private class ActivityGeoLevelDAO extends DynamoDAO {
 
         private static final String HASH_KEY = "hashKey";
         private static final String RANGE_KEY = "rangeKey";

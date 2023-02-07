@@ -31,7 +31,7 @@ public class ActivityRecordDAO {
         }
     }
 
-    public static ActivityRecord findById(Integer id, EntityManager em) {
+    public ActivityRecord findById(Integer id) {
         try {
         	ActivityRecord activityRecord = em.find(ActivityRecord.class, id);
             if (activityRecord != null) {
@@ -44,16 +44,14 @@ public class ActivityRecordDAO {
     }
     
     
-    public static List<ActivityRecord> getActvityRecordByActivityRecordListIds(final List<Integer> activityRecordListIds,
-            final EntityManager em) {
+    public List<ActivityRecord> getActvityRecordByActivityRecordListIds(final List<Integer> activityRecordListIds) {
     			return em.createQuery("SELECT ar FROM ActivityRecord ar " +
     						"WHERE ar.activityRecordListId IN(:activityRecordListIds)", ActivityRecord.class)
     						.setParameter("activityRecordListIds", activityRecordListIds)
     						.getResultList();
 }
 
-   public static void deleteActvityRecordByActivityIds(final List<Integer> actvivityRecordIds,
-            final EntityManager em) {
+   public void deleteActvityRecordByActivityIds(final List<Integer> actvivityRecordIds) {
     			em.createQuery("DELETE FROM ActivityRecord ar " +
     						"WHERE ar.id IN(:actvivityRecordIds)")
     						.setParameter("actvivityRecordIds", actvivityRecordIds)

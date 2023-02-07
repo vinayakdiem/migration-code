@@ -14,13 +14,15 @@ import com.diemlife.models.FundraisingTransaction;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import play.Logger;
-import play.db.jpa.JPAApi;
-import play.db.jpa.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 import static java.lang.String.format;
@@ -28,74 +30,71 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 
-@Singleton
+@Service
 public class FundraisingService implements FundraisingLinkRepository {
 
-    private final Config configuration;
-    private final JPAApi jpaApi;
-    private final FundraisingLinkDAO fundraisingLinkDAO;
+	@Autowired
+    private Config configuration;
+	
+	@Autowired
+    private FundraisingLinkDAO fundraisingLinkDAO;
 
-    @Inject
-    public FundraisingService(final Config configuration,
-                              final JPAApi jpaApi,
-                              final FundraisingLinkDAO fundraisingLinkDAO) {
-        this.configuration = configuration;
-        this.jpaApi = jpaApi;
-        this.fundraisingLinkDAO = fundraisingLinkDAO;
-    }
-
-    @Transactional
+//    @Transactional
     @Override
     public FundraisingLink getFundraisingLink(final Quests quest, final User doer) {
         return fundraisingLinkDAO.getFundraisingLink(quest, doer);
     }
 
-    @Transactional
+//    @Transactional
     @Override
     public FundraisingLink addBackingTransaction(final FundraisingLink fundraisingLink,
                                                  final FundraisingTransaction transaction) {
         return fundraisingLinkDAO.addBackingTransaction(fundraisingLink, transaction);
     }
 
-    @Transactional
+//    @Transactional
     public FundraisingLinkDTO getFundraisingLinkDTO(final @NotNull Integer questId, final @NotNull Integer doerId) {
-        return convert(getFundraisingLinkModel(questId, doerId, jpaApi.em()));
+        return convert(getFundraisingLinkModel(questId, doerId));
     }
 
-    @Transactional
+//    @Transactional
     public List<FundraisingLinkDTO> getQuestFundraisingLinks(final @NotNull Integer questId) {
-        final EntityManager em = jpaApi.em();
-        return fundraisingLinkDAO.getQuestFundraisingLinks(em.find(Quests.class, questId))
-                .stream()
-                .map(this::convert)
-                .collect(toList());
+//FIXME Vinayak
+    	return null;
+//        return fundraisingLinkDAO.getQuestFundraisingLinks(em.find(Quests.class, questId))
+//                .stream()
+//                .map(this::convert)
+//                .collect(toList());
     }
 
-    @Transactional
+//    @Transactional
     public List<FundraisingLinkDTO> getUserFundraisingLinks(final @NotNull Integer userId) {
-        final EntityManager em = jpaApi.em();
-        final User user = em.find(User.class, userId);
-        return fundraisingLinkDAO.getUserFundraisingLinks(user)
-                .stream()
-                .map(this::convert)
-                .collect(toList());
+    	//FIXME Vinayak
+    	return null;
+//        final User user = em.find(User.class, userId);
+//        return fundraisingLinkDAO.getUserFundraisingLinks(user)
+//                .stream()
+//                .map(this::convert)
+//                .collect(toList());
     }
 
     // TODO: How do we bootstrap fundraising detail for a parent quest?  Is this approach correct?
     public FundraisingLinkDTO getFundraisingLinkForParentQuest(int questId, int userId) {
-        final EntityManager em = jpaApi.em();
-        final Quests quest = em.find(Quests.class, questId);
-        final User doer = em.find(User.class, userId);
+    	//FIXME Vinayak
+//        final Quests quest = em.find(Quests.class, questId);
+//        final User doer = em.find(User.class, userId);
 
         FundraisingLinkDTO dto = new FundraisingLinkDTO();
-        dto.creator =  UserDTO.toDTO(quest.getUser());
+      //FIXME Vinayak
+//        dto.creator =  UserDTO.toDTO(quest.getUser());
 
         // TODO: fill in more stuff
         final String envUrl = configuration.getString(DeploymentEnvironments.valueOf(configuration.getString("application.mode")).getBaseUrlKey());
         dto.id = null;
         dto.brand = /* BrandConfigDTO.toDto(link.brand) */ null;
         dto.secondaryBrand = /* BrandConfigDTO.toDto(link.secondaryBrand) */ null;
-        dto.doer = UserDTO.toDTO(doer);
+      //FIXME Vinayak
+//        dto.doer = UserDTO.toDTO(doer);
         dto.campaignName = /* link.campaignName */ null;
         dto.coverImageUrl = /* link.coverImageUrl */ null;
         dto.quest = /* QuestDTO.toDTO(quest).withSEOSlugs(publicQuestSEOSlugs(quest, quest.getUser(), envUrl)) */ null;
@@ -115,22 +114,23 @@ public class FundraisingService implements FundraisingLinkRepository {
         // Update the parent...
     }
 
-    private FundraisingLink getFundraisingLinkModel(final Integer questId, final Integer doerId, final EntityManager em) {
-        final User doer = em.find(User.class, doerId);
-        final Quests quest = em.find(Quests.class, questId);
-        if (doer == null || quest == null) {
+    private FundraisingLink getFundraisingLinkModel(final Integer questId, final Integer doerId) {
+    	//FIXME Vinayak
+//        final User doer = em.find(User.class, doerId);
+//        final Quests quest = em.find(Quests.class, questId);
+//        if (doer == null || quest == null) {
             return null;
-        } else {
-            return fundraisingLinkDAO.getFundraisingLink(quest, doer);
-        }
+//        } else {
+//            return fundraisingLinkDAO.getFundraisingLink(quest, doer);
+//        }
     }
 
-    @Transactional(readOnly = true)
+//    @Transactional(readOnly = true)
     public boolean fundraisingLinkExists(final @NotNull Quests quest, final @NotNull User fundraiser) {
         return quest.isFundraising() && fundraisingLinkDAO.existsWithQuestAndFundraiserUser(quest, fundraiser);
     }
 
-    @Transactional
+//    @Transactional
     public FundraisingLinkDTO startFundraising(final @NotNull Quests quest,
                                                final @NotNull User fundraiser,
                                                final @NotNull Long targetAmountInCents,
@@ -201,17 +201,18 @@ public class FundraisingService implements FundraisingLinkRepository {
         return result;
     }
 
-    @Transactional
+//    @Transactional
     public FundraisingLinkDTO setupParties(final @NotNull Integer questId, final @NotNull Integer doerId) {
-        final EntityManager em = jpaApi.em();
-        final Quests quest = em.find(Quests.class, questId);
+    	//FIXME Vinayak
+//        final Quests quest = em.find(Quests.class, questId);
         final FundraisingLinkDTO result = new FundraisingLinkDTO();
-        if (quest != null && quest.isFundraising()) {
-            final String envUrl = configuration.getString(DeploymentEnvironments.valueOf(configuration.getString("application.mode")).getBaseUrlKey());
-            result.doer = UserDTO.toDTO(em.find(User.class, doerId));
-            result.creator = UserDTO.toDTO(em.find(User.class, quest.getCreatedBy()));
-            result.quest = QuestDTO.toDTO(quest).withSEOSlugs(publicQuestSEOSlugs(quest, quest.getUser(), envUrl));
-        }
+      //FIXME Vinayak
+//        if (quest != null && quest.isFundraising()) {
+//            final String envUrl = configuration.getString(DeploymentEnvironments.valueOf(configuration.getString("application.mode")).getBaseUrlKey());
+//            result.doer = UserDTO.toDTO(em.find(User.class, doerId));
+//            result.creator = UserDTO.toDTO(em.find(User.class, quest.getCreatedBy()));
+//            result.quest = QuestDTO.toDTO(quest).withSEOSlugs(publicQuestSEOSlugs(quest, quest.getUser(), envUrl));
+//        }
         return result;
     }
 

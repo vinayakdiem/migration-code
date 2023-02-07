@@ -1,5 +1,7 @@
 package com.diemlife.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -12,6 +14,7 @@ import com.typesafe.config.Config;
 
 import play.Logger;
 
+@Repository
 public abstract class DynamoDAO {
     
     // Note: our config files typically have these in all caps

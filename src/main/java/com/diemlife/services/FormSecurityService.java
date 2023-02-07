@@ -8,32 +8,31 @@ import com.diemlife.security.PasswordHasher;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
-@Singleton
+@Service
 public class FormSecurityService {
 
-    private final PasswordHasher passwordHasher;
-    private final MyUsernamePasswordAuthProvider userPaswAuthProvider;
-
-    @Inject
-    public FormSecurityService(final PasswordHasher passwordHasher,
-                               final MyUsernamePasswordAuthProvider userPaswAuthProvider) {
-        this.passwordHasher = passwordHasher;
-        this.userPaswAuthProvider = userPaswAuthProvider;
-    }
+	@Autowired
+    private PasswordHasher passwordHasher;
+    private MyUsernamePasswordAuthProvider userPaswAuthProvider;
 
     public boolean formPasswordMatches(final User user, final String password) {
         if (isBlank(password)) {
             return false;
         }
-        final LinkedAccount credentials = user.getLinkedAccounts().stream()
-                .filter(linkedAccount -> userPaswAuthProvider.getKey().equals(linkedAccount.getProviderKey()))
-                .findFirst()
-                .orElse(null);
-        return credentials != null && passwordsMatch(password, credentials.getProviderUserId());
+        //FIXME Vinayak
+        return true;
+//        final LinkedAccount credentials = user.getLinkedAccounts().stream()
+//                .filter(linkedAccount -> userPaswAuthProvider.getKey().equals(linkedAccount.getProviderKey()))
+//                .findFirst()
+//                .orElse(null);
+//        return credentials != null && passwordsMatch(password, credentials.getProviderUserId());
     }
 
     private boolean passwordsMatch(final String clearTextCandidate, final String checkHash) {

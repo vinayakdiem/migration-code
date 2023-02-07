@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.constants.ActivityUnit;
 import com.diemlife.models.Attribute;
@@ -17,15 +20,15 @@ import com.diemlife.models.Attribute;
 import play.Logger;
 
 
+@Repository
 public class AttributesDAO {
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
 	private static AttributesDAO sInstance = new AttributesDAO();
 
-    private AttributesDAO() {
-
-    }
-
-    public static AttributesDAO getInstance() {
+    public AttributesDAO getInstance() {
         return sInstance;
     }
 
@@ -105,7 +108,7 @@ public class AttributesDAO {
 		return ret;
 	}
 
-	public static Double getDistanceAttributeValueByQuestId(final Integer questId, final Integer userId, final String distanceAttributeName, final EntityManager entityManager) {
+	public Double getDistanceAttributeValueByQuestId(final Integer questId, final Integer userId, final String distanceAttributeName) {
     	return (Double) entityManager.createNativeQuery("" +
 				"SELECT SUM(attr_v.attribute_value) AS distance " +
 				"FROM attributes attr " +

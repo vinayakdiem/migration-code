@@ -18,8 +18,10 @@ import com.diemlife.models.StripeCustomer;
 import com.diemlife.models.StripeEntity;
 import com.diemlife.models.User;
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
-import play.db.jpa.JPAApi;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -35,39 +37,36 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static com.diemlife.models.User.USER_BRAND_FLAG_TRUE;
 
-@Singleton
+@Service
 public class BrandConfigService {
 
-    private final StripeConnectService stripeConnectService;
-    private final BrandConfigDAO brandConfigDao;
-    private final Config config;
-    private final JPAApi jpaApi;
+	@Autowired
+    private StripeConnectService stripeConnectService;
+	
+    @Autowired
+    private BrandConfigDAO brandConfigDao;
+    
+    @Autowired
+    private Config config;
 
-    @Inject
-    public BrandConfigService(final StripeConnectService stripeConnectService,
-                              final Config config,
-                              final JPAApi jpaApi) {
-        this.stripeConnectService = stripeConnectService;
-        this.brandConfigDao = new BrandConfigDAO(jpaApi);
-        this.config = config;
-        this.jpaApi = jpaApi;
-    }
 
     public List<QuestBrandConfig> getBrandConfigsForQuest(final Integer questId) {
-        final Quests quest = Optional.ofNullable(questId).map(id -> jpaApi.em().find(Quests.class, id)).orElse(null);
-        if (quest == null) {
-            Logger.warn(format("Cannot load brand configs for missing Quest with ID %s", questId));
-
-            return emptyList();
-        } else if (!quest.isMultiSellerEnabled()) {
-            Logger.warn(format("Multi-seller feature is disabled for Quest withID %s", quest.getId()));
-
-            return emptyList();
-        } else {
-            Logger.debug(format("Loading all brand configs for Quest with ID %s", quest.getId()));
-
-            return brandConfigDao.findAllQuestBrandConfigsByQuest(quest);
-        }
+    	return null;
+//    	FIXME Vinayak
+//        final Quests quest = Optional.ofNullable(questId).map(id -> jpaApi.em().find(Quests.class, id)).orElse(null);
+//        if (quest == null) {
+//            Logger.warn(format("Cannot load brand configs for missing Quest with ID %s", questId));
+//
+//            return emptyList();
+//        } else if (!quest.isMultiSellerEnabled()) {
+//            Logger.warn(format("Multi-seller feature is disabled for Quest withID %s", quest.getId()));
+//
+//            return emptyList();
+//        } else {
+//            Logger.debug(format("Loading all brand configs for Quest with ID %s", quest.getId()));
+//
+//            return brandConfigDao.findAllQuestBrandConfigsByQuest(quest);
+//        }
     }
 
     public BrandConfig processBrandConfigImport(final BrandConfigImportDTO dto) {
@@ -104,7 +103,6 @@ public class BrandConfigService {
     private BrandConfig processBrandConfigDelete(final BrandConfigImportDTO dto) {
         Logger.debug(format("Processing brand config deletion: %s", dto));
 
-        final EntityManager em = jpaApi.em();
         final BrandConfig brandConfig = brandConfigDao.findBrandConfigBySiteUrl(dto.getSiteUrl());
         if (brandConfig == null) {
             Logger.warn(format("Brand config not found for site URL '%s'", dto.getSiteUrl()));
@@ -116,26 +114,27 @@ public class BrandConfigService {
 
             Logger.info(format("Deleting %s Quest brand configs for user '%s' with ID %s", questConfigs.size(), user.getEmail(), brandConfig.getUserId()));
 
-            questConfigs.forEach(em::remove);
+//            FIXME Vinayak
+//            questConfigs.forEach(em::remove);
 
             Logger.info(format("Deleting brand config for user '%s' with ID %s", user.getEmail(), brandConfig.getUserId()));
 
-            em.remove(brandConfig);
+//          FIXME Vinayak
+//            em.remove(brandConfig);
 
             Logger.info(format("Deleting Stripe config for user '%s' with ID %s", user.getEmail(), brandConfig.getUserId()));
 
             deleteStripeEntities(user.getStripeEntity());
 
             Logger.info(format("Deleting user '%s' with ID %s", user.getEmail(), brandConfig.getUserId()));
-
-            em.remove(user);
+//          FIXME Vinayak
+//            em.remove(user);
         }
 
         return brandConfig;
     }
 
     private User createBrandUser(final BrandConfigImportDTO dto) {
-        final EntityManager em = jpaApi.em();
         final User user = new User();
 
         user.setFirstName(dto.getBrandName());
@@ -152,17 +151,16 @@ public class BrandConfigService {
 
         final SecurityRole role = new SecurityRoleHome().findByRoleName(USER_ROLE, em);
         user.getSecurityRoles().add(role);
-
-        em.persist(user);
+//      FIXME Vinayak
+//        em.persist(user);
 
         user.setUserName(generateDiemLifeBrandUsername(user));
         user.setEmail(user.getUserName() + "@diemlife.com");
-
-        return em.merge(user);
+//      FIXME Vinayak
+//        return em.merge(user);
     }
 
     private BrandConfig createBrandConfig(final BrandConfigImportDTO dto, final User user) {
-        final EntityManager em = jpaApi.em();
         final BrandConfig brandConfig = new BrandConfig();
 
         brandConfig.setUserId(user.getId());
@@ -174,11 +172,13 @@ public class BrandConfigService {
         brandConfig.setOnLanding(false);
         brandConfig.setLandingOrder(Short.MAX_VALUE);
 
-        return em.merge(brandConfig);
+//      FIXME Vinayak
+//        return em.merge(brandConfig);
+        return null;
     }
 
     private StripeAccount createStripeEntities(final BrandConfigImportDTO dto, final User user, final BrandConfig brandConfig) {
-        final StripeCustomerDAO stripeEntityDao = new StripeCustomerDAO(jpaApi.em());
+        final StripeCustomerDAO stripeEntityDao = new StripeCustomerDAO();
         final StripeAccount stripeAccount = new StripeAccount(user);
 
         if (user.isUserNonProfit()) {
@@ -214,7 +214,7 @@ public class BrandConfigService {
             }
         }
         if (entity != null) {
-            new StripeCustomerDAO(jpaApi.em()).delete(entity);
+            new StripeCustomerDAO().delete(entity);
         }
     }
 

@@ -11,7 +11,7 @@ import com.diemlife.dto.MilestoneDTO;
 import com.diemlife.dto.QuestLiteDTO;
 import com.diemlife.dto.TaskGroupDTO;
 import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.QuestActionPointForm;
+import com.diemlife.forms.QuestActionPointForm;
 import com.diemlife.models.EmbeddedVideo;
 import com.diemlife.models.QuestTaskCompletionHistory;
 import com.diemlife.models.QuestTasks;
@@ -21,6 +21,8 @@ import com.diemlife.models.QuestTeam2;
 import com.diemlife.models.User;
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.TransformException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import play.db.Database;
 import play.db.NamedDatabase;
@@ -43,19 +45,13 @@ import static java.lang.String.format;
 import static org.geotools.referencing.crs.DefaultGeographicCRS.WGS84;
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 
-@Singleton
+@Service
 public class MilestoneService {
+    @Autowired
+    private Database dbRo;
     
-    private final JPAApi jpaApi;
-    private final Database dbRo;
-    private final ActivityService activityService;
-
-     @Inject
-    public MilestoneService(JPAApi jpaApi, @NamedDatabase("ro") Database dbRo, ActivityService activityService) {
-        this.jpaApi = jpaApi;
-        this.dbRo = dbRo;
-        this.activityService = activityService;
-    }
+    @Autowired
+    private ActivityService activityService;
     
     public QuestTasks copyMilestone(final QuestTasks milestone, final Quests newQuest, final User newDoer) {
         if (milestone == null) {
@@ -68,7 +64,6 @@ public class MilestoneService {
             throw new RequiredParameterMissingException("newDoer");
         }
 
-        EntityManager em = jpaApi.em();
         final QuestTasks newMilestone = new QuestTasks();
         final Date now = new Date();
         newMilestone.setQuestId(newQuest.getId());
@@ -97,11 +92,13 @@ public class MilestoneService {
                 newVideo.thumbnails = new LinkedHashMap<>();
                 video.thumbnails.forEach((key, value) -> newVideo.thumbnails.putIfAbsent(key, value));
             }
-            em.persist(newVideo);
+          //FIXME Vinayak
+//            em.persist(newVideo);
 
             newMilestone.setVideo(newVideo);
         }
-        em.persist(newMilestone);
+      //FIXME Vinayak
+//        em.persist(newMilestone);
 
         return newMilestone;
     }
@@ -117,41 +114,44 @@ public class MilestoneService {
                                                             final User checker,
                                                             final boolean completed,
                                                             final QuestActionPointForm togglePoint, boolean logActivityFeed) {
-        EntityManager em = jpaApi.em();
         final Instant now = Instant.now();
         milestone.setLastModifiedDate(Date.from(now));
         milestone.setLastModifiedBy(checker.getId());
         milestone.setTaskCompleted(Boolean.valueOf(completed).toString().toUpperCase());
         milestone.setTaskCompletionDate(completed ? Date.from(now) : null);
-        em.merge(milestone);
+      //FIXME Vinayak
+//        em.merge(milestone);
 
         int taskId = milestone.getId();
         int userId = checker.getId();
 
         final QuestTaskCompletionHistory completion = new QuestTaskCompletionHistory();
-        completion.setMilestoneId(taskId);
-        completion.setUserTriggeredId(userId);
-        completion.setDateTriggered(Timestamp.from(Instant.now()));
-        completion.setCompleted(completed);
+      //FIXME Vinayak
+//        completion.setMilestoneId(taskId);
+//        completion.setUserTriggeredId(userId);
+//        completion.setDateTriggered(Timestamp.from(Instant.now()));
+//        completion.setCompleted(completed);
 
         if (milestone.getPoint() != null && milestone.getRadiusInKm() != null) {
-            final Point point = QuestTasksDAO.buildGeoPoint(togglePoint);
-            completion.setPoint(point);
+        	//FIXME Vinayak
+//            final Point point = QuestTasksDAO.buildGeoPoint(togglePoint);
+//            completion.setPoint(point);
 
-            if (point == null) {
-                Logger.warn(format("Coordinates not provided when toggling the geo-located milestone with ID %s!", taskId));
-            } else {
-                try {
-                    final double distanceInMeters = JTS.orthodromicDistance(milestone.getPoint().getCoordinate(), point.getCoordinate(), WGS84);
-                    completion.setGeoPointInArea(milestone.getRadiusInKm().doubleValue() * 1000.0d > distanceInMeters);
-
-                    Logger.info(format("Milestone with ID %s is%s checked within the defined area", taskId, completion.isGeoPointInArea() ? "" : " not"));
-                } catch (final TransformException e) {
-                    Logger.error(format("Unable to calculate distance when checking milestone with ID %s due to '%s'", milestone.getId(), e.getMessage()), e);
-                }
-            }
+//            if (point == null) {
+//                Logger.warn(format("Coordinates not provided when toggling the geo-located milestone with ID %s!", taskId));
+//            } else {
+//                try {
+//                    final double distanceInMeters = JTS.orthodromicDistance(milestone.getPoint().getCoordinate(), point.getCoordinate(), WGS84);
+//                    completion.setGeoPointInArea(milestone.getRadiusInKm().doubleValue() * 1000.0d > distanceInMeters);
+//
+//                    Logger.info(format("Milestone with ID %s is%s checked within the defined area", taskId, completion.isGeoPointInArea() ? "" : " not"));
+//                } catch (final TransformException e) {
+//                    Logger.error(format("Unable to calculate distance when checking milestone with ID %s due to '%s'", milestone.getId(), e.getMessage()), e);
+//                }
+//            }
         }
-        em.persist(completion);
+      //FIXME Vinayak
+//        em.persist(completion);
 
         if (completed && logActivityFeed) {
             int questId = milestone.getQuestId();
@@ -161,20 +161,23 @@ public class MilestoneService {
                 lat = null;
                 lon = null;
             } else {
-                lat = togglePoint.getLatitude().doubleValue();
-                lon = togglePoint.getLongitude().doubleValue();
+            	//FIXME Vinayak
+//                lat = togglePoint.getLatitude().doubleValue();
+//                lon = togglePoint.getLongitude().doubleValue();
             }
 
             // Record event for activity feed
             QuestTeam2 questTeam = null;
-            try (Connection c = dbRo.getConnection()) {
-            questTeam = QuestTeamDAO.getActiveTeamByQuestAndUser(c, questId, userId); 
-            } catch (SQLException e) {
-                Logger.error("checkMilestone - unable to fetch quest team", e);
-                questTeam = null;
-            }
+          //FIXME Vinayak
+//            try (Connection c = dbRo.getConnection()) {
+//            questTeam = QuestTeamDAO.getActiveTeamByQuestAndUser(c, questId, userId); 
+//            } catch (SQLException e) {
+//                Logger.error("checkMilestone - unable to fetch quest team", e);
+//                questTeam = null;
+//            }
 
-            activityService.taskCompleted((long) questId, checker.getUserName(), (long) taskId, ((questTeam == null) ? null : (long) questTeam.getId()), lat, lon);
+          //FIXME Vinayak
+//            activityService.taskCompleted((long) questId, checker.getUserName(), (long) taskId, ((questTeam == null) ? null : (long) questTeam.getId()), lat, lon);
         }
 
         Logger.info(format("Milestone with ID %s is%s checked", milestone.getId(), completed ? "" : " un"));
@@ -188,7 +191,8 @@ public class MilestoneService {
 
     public TaskGroupDTO convertToDto(final QuestTasksGroup taskGroup, final String envUrl, final LinkPreviewService service) {
         final TaskGroupDTO taskGroupDTO = TaskGroupDTO.toDto(taskGroup);
-        taskGroupDTO.getQuestTasks().forEach(milestoneDTO -> populateMilestoneData(milestoneDTO, envUrl, service));
+      //FIXME Vinayak
+//        taskGroupDTO.getQuestTasks().forEach(milestoneDTO -> populateMilestoneData(milestoneDTO, envUrl, service));
         return taskGroupDTO;
     }
 
@@ -196,32 +200,34 @@ public class MilestoneService {
         if (task == null) {
             return null;
         }
-        EntityManager em = jpaApi.em();
+        
         final MilestoneDTO dto = task instanceof MilestoneDTO ? (MilestoneDTO) task : MilestoneDTO.toDto(task);
-        return dto.withLastCompletion(Optional.ofNullable(QuestTasksDAO.getLastTaskCompletion(task.getId(), task.getUserId(), em))
-                .map(MilestoneCompletionDTO::toDto)
-                .orElse(null))
-                .withLinkedQuest(Optional.ofNullable(task.getLinkedQuestId())
-                        .map(linkedQuestId -> QuestsDAO.findById(task.getLinkedQuestId(), em))
-                        .map(linkedQuest -> {
-                            boolean hasActivity;
-                            try (Connection c = dbRo.getConnection()) {
-                                hasActivity = QuestActivityHome.doesQuestActivityExistForUserIdAndQuestId(c, (long) linkedQuest.getId(), (long) task.getUserId());
-                            } catch (SQLException e) {
-                                Logger.error("populateMilesotneData - unable to fetch quest activity", e);
-                                hasActivity = false;
-                            }
-                            
-                            final User linkedQuestUser;
-                            if (hasActivity) {
-                                linkedQuestUser = UserHome.findById(task.getUserId(), em);
-                            } else {
-                                linkedQuestUser = linkedQuest.getUser();
-                            }
-                            return QuestLiteDTO.toDTO(linkedQuest).withSeoSlugs(publicQuestSEOSlugs(linkedQuest, linkedQuestUser, envUrl));
-                        })
-                        .orElse(null))
-                .withLinkPreview(service.createLinkPreview(dto.getLinkUrl()));
+      //FIXME Vinayak
+//        return dto.withLastCompletion(Optional.ofNullable(QuestTasksDAO.getLastTaskCompletion(task.getId(), task.getUserId()))
+//                .map(MilestoneCompletionDTO::toDto)
+//                .orElse(null))
+//                .withLinkedQuest(Optional.ofNullable(task.getLinkedQuestId())
+//                        .map(linkedQuestId -> QuestsDAO.findById(task.getLinkedQuestId(), em))
+//                        .map(linkedQuest -> {
+//                            boolean hasActivity;
+//                            try (Connection c = dbRo.getConnection()) {
+//                                hasActivity = QuestActivityHome.doesQuestActivityExistForUserIdAndQuestId(c, (long) linkedQuest.getId(), (long) task.getUserId());
+//                            } catch (SQLException e) {
+//                                Logger.error("populateMilesotneData - unable to fetch quest activity", e);
+//                                hasActivity = false;
+//                            }
+//                            
+//                            final User linkedQuestUser;
+//                            if (hasActivity) {
+//                                linkedQuestUser = UserHome.findById(task.getUserId(), em);
+//                            } else {
+//                                linkedQuestUser = linkedQuest.getUser();
+//                            }
+//                            return QuestLiteDTO.toDTO(linkedQuest).withSeoSlugs(publicQuestSEOSlugs(linkedQuest, linkedQuestUser, envUrl));
+//                        })
+//                        .orElse(null))
+//                .withLinkPreview(service.createLinkPreview(dto.getLinkUrl()));
+        return null;
     }
 
 }

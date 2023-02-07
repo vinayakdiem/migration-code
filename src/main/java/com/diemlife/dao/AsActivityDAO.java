@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.dto.AllPillarsCount;
 import com.diemlife.dto.AsActivityAttributesDTO;
@@ -19,11 +22,13 @@ import play.Logger;
 /**
  * Created by Raj on 8/13/22.
  */
+@Repository
 public class AsActivityDAO {
+	
+	@PersistenceContext
+	EntityManager em;
 
-
-    public void persist(AsActivity transientInstance, EntityManager em) {
-
+    public void persist(AsActivity transientInstance) {
         try {
             em.persist(transientInstance);
         } catch (Exception e) {
@@ -31,7 +36,7 @@ public class AsActivityDAO {
         }
     }
 
-    public static AsActivity findById(Integer id, EntityManager em) {
+    public AsActivity findById(Integer id) {
         try {
         	AsActivity asActivity = em.find(AsActivity.class, id);
             if (asActivity != null) {
@@ -44,16 +49,15 @@ public class AsActivityDAO {
     }
     
     
-    public static List<AsActivity> getActvitiesByIds(final Set<Integer> ids,
-            final EntityManager em) {
+    public List<AsActivity> getActvitiesByIds(final Set<Integer> ids) {
     			return em.createQuery("SELECT aa FROM AsActivity aa " +
     						"WHERE aa.id IN(:ids)", AsActivity.class)
     						.setParameter("ids", ids)
     						.getResultList();
-}
+    }
 
     
-    public static List<AllPillarsCount> getTotalPillarsByActivityIds(List activityIds,EntityManager em) {
+    public List<AllPillarsCount> getTotalPillarsByActivityIds(List activityIds) {
       	 
     	String  SQL = "SELECT pil.name,count(*),act.pillarId As count FROM AsActivity act " + 
     			"inner join AsPillar pil on act.pillarId= pil.id " + 
@@ -76,7 +80,7 @@ public class AsActivityDAO {
     	return pillasList;
     }
     
-    public static List<AsAttributeDTO> getAttributesByActvitId(Integer activityId, EntityManager em) {
+    public List<AsAttributeDTO> getAttributesByActvitId(Integer activityId) {
      	 
     	String SQLNew = "SELECT asa.name, asa.id from AsAttribute asa inner join AsActivityAttribute aaa on asa.id = aaa.attributeId where aaa.activityId = :activityId";
     	//String  SQL = "SELECT name, id from AsAttribute where activityId = :activityId";
@@ -101,7 +105,7 @@ public class AsActivityDAO {
     }
 
 
-    public static Map<Integer, List<AsUnitDTO>> getUnitsByAttributeIds(List attributeIds,EntityManager em) {
+    public Map<Integer, List<AsUnitDTO>> getUnitsByAttributeIds(List attributeIds) {
     	
     	List<AsAttributeDTO> attributes = new ArrayList();
     	List<AsUnitDTO> units = new ArrayList();
@@ -143,7 +147,7 @@ public class AsActivityDAO {
     	return attributesUnit;
     }
     
-    public static List<Integer> getActivityRecordListByPillar(Integer pillarId,EntityManager em) {
+    public List<Integer> getActivityRecordListByPillar(Integer pillarId) {
      	 
     	String  SQL = "SELECT actRecord.activityRecordListId FROM AsActivity act " + 
     			"inner join ActivityRecord actRecord on act.id= actRecord.activityId " + 

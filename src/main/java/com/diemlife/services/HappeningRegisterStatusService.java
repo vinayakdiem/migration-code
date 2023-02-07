@@ -6,23 +6,19 @@ import com.diemlife.models.Happening;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 /**
  * Service for determining the status of registration for the event
  * Created 06/11/2020
  *
  * @author SYushchenko
  */
+@Service
 public class HappeningRegisterStatusService {
-    private final Happening happening;
-
-    /**
-     * Constructor with parameters
-     *
-     * @param happening {@link Happening}
-     */
-    public HappeningRegisterStatusService(@NonNull final Happening happening) {
-        this.happening = happening;
-    }
+	@Autowired
+    private Happening happening;
 
     /**
      * Create {@link HappeningRegisterStatusDTO} by conditions

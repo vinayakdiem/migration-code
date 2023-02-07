@@ -6,18 +6,22 @@ import static java.util.Collections.emptyList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.models.FundraisingSupplement;
 
 import play.Logger;
 
+@Repository
 public class FundraisingSupplementDAO {
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 
-    private FundraisingSupplementDAO() {
-    }
-
-    public static List<FundraisingSupplement> getFundraisingSupplement(final Integer questId, final Integer userId, final EntityManager entityManager) {
+    public List<FundraisingSupplement> getFundraisingSupplement(final Integer questId, final Integer userId) {
         if (entityManager == null) {
             return emptyList();
         }

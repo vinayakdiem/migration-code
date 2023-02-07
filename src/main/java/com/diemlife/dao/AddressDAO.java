@@ -1,7 +1,10 @@
 package com.diemlife.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.diemlife.models.Address;
 
+@Repository
 public class AddressDAO extends TypedSingletonDAO<Address> {
 
    

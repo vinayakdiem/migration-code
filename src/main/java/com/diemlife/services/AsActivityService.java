@@ -8,28 +8,20 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 
+import org.springframework.stereotype.Service;
+
 import com.diemlife.dao.AsActivityDAO;
 import com.diemlife.dto.AsActivityAttributesDTO;
 import com.diemlife.dto.AsAttributeDTO;
 import com.diemlife.dto.AsUnitDTO;
-import play.db.jpa.JPAApi;
-import play.db.jpa.Transactional;
 
-@Singleton
+@Service
 public class AsActivityService {
 	
-	private final JPAApi jpaApi;
-	
-	@Inject
-    public AsActivityService(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
-	
 	public AsActivityAttributesDTO getAttributesAndUnitsByCategoryId(Integer activityId) {
-		 final EntityManager em = jpaApi.em();
 		 
 		 AsActivityAttributesDTO asActivityAttributesDTO = new AsActivityAttributesDTO(); 
-		List<AsAttributeDTO> attributes = AsActivityDAO.getAttributesByActvitId(activityId, em);
+		List<AsAttributeDTO> attributes = AsActivityDAO.getAttributesByActvitId(activityId);
 		List<Integer> attributeIds  = new ArrayList<>();
 		List<AsAttributeDTO> attributesForUI =  new ArrayList<>();
 		AsAttributeDTO asAttributeDTOForUI = new AsAttributeDTO();

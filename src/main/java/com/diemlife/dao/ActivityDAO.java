@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import org.springframework.stereotype.Repository;
+
 import com.amazonaws.services.dynamodbv2.document.AttributeUpdate;
 import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Index;
@@ -32,6 +34,7 @@ import com.typesafe.config.Config;
 
 import play.Logger;
 
+@Repository
 public class ActivityDAO extends DynamoDAO {
 
     // unique id
@@ -336,11 +339,11 @@ public class ActivityDAO extends DynamoDAO {
         return result;
     }
 
-    private static QuerySpec buildQuerySpec(String hashKey, Object hashKeyValue, Long ts, Integer limit) {
+    private QuerySpec buildQuerySpec(String hashKey, Object hashKeyValue, Long ts, Integer limit) {
         return buildQuerySpec(hashKey, hashKeyValue, ts, limit, true);
     }
 
-    private static QuerySpec buildQuerySpec(String hashKey, Object hashKeyValue, Long ts, Integer limit, boolean lookForward) {
+    private QuerySpec buildQuerySpec(String hashKey, Object hashKeyValue, Long ts, Integer limit, boolean lookForward) {
         QuerySpec querySpec = new QuerySpec();
         querySpec.withHashKey(hashKey, hashKeyValue);
         if (ts != null) {
@@ -358,7 +361,7 @@ public class ActivityDAO extends DynamoDAO {
     }
 
     // order is ASC
-    private static List<Activity> orderByTs(ItemCollection<QueryOutcome> items) {
+    private List<Activity> orderByTs(ItemCollection<QueryOutcome> items) {
         TreeMap<Long, Activity> orderedResults = new TreeMap<Long, Activity>();
         Iterator<Item> itemsIt = items.iterator();
         while (itemsIt.hasNext()) {
@@ -684,7 +687,7 @@ public class ActivityDAO extends DynamoDAO {
         return softDelete(targetActivity);
     }
 
-    private static Activity itemToActivity(Item item) {
+    private Activity itemToActivity(Item item) {
     	return null;
     	//FIXME Vinayak
 //        return new Activity(
