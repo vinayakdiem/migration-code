@@ -3,6 +3,9 @@ package com.diemlife.dao;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.models.ActivityRecord;
 
@@ -11,10 +14,15 @@ import play.Logger;
 /**
  * Created by Raj on 8/13/22.
  */
+
+@Repository
 public class ActivityRecordDAO {
 
 
-    public void persist(ActivityRecord transientInstance, EntityManager em) {
+	@PersistenceContext
+	private EntityManager em;
+	
+    public void persist(ActivityRecord transientInstance) {
 
         try {
             em.persist(transientInstance);

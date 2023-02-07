@@ -1,50 +1,54 @@
 package com.diemlife.dao;
 
-import lombok.NonNull;
-import models.PushNotificationDevice;
-import org.hibernate.exception.ConstraintViolationException;
-import play.Logger;
-import play.db.jpa.JPAApi;
-
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.PushNotificationDevice;
+
+import lombok.NonNull;
+import play.Logger;
+
+@Repository
 public class PushNotificationDeviceDAO {
 
-    private final JPAApi jpaApi;
+	 @PersistenceContext
+	 private EntityManager entityManager;
 
-    @Inject
-    public PushNotificationDeviceDAO(JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
+   
 
     public void addNewDevice(PushNotificationDevice device) {
         try {
-            jpaApi.em().persist(device);
+        	entityManager.persist(device);
         } catch (ConstraintViolationException e) {
             Logger.warn("device token already exists, not saving again for user [{}]", device.getUserId());
         }
     }
 
     public boolean isDeviceRegistered(@NonNull final String token) {
-        return jpaApi.em().createQuery("SELECT COUNT(pnd) FROM PushNotificationDevice pnd WHERE pnd.token = :token", Long.class)
+        return entityManager.createQuery("SELECT COUNT(pnd) FROM PushNotificationDevice pnd WHERE pnd.token = :token", Long.class)
                 .setParameter("token", token)
                 .getSingleResult() > 0;
     }
 
     public List<PushNotificationDevice> findForUser(final int userId) {
-        return new ArrayList<>(jpaApi.em()
+        return new ArrayList<>(entityManager
             .createQuery("SELECT pnd FROM PushNotificationDevice pnd WHERE pnd.userId = :userId", PushNotificationDevice.class)
             .setParameter("userId", userId)
             .getResultList());
     }
 
     public void updateDeviceToken(PushNotificationDevice device) {
-        jpaApi.em().merge(device);
+    	entityManager.merge(device);
     }
 
     public PushNotificationDevice findById(PushNotificationDevice device) {
-        return jpaApi.em().find(PushNotificationDevice.class, device.getToken());
+        return entityManager.find(PushNotificationDevice.class, device.getToken());
     }
 }

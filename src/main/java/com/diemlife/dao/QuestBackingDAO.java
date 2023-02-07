@@ -4,6 +4,10 @@ import com.diemlife.models.QuestBacking;
 import com.diemlife.models.User;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -11,12 +15,12 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+@Repository
 public class QuestBackingDAO extends TypedDAO<QuestBacking> {
 
-    public QuestBackingDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
-
+	 @PersistenceContext
+	 private EntityManager entityManager;
+	 
     public List<QuestBacking> getQuestBackingsByQuestBackingIds(final List<Long> questBackingIds) {
         return questBackingIds.isEmpty() ? Collections.emptyList() :
                 this.entityManager.createQuery("SELECT qb FROM QuestBackings qb " +

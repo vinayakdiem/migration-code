@@ -1,23 +1,15 @@
 package com.diemlife.dao;
 
-import acl.QuestsListWithACL;
-import constants.QuestActivityStatus;
-import constants.QuestMode;
-import dto.QuestActivityDTO;
-import models.QuestActivity;
-import models.Quests;
-import models.User;
-import play.Logger;
+import static com.diemlife.acl.QuestsListWithACL.emptyListWithACL;
+import static com.diemlife.constants.QuestActivityStatus.COMPLETE;
+import static com.diemlife.constants.QuestActivityStatus.IN_PROGRESS;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
-import com.diemlife.constants.Util;
-
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,21 +19,38 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static acl.QuestsListWithACL.emptyListWithACL;
-import static constants.QuestActivityStatus.COMPLETE;
-import static constants.QuestActivityStatus.IN_PROGRESS;
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.util.CollectionUtils.isEmpty;
+import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.acl.QuestsListWithACL;
+import com.diemlife.constants.QuestActivityStatus;
+import com.diemlife.constants.QuestMode;
+import com.diemlife.constants.Util;
+import com.diemlife.dto.QuestActivityDTO;
+import com.diemlife.models.QuestActivity;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+
+import play.Logger;
 
 /**
  * Created by andrewcoleman on 8/22/16.
  */
+
+@Repository
 public class QuestActivityHome {
 
-    public static void startQuestForUser(final Integer questId, final Integer userId, final QuestMode mode, final EntityManager em) {
+	 @PersistenceContext
+	 private EntityManager em;
+	 
+    public void startQuestForUser(final Integer questId, final Integer userId, final QuestMode mode) {
 
         final Date date = new Date();
         final QuestActivity questActivity = new QuestActivity();
@@ -59,10 +68,10 @@ public class QuestActivityHome {
         }
     }
 
-    public static void completeQuestForUser(Quests quest, User user, EntityManager em) {
+    public void completeQuestForUser(Quests quest, User user) {
         final Date date = new Date();
         try {
-            final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, user, em);
+            final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, user);
 
             if (questActivity != null) {
                 questActivity.setStatus(COMPLETE);
@@ -78,10 +87,10 @@ public class QuestActivityHome {
         }
     }
 
-    public static boolean repeatQuestForUser(final Quests quest, final User user, final EntityManager em) {
+    public boolean repeatQuestForUser(final Quests quest, final User user) {
         final Date date = new Date();
         try {
-            final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, user, em);
+            final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, user);
 
             if (questActivity == null) {
                 Logger.warn(format("Quest [%s] cannot be repeated for user [%s] for no activity", quest.getId(), user.getId()));
@@ -110,7 +119,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static List<QuestActivityDTO> getRepeatableInfoForDoer(final User doer, final EntityManager em) {
+    public List<QuestActivityDTO> getRepeatableInfoForDoer(final User doer) {
         if (doer == null || doer.getId() == null) {
             return emptyList();
         }
@@ -132,7 +141,7 @@ public class QuestActivityHome {
                 .getResultList();
     }
 
-    public static QuestActivityDTO getRepeatableInfoForQuestAndDoer(final Quests quest, final User doer, final EntityManager em) {
+    public QuestActivityDTO getRepeatableInfoForQuestAndDoer(final Quests quest, final User doer) {
         if (quest == null || quest.getId() == null || doer == null || doer.getId() == null) {
             return null;
         }
@@ -158,7 +167,7 @@ public class QuestActivityHome {
                 .orElse(null);
     }
 
-    public static QuestsListWithACL getInProgressQuestsForUser(User user, EntityManager em, Integer pageNumber, Integer pageSize) {
+    public QuestsListWithACL getInProgressQuestsForUser(User user, Integer pageNumber, Integer pageSize) {
         if (user == null) {
             return emptyListWithACL();
         }
@@ -188,7 +197,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static QuestsListWithACL getCompletedQuestsForUser(User user, EntityManager em, Integer pageNumber, Integer pageSize) {
+    public QuestsListWithACL getCompletedQuestsForUser(User user, Integer pageNumber, Integer pageSize) {
         if (user == null) {
             return emptyListWithACL();
         }
@@ -220,7 +229,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static QuestsListWithACL getQuestsNotInProgressForUser(User user, Integer limit, EntityManager em) {
+    public QuestsListWithACL getQuestsNotInProgressForUser(User user, Integer limit) {
         try {
             if (user != null) {
                 // get user friends to check which quests to show
@@ -262,7 +271,7 @@ public class QuestActivityHome {
         return emptyListWithACL();
     }
 
-    public static QuestsListWithACL getQuestsNotInProgressByCategory(final User user, final int limit, final String category, EntityManager em) {
+    public QuestsListWithACL getQuestsNotInProgressByCategory(final User user, final int limit, final String category) {
         if (user == null) {
             final TypedQuery<Quests> query = em.createQuery("SELECT q from Quests q " +
                     "WHERE q.pillar = :category " +
@@ -291,7 +300,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static QuestsListWithACL getQuestsNotInProgressForUserPaginated(User user, int start, int limit, List<String> pillars, String category, String place, EntityManager em) {
+    public QuestsListWithACL getQuestsNotInProgressForUserPaginated(User user, int start, int limit, List<String> pillars, String category, String place) {
         List<Integer> friends = user == null ? emptyList() : UserRelationshipDAO.getCurrentFriendsByUserId(user.getId(), em);
         List<Integer> userFriendsWithBrands = UserHome.getUsersByIdWithBrand(friends, em);
 
@@ -335,7 +344,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static QuestActivity getQuestActivityForQuestIdAndUser(final Quests quest, final User currentUser, final EntityManager em) {
+    public QuestActivity getQuestActivityForQuestIdAndUser(final Quests quest, final User currentUser) {
         if (quest == null || currentUser == null) {
             return null;
         }
@@ -349,15 +358,18 @@ public class QuestActivityHome {
                 .orElse(null);
     }
 
-    public static boolean doesQuestActivityExistForUserIdAndQuestId(Connection c, Long questId, Long userId) {
+    public boolean doesQuestActivityExistForUserIdAndQuestId(Connection c, Long questId, Long userId) {
         if ((questId != null) && (userId != null)) {
-            try (PreparedStatement ps = c.prepareStatement("select 1 from quest_activity where user_id = ? and quest_id = ? limit 1")) {
-                ps.setLong(1, userId);
-                ps.setLong(2, questId);
-
-                try (ResultSet rs = ps.executeQuery()) {
-                    return rs.first();
-                }
+            try {
+            	int result = em.createNativeQuery("select 1 from quest_activity where user_id = ? and quest_id = ? limit 1") 
+                .setParameter(1, userId)
+                .setParameter(2, questId)
+                .getFirstResult();
+            	
+            	if(result==1) {
+            		return true;
+            	}
+               
             } catch (Exception e) {
                 Logger.error("doesQuestActivityExistForUserIdAndQuestId - error", e);
             }
@@ -366,7 +378,7 @@ public class QuestActivityHome {
         return false;
     }
 
-    public static void removeAllQuestActivity(Integer questId, Integer userId, EntityManager em) {
+    public void removeAllQuestActivity(Integer questId, Integer userId) {
         if (questId == null || userId == null) {
             Logger.warn("Empty parameters for all Quest activity removal - skipping");
             return;
@@ -383,7 +395,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static List<QuestActivity> getRecentActivityPending(Integer limit, Integer offset, Integer userId, EntityManager em) {
+    public List<QuestActivity> getRecentActivityPending(Integer limit, Integer offset, Integer userId) {
 
         try {
 
@@ -407,7 +419,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static List<QuestActivity> getRecentActivityCompleted(Integer limit, Integer userId, EntityManager em) {
+    public List<QuestActivity> getRecentActivityCompleted(Integer limit, Integer userId) {
 
         try {
             // get user friends to check which quests to show
@@ -429,7 +441,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static List<QuestActivity> getUsersDoingQuest(final Integer questId, final String group, final EntityManager em) {
+    public List<QuestActivity> getUsersDoingQuest(final Integer questId, final String group) {
         try {
         	
         	String SQL  = "SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId AND qa.group=:group";
@@ -452,22 +464,22 @@ public class QuestActivityHome {
         }
     }
 
-    public static void changeQuestActivityMode(final QuestActivity activity, final QuestMode mode, final EntityManager em) {
+    public void changeQuestActivityMode(final QuestActivity activity, final QuestMode mode) {
         if (activity != null && mode != null) {
             activity.setMode(mode);
             em.merge(activity);
         }
     }
 
-    public static List<QuestActivity> getUsersAffiliatedWithQuest(final int questId, final EntityManager entityManager) {
-        return entityManager.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId", QuestActivity.class)
+    public List<QuestActivity> getUsersAffiliatedWithQuest(final int questId) {
+        return em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId", QuestActivity.class)
                 .setParameter("questId", questId)
                 .getResultList();
     }
 
-    public static List<QuestActivity> getUsersAffiliatedWithQuestByStatus(String questActivityStatus,
-                                                                          final int questId, EntityManager entityManager) {
-        return entityManager.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = :status AND qa.questId = :questId", QuestActivity.class)
+    public List<QuestActivity> getUsersAffiliatedWithQuestByStatus(String questActivityStatus,
+                                                                          final int questId) {
+        return em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = :status AND qa.questId = :questId", QuestActivity.class)
                 .setParameter("status", QuestActivityStatus.valueOf(questActivityStatus))
                 .setParameter("questId", questId)
                 .getResultList()
@@ -475,16 +487,16 @@ public class QuestActivityHome {
                 .collect(Collectors.toList());
     }
 
-    public static List<QuestActivity> getUsersCompletedWithQuest(final int questId, EntityManager entityManager) {
-        return entityManager.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = 'COMPLETE' AND qa.questId = :questId", QuestActivity.class)
+    public List<QuestActivity> getUsersCompletedWithQuest(final int questId) {
+        return em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = 'COMPLETE' AND qa.questId = :questId", QuestActivity.class)
                 .setParameter("questId", questId)
                 .getResultList()
                 .stream()
                 .collect(Collectors.toList());
     }
 
-    public static List<QuestActivity> getUsersInGroup(final int questId, final String group, final EntityManager entityManager) {
-        return entityManager.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId AND qa.group = :group", QuestActivity.class)
+    public List<QuestActivity> getUsersInGroup(final int questId, final String group) {
+        return em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId AND qa.group = :group", QuestActivity.class)
                 .setParameter("questId", questId)
                 .setParameter("group", group)
                 .getResultList()
@@ -492,7 +504,7 @@ public class QuestActivityHome {
                 .collect(Collectors.toList());
     }
 
-    public static Quests getInProgressRealtimeQuestForUser(User user, EntityManager em) {
+    public Quests getInProgressRealtimeQuestForUser(User user) {
         if (user == null) {
             Logger.info("Cannot get realtime Quest id for null User");
             return null;
@@ -517,7 +529,7 @@ public class QuestActivityHome {
         }
     }
 
-    public static List<QuestActivity> getQuestActivitiesByQuest(final Integer questId, final EntityManager em) {
+    public List<QuestActivity> getQuestActivitiesByQuest(final Integer questId) {
         
         return em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.questId = :questId AND qa.group IS NOT NULL GROUP BY qa.group", QuestActivity.class)
                 .setParameter("questId", questId)

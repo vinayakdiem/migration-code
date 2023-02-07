@@ -1,31 +1,34 @@
 package com.diemlife.dao;
 
-import lombok.NonNull;
-import models.PushNotificationMessageInfo;
-import play.db.jpa.JPAApi;
-
-import javax.inject.Inject;
 import java.util.Optional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.PushNotificationMessageInfo;
+
+import lombok.NonNull;
+
+@Repository
 public class PushNotificationMessageInfoDAO {
 
-    private final JPAApi jpaApi;
+	 @PersistenceContext
+	 private EntityManager entityManager;
 
-    @Inject
-    public PushNotificationMessageInfoDAO(@NonNull JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
+   
 
     public void addMessageInfo(@NonNull PushNotificationMessageInfo messageInfo) {
-        jpaApi.em().persist(messageInfo);
+    	entityManager.persist(messageInfo);
     }
 
     public void updateMessageInfo(@NonNull PushNotificationMessageInfo messageInfo) {
-        jpaApi.em().merge(messageInfo);
+    	entityManager.merge(messageInfo);
     }
 
     public Optional<PushNotificationMessageInfo> findByMessageId(final String messageId) {
-        return jpaApi.em().createQuery("SELECT pmi FROM PushNotificationMessageInfo pmi " +
+        return entityManager.createQuery("SELECT pmi FROM PushNotificationMessageInfo pmi " +
             "WHERE pmi.messageId = :messageId", PushNotificationMessageInfo.class)
             .setParameter("messageId", messageId)
             .getResultList()

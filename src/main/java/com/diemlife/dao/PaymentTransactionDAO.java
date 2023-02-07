@@ -1,13 +1,7 @@
 package com.diemlife.dao;
 
-import com.diemlife.dto.TransactionExportDTO;
-import com.diemlife.exceptions.RequiredParameterMissingException;
-import com.diemlife.models.PaymentTransaction;
-import com.diemlife.models.RecurringQuestBackingTransaction;
-import com.diemlife.models.TicketPurchaseTransaction;
-import play.Logger;
+import static java.lang.String.format;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,13 +10,28 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.String.format;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.dto.TransactionExportDTO;
+import com.diemlife.exceptions.RequiredParameterMissingException;
+import com.diemlife.models.PaymentTransaction;
+import com.diemlife.models.RecurringQuestBackingTransaction;
+import com.diemlife.models.TicketPurchaseTransaction;
+
+import play.Logger;
+
+@Repository
 public class PaymentTransactionDAO extends TypedDAO<PaymentTransaction> {
 
-    public PaymentTransactionDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	 @PersistenceContext
+	 private EntityManager entityManager;
 
     public List<PaymentTransaction> getLastTransactions(final Integer userId, final boolean all) {
 

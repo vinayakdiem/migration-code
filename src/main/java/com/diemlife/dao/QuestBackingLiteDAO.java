@@ -4,17 +4,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dto.FundraisingTotalDTO;
-
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.dto.FundraisingTotalDTO;
+
+@Repository
 public class QuestBackingLiteDAO {
 
-    private final EntityManager entityManager;
-
-    public QuestBackingLiteDAO(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
+	 @PersistenceContext
+	 private EntityManager entityManager;
 
     public List<FundraisingTotalDTO> getFundraisingTotals(final int questId, final int userId) {
         return Stream.of(entityManager.createQuery("SELECT qb.amountInCents, pt.stripeTransactionId" +

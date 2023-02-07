@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.stereotype.Repository;
+
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.diemlife.com.amazonaws.geo.GeoDataManager;
@@ -19,6 +21,7 @@ import com.typesafe.config.Config;
 
 import play.Logger;
 
+@Repository
 public class ActivityGeoDAO {
     
     private static class ActivityGeoLevelDAO extends DynamoDAO {

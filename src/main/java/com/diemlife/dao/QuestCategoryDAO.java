@@ -1,25 +1,28 @@
 package com.diemlife.dao;
 
-import models.QuestCategory;
-import play.Logger;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+
+import com.diemlife.models.QuestCategory;
+
+import play.Logger;
+
 
 public class QuestCategoryDAO extends TypedDAO<QuestCategory> {
 
     private static final String QUEST_ID = "questId";
 
-    public QuestCategoryDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
-
+    @PersistenceContext
+	 private EntityManager entityManager;
+    
     public List<QuestCategory> findQuestCategory(final Integer questId) {
         checkNotNull(questId, QUEST_ID);
         return entityManager.createQuery("SELECT qc FROM QuestCategory qc WHERE qc.questId = :questId", QuestCategory.class)

@@ -1,32 +1,34 @@
 package com.diemlife.dao;
 
-import constants.NotificationType;
-import dto.GroupedNotificationDTO;
-import models.Notification;
-import models.User;
-import play.Logger;
-import play.cache.CacheApi;
-import play.cache.NamedCache;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
-import javax.inject.Inject;
+import java.util.Date;
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
-import java.util.Date;
-import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import com.diemlife.constants.NotificationType;
+import com.diemlife.dto.GroupedNotificationDTO;
+import com.diemlife.models.Notification;
+import com.diemlife.models.User;
+
+import play.Logger;
+
 
 public class NotificationsDAO {
 
-    private final CacheApi notificationsCache;
+   //FIXME Raj
+	//private final CacheApi notificationsCache;
 
-    @Inject
+  //FIXME Raj
+    /*@Inject
     public NotificationsDAO(@NamedCache("notifications-cache") final CacheApi notificationsCache) {
         this.notificationsCache = notificationsCache;
-    }
+    }*/
 
     /**
      * A utility method to be used anytime we want to create a notification in the application
@@ -44,13 +46,15 @@ public class NotificationsDAO {
 
         Logger.info(format("adding a new notification for user: [%s] of type: [%s]", userId, notificationType.name()));
         createNotification(userId, notificationType, fromUserId, fromQuestId, fromCommentId, entityManager);
-        clearNotificationCache(userId, notificationsCache);
+        //FIXME Raj
+        //clearNotificationCache(userId, notificationsCache);
     }
 
-    public void clearNotificationCache(final Integer userId, final CacheApi notificationsCache) {
+    //FIXME Raj
+   /* public void clearNotificationCache(final Integer userId, final CacheApi notificationsCache) {
         notificationsCache.remove(userId + "-notifications");
     }
-
+*/
     /**
      * Creates a notification for a given user
      *
@@ -113,7 +117,8 @@ public class NotificationsDAO {
                         .executeUpdate();
             }
 
-            clearNotificationCache(userId, notificationsCache);
+            //FIXME Raj
+           // clearNotificationCache(userId, notificationsCache);
 
         } catch (IllegalStateException e) {
             Logger.info("NotificationsDAO :: updateNotification : operation not acceptable for this query");

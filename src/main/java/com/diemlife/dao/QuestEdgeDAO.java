@@ -1,18 +1,22 @@
 package com.diemlife.dao;
 
-import com.diemlife.models.QuestEdge;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.QuestEdge;
+
 import play.Logger;
 
-import constants.ActivityUnit;
 
-
+@Repository
 public class QuestEdgeDAO {
 
 	private static QuestEdgeDAO sInstance = new QuestEdgeDAO();
@@ -21,10 +25,14 @@ public class QuestEdgeDAO {
 
     }
 
+    @PersistenceContext
+	private EntityManager entityManager;
+    
     public static QuestEdgeDAO getInstance() {
         return sInstance;
     }
 
+    //FIXME Raj
 	public QuestEdge getEdge(Connection c, long questSrc, String type, long questDst) {
 
 		try (PreparedStatement ps = c.prepareStatement("select tags from quest_edge where quest_src = ? and type = ? and quest_dst = ?")) {
@@ -47,6 +55,7 @@ public class QuestEdgeDAO {
 		return null;	
 	}
 
+	//FIXME Raj
 	public QuestEdge getQuestForEdge(Connection c, long questDst, String type) {
 
 		try (PreparedStatement ps = c.prepareStatement("select quest_src, tags from quest_edge where quest_dst = ? and type = ?")) {

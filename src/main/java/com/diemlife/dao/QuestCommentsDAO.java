@@ -9,10 +9,14 @@ import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Root;
+
+import org.springframework.stereotype.Repository;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,9 +30,14 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * Created by andrew on 5/24/17.
  */
+
+@Repository
 public class QuestCommentsDAO {
 
-    public void persist(QuestComments transientInstance, EntityManager entityManager) {
+	 @PersistenceContext
+	 private EntityManager entityManager;
+	 
+    public void persist(QuestComments transientInstance) {
 
         try {
             entityManager.persist(transientInstance);
@@ -37,7 +46,7 @@ public class QuestCommentsDAO {
         }
     }
 
-    public void remove(QuestComments persistentInstance, EntityManager entityManager) {
+    public void remove(QuestComments persistentInstance) {
 
         try {
             entityManager.remove(persistentInstance);
@@ -64,10 +73,12 @@ public class QuestCommentsDAO {
 		return ret;
 	}
 	
-	public static boolean setCommentImage(Connection c, long commentId, long imageId) {
+	public boolean setCommentImage(Connection c, long commentId, long imageId) {
 		boolean ret;
+		
+		//FIXME Raj
 		// TODO: change this to delayed insert once InnoDB is ditched in favor of MyISAM
-		try (PreparedStatement ps = c.prepareStatement("insert into quest_comment_image (comment_id, image_id) values (?, ?) on duplicate key update image_id = ?")) {
+		/*try (PreparedStatement ps = c.prepareStatement("insert into quest_comment_image (comment_id, image_id) values (?, ?) on duplicate key update image_id = ?")) {
 			ps.setLong(1, commentId);
 			ps.setLong(2, imageId);
 			ps.setLong(3, imageId);
@@ -78,13 +89,14 @@ public class QuestCommentsDAO {
 			Logger.error("addCommentImage - error", e);
 			ret = false;
 		}
-		
-		return ret;	
+	*/	
+		return false;	
 	}
 	
-	public static boolean removeCommentImage(Connection c, long commentId) {
-		boolean ret;
-		try (PreparedStatement ps = c.prepareStatement("delete from quest_comment_image where comment_id = ?")) {
+	public boolean removeCommentImage(Connection c, long commentId) {
+		boolean ret = false;
+		//FIXME Raj
+		/*try (PreparedStatement ps = c.prepareStatement("delete from quest_comment_image where comment_id = ?")) {
 			ps.setLong(1, commentId);
 			ps.executeUpdate();
 			ret = true;
@@ -92,25 +104,24 @@ public class QuestCommentsDAO {
 			Logger.error("removeCommentImage - error", e);
 			ret = false;
 		}
-		
+		*/
 		return ret;
 	}
 
-    public static QuestComments addCommentsToQuestByUserIdAndQuestId(final Integer userId,
+    public QuestComments addCommentsToQuestByUserIdAndQuestId(final Integer userId,
                                                                      final Integer questId,
                                                                      final Integer inReplyTo,
-                                                                     final String comment,
-                                                                     final EntityManager em) {
+                                                                     final String comment                                                                     ) {
 
-        return addCommentsToQuestByUserIdAndQuestId(userId, questId, inReplyTo, comment, null, em);
+        return addCommentsToQuestByUserIdAndQuestId(userId, questId, inReplyTo, comment, null);
     }
 	
-    public static QuestComments addCommentsToQuestByUserIdAndQuestId(final Integer userId,
+    public QuestComments addCommentsToQuestByUserIdAndQuestId(final Integer userId,
                                                                      final Integer questId,
                                                                      final Integer inReplyTo,
                                                                      final String comment,
-                                                                     final Long questBackingId,
-                                                                     final EntityManager em) {
+                                                                     final Long questBackingId
+                                                                     ) {
         if (userId == null || questId == null || isBlank(comment)) {
             Logger.warn("Cannot add comment : missing required arguments");
 
@@ -128,21 +139,21 @@ public class QuestCommentsDAO {
             questComments.setQuestBackingId(questBackingId);
 
             if (inReplyTo != null) {
-                final QuestComments repliedComment = em.find(QuestComments.class, inReplyTo);
+                final QuestComments repliedComment = entityManager.find(QuestComments.class, inReplyTo);
                 if (repliedComment != null) {
                     questComments.setInReplyTo(repliedComment);
                 }
             }
 
-            em.persist(questComments);
-            em.flush();
+            entityManager.persist(questComments);
+            entityManager.flush();
 
-            final QuestComments addedComment = em.find(QuestComments.class, questComments.getId());
-            addedComment.setUser(em.find(User.class, userId));
+            final QuestComments addedComment = entityManager.find(QuestComments.class, questComments.getId());
+            addedComment.setUser(entityManager.find(User.class, userId));
 
-            em.merge(addedComment);
+            entityManager.merge(addedComment);
 
-            updateQuestCommentsCount(questId, getCommentsCountForQuest(questId, em), em);
+            updateQuestCommentsCount(questId, getCommentsCountForQuest(questId));
 
             return addedComment;
         } catch (final PersistenceException e) {
@@ -152,28 +163,28 @@ public class QuestCommentsDAO {
         }
     }
 
-    private static long getCommentsCountForQuest(final int questId, final EntityManager em) {
-        return em.createQuery("SELECT COUNT(c) FROM QuestComments c WHERE c.questId = :questId", Long.class)
+    private long getCommentsCountForQuest(final int questId) {
+        return entityManager.createQuery("SELECT COUNT(c) FROM QuestComments c WHERE c.questId = :questId", Long.class)
                 .setParameter("questId", questId)
                 .getSingleResult();
     }
 
-    private static void updateQuestCommentsCount(final int questId, final long commentsCount, final EntityManager em) {
-        final CriteriaBuilder cb = em.getCriteriaBuilder();
+    private void updateQuestCommentsCount(final int questId, final long commentsCount) {
+        final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         final CriteriaUpdate<Quests> update = cb.createCriteriaUpdate(Quests.class);
         final Root<Quests> root = update.from(Quests.class);
-        final int rowsUpdated = em.createQuery(update.set(root.get("commentCount"), commentsCount).where(cb.equal(root.get("id"), questId))).executeUpdate();
+        final int rowsUpdated = entityManager.createQuery(update.set(root.get("commentCount"), commentsCount).where(cb.equal(root.get("id"), questId))).executeUpdate();
         if (rowsUpdated == 1) {
             Logger.info("Successfully update comments count to " + commentsCount + " on Quest with ID " + questId);
         }
     }
 
-    public static List<QuestComments> getAllCommentsByQuestId(final Integer questId, final EntityManager em) {
+    public List<QuestComments> getAllCommentsByQuestId(final Integer questId) {
         if (questId == null) {
             throw new RequiredParameterMissingException("questId");
         }
         try {
-            return em.createQuery("SELECT c FROM QuestComments c " +
+            return entityManager.createQuery("SELECT c FROM QuestComments c " +
                             "WHERE c.questId = :questId " +
                             "AND c.deleted IS NULL " +
                             "ORDER BY c.createdDate DESC",
@@ -186,8 +197,8 @@ public class QuestCommentsDAO {
         }
     }
 
-    public static boolean toggleCommentLike(final QuestComments comment, final User liker, final EntityManager em) {
-        final List<QuestCommentLike> likes = em.createQuery(
+    public boolean toggleCommentLike(final QuestComments comment, final User liker) {
+        final List<QuestCommentLike> likes = entityManager.createQuery(
                 "SELECT l FROM QuestCommentLikes l " +
                         "WHERE l.liker.id = :likerId " +
                         "AND l.comment.id = :commentId",
@@ -200,53 +211,53 @@ public class QuestCommentsDAO {
             like.comment = comment;
             like.liker = liker;
             like.createdOn = Calendar.getInstance().getTime();
-            em.persist(like);
+            entityManager.persist(like);
             return true;
         } else {
             likes.forEach(like -> {
                 comment.getLikes().remove(like);
-                em.remove(like);
+                entityManager.remove(like);
             });
-            em.merge(comment);
+            entityManager.merge(comment);
             return false;
         }
     }
 
-    public static void deleteComment(Integer commentId, EntityManager em) {
+    public void deleteComment(Integer commentId) {
         try {
-            QuestComments comment = em.find(QuestComments.class, commentId);
+            QuestComments comment = entityManager.find(QuestComments.class, commentId);
 
             comment.setDeleted("Y");
             comment.setDeletedDate(new Date());
 
-            em.merge(comment);
+            entityManager.merge(comment);
 
             //decrease comment count
-            Quests quest = em.find(Quests.class, comment.getQuestId());
+            Quests quest = entityManager.find(Quests.class, comment.getQuestId());
             quest.setCommentCount(quest.getCommentCount() - 1);
-            em.merge(quest);
+            entityManager.merge(quest);
         } catch (PersistenceException pe) {
             Logger.info("QuestCommentsDAO :: deleteComment : error deleting comment => " + pe, pe);
         }
     }
 
-    public static void editComment(Integer commentId, String text, EntityManager em) {
+    public void editComment(Integer commentId, String text) {
         try {
-            QuestComments comment = em.find(QuestComments.class, commentId);
+            QuestComments comment = entityManager.find(QuestComments.class, commentId);
 
             comment.setComments(text);
             comment.setEdited("Y");
             comment.setLastModifiedDate(new Date());
 
-            em.merge(comment);
+            entityManager.merge(comment);
         } catch (PersistenceException pe) {
             Logger.info("QuestCommentsDAO :: editComment : error editing comment => " + pe, pe);
         }
     }
 
-    public static UserWithFiendStatusDTO getMentionedUser(final String userName, final EntityManager em) {
+    public UserWithFiendStatusDTO getMentionedUser(final String userName) {
         try {
-            return em.createQuery("SELECT u FROM User u WHERE u.userName = :userName", User.class)
+            return entityManager.createQuery("SELECT u FROM User u WHERE u.userName = :userName", User.class)
                     .setParameter("userName", userName)
                     .getResultList()
                     .stream()
@@ -266,7 +277,7 @@ public class QuestCommentsDAO {
         }
     }
 
-    public static QuestComments findById(final Integer id, final EntityManager entityManager) {
+    public QuestComments findById(final Integer id) {
         if (id == null) {
             return null;
         }

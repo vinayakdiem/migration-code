@@ -9,6 +9,9 @@ import play.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,6 +27,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+@Repository
 public class PromptDAO {
 
     private static PromptDAO sInstance = new PromptDAO();

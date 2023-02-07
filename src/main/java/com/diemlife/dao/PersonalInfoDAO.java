@@ -1,15 +1,19 @@
 package com.diemlife.dao;
 
-import com.diemlife.dto.PaymentPersonalInfoDTO;
-import com.diemlife.models.PersonalInfo;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.TypedQuery;
+
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.dto.PaymentPersonalInfoDTO;
+import com.diemlife.models.PersonalInfo;
 
 /**
  * DAO for {@link PersonalInfo}
@@ -17,17 +21,12 @@ import java.util.stream.Collectors;
  *
  * @author SYushchenko
  */
+@Repository
 public class PersonalInfoDAO extends TypedDAO<PersonalInfo> {
 
-    /**
-     * Constructor with parameters
-     *
-     * @param entityManager {@link EntityManager}
-     */
-    public PersonalInfoDAO(EntityManager entityManager) {
-        super(entityManager);
-    }
-
+	
+	 @PersistenceContext
+	  private EntityManager entityManager;
     /**
      * Search for personal information by payment transaction Id
      *

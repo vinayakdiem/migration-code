@@ -1,5 +1,7 @@
 package com.diemlife.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
@@ -10,6 +12,7 @@ import com.typesafe.config.Config;
 
 import play.Logger;
 
+@Repository
 public class ActivityRawDAO extends DynamoDAO {
 
     // ID types to use in sort key

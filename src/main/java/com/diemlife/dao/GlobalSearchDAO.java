@@ -1,5 +1,7 @@
 package com.diemlife.dao;
 
+import static com.diemlife.utils.URLUtils.seoFriendlyPublicQuestPath;
+import static com.diemlife.utils.URLUtils.seoFriendlyUserProfilePath;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -8,8 +10,6 @@ import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
-import static com.diemlife.utils.URLUtils.seoFriendlyPublicQuestPath;
-import static com.diemlife.utils.URLUtils.seoFriendlyUserProfilePath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,9 @@ import play.Logger;
 
 @Repository
 public class GlobalSearchDAO {
+	
+	@PersistenceContext
+	private EntityManager fullTextEntityManager;
 
     public static Page<SearchResponse> searchGlobally(final String query,
                                                       final int start,
@@ -86,8 +90,9 @@ public class GlobalSearchDAO {
             final List searchResults = fullTextEntityManager.createFullTextQuery(combinedQuery, entityClasses)
                     .setFirstResult(start)
                     .setMaxResults(limit + 1)
-                    .setSort(sort)
-                    .setProjection(FullTextQuery.SCORE, FullTextQuery.EXPLANATION, FullTextQuery.THIS)
+                   //FIXME Raj
+                    //.setSort(sort)
+                   // .setProjection(FullTextQuery.SCORE, FullTextQuery.EXPLANATION, FullTextQuery.THIS)
                     .getResultList();
             final boolean hasMore = searchResults.size() > limit;
 
