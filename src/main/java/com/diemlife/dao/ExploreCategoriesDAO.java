@@ -38,31 +38,35 @@ public class ExploreCategoriesDAO {
 
         try {
             List<QuestCategory> questCategories = em.createQuery("SELECT q FROM QuestCategory q where q.category is not null", QuestCategory.class).getResultList();
-            Set<String> uniqueCategories = questCategories.stream().map(QuestCategory::getCategory).collect(Collectors.toSet());
+          //FIXME Vinayak
+//            Set<String> uniqueCategories = questCategories.stream().map(QuestCategory::getCategory).collect(Collectors.toSet());
             questCategories.sort(new SortByConfidence());
-            Map<String, Integer> uniqueCategoriesMap = questCategories.stream().collect(Collectors.toMap(QuestCategory::getCategory, QuestCategory::getQuestId, (oldValue, newValue) -> oldValue));
+          //FIXME Vinayak
+//            Map<String, Integer> uniqueCategoriesMap = questCategories.stream().collect(Collectors.toMap(QuestCategory::getCategory, QuestCategory::getQuestId, (oldValue, newValue) -> oldValue));
 
-            if (!uniqueCategoriesMap.isEmpty()) {
-                uniqueCategoriesMap.forEach((category, questId) -> {
-                    Quests quest = QuestsDAO.findById(questId, em);
-                    if (quest != null) {
-                        quest.setCategory(prepareExploreCategory(category));
-                        em.merge(quest);
-                    }
-                });
-            }
-
-            uniqueCategories.iterator().forEachRemaining(questCategory -> {
-                if (!isCategoryExists(prepareExploreCategory((questCategory)), em) && StringUtils.isNotEmpty(prepareExploreCategory((questCategory)))) {
-                    ExploreCategories exploreCategory = new ExploreCategories();
-                    exploreCategory.setCategory(prepareExploreCategory(questCategory));
-                    exploreCategory.setIncluded(true);
-                    exploreCategory.setOrder(0);
-
-                    em.merge(exploreCategory);
-                    exploreCategoriesList.add(exploreCategory);
-                }
-            });
+          //FIXME Vinayak
+//            if (!uniqueCategoriesMap.isEmpty()) {
+//                uniqueCategoriesMap.forEach((category, questId) -> {
+//                    Quests quest = QuestsDAO.findById(questId, em);
+//                    if (quest != null) {
+//                        quest.setCategory(prepareExploreCategory(category));
+//                        em.merge(quest);
+//                    }
+//                });
+//            }
+//
+          //FIXME Vinayak
+//            uniqueCategories.iterator().forEachRemaining(questCategory -> {
+//                if (!isCategoryExists(prepareExploreCategory((questCategory)), em) && StringUtils.isNotEmpty(prepareExploreCategory((questCategory)))) {
+//                    ExploreCategories exploreCategory = new ExploreCategories();
+//                    exploreCategory.setCategory(prepareExploreCategory(questCategory));
+//                    exploreCategory.setIncluded(true);
+//                    exploreCategory.setOrder(0);
+//
+//                    em.merge(exploreCategory);
+//                    exploreCategoriesList.add(exploreCategory);
+//                }
+//            });
 
 
         } catch (PersistenceException e) {
@@ -84,23 +88,28 @@ public class ExploreCategoriesDAO {
 
     static class SortByConfidence implements Comparator<QuestCategory> {
         public int compare(QuestCategory a, QuestCategory b) {
-            return (int) (b.getConfidence() - a.getConfidence());
+        	//FIXME Vinayak
+        	return (int) 0;
+//            return (int) (b.getConfidence() - a.getConfidence());
         }
     }
 
     public ExploreCategories addExploreCategory(ExploreCategories category, EntityManager em) {
-        if (category.getId() == null) {
-            try {
-                em.persist(category);
-                em.flush();
-            } catch (final PersistenceException | IllegalArgumentException e) {
-                Logger.error("Unable to persist ExploreCategory ", e);
-                throw e;
-            }
-            return em.find(ExploreCategories.class, category.getId());
-        } else {
-            return em.merge(category);
-        }
+    	//FIXME Vinayak
+    	return null;
+    	
+//        if (category.getId() == null) {
+//            try {
+//                em.persist(category);
+//                em.flush();
+//            } catch (final PersistenceException | IllegalArgumentException e) {
+//                Logger.error("Unable to persist ExploreCategory ", e);
+//                throw e;
+//            }
+//            return em.find(ExploreCategories.class, category.getId());
+//        } else {
+//            return em.merge(category);
+//        }
     }
 
     private boolean isCategoryExists(String category, EntityManager em) {

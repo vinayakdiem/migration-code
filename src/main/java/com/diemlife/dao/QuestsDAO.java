@@ -14,8 +14,8 @@ import com.diemlife.dto.LeaderboardMaxActivityDTO;
 import com.diemlife.dto.LogActivityDTO;
 import com.diemlife.dto.UserSummaryDTO;
 import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.CommentsForm;
-import forms.LogActivityForm;
+import com.diemlife.forms.CommentsForm;
+import com.diemlife.forms.LogActivityForm;
 import com.diemlife.models.AsActivity;
 import com.diemlife.models.AsActivityRecordValue;
 import com.diemlife.models.AsAttributeUnit;
@@ -32,12 +32,14 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.StopWatch;
 import play.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -62,12 +64,16 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * Created by andrewcoleman on 3/6/16.
  */
+@Repository
 public class QuestsDAO {
-
-    public static List<Quests> all(EntityManager em) {
+	
+	@PersistenceContext
+	EntityManager entityManager;
+	
+    public List<Quests> all() {
         try {
-            em.setFlushMode(FlushModeType.AUTO);
-            Query query = em.createQuery("SELECT q FROM Quests q ORDER BY q.dateModified DESC");
+        	entityManager.setFlushMode(FlushModeType.AUTO);
+            Query query = entityManager.createQuery("SELECT q FROM Quests q ORDER BY q.dateModified DESC");
             query.setHint("org.hibernate.cacheable", true);
             query.setHint("org.hibernate.readOnly", true);
 
@@ -79,28 +85,28 @@ public class QuestsDAO {
 
     }
 
-    public static List<Quests> findAllPublic(EntityManager entityManager) {
+    public List<Quests> findAllPublic() {
         Query query = entityManager.createQuery("SELECT q FROM Quests q WHERE q.privacyLevel != :privacyLevel", Quests.class);
         query.setParameter("privacyLevel", PRIVATE);
         return query.getResultList();
     }
 
-    public static QuestsListWithACL getAllQuestsWithACL(EntityManager em) {
+    public QuestsListWithACL getAllQuestsWithACL() {
         try {
-            Query query = em.createQuery("SELECT q FROM Quests q ORDER BY q.dateModified DESC");
+            Query query = entityManager.createQuery("SELECT q FROM Quests q ORDER BY q.dateModified DESC");
             query.setHint("org.hibernate.cacheable", true);
             query.setHint("org.hibernate.readOnly", true);
 
             List<Quests> quests = query.getResultList();
 
-            return new QuestsListWithACL(() -> quests, em);
+            return new QuestsListWithACL(() -> quests, entityManager);
         } catch (final PersistenceException e) {
             Logger.error("QuestsDAO :: getAllQuestsWithACL : error getting quests => " + e, e);
             return emptyListWithACL();
         }
     }
 
-    public static QuestsListWithACL findQuestsWithAclByIds(final Collection<Integer> ids, final EntityManager em) {
+    public QuestsListWithACL findQuestsWithAclByIds(final Collection<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
             return emptyListWithACL();
         }
@@ -109,9 +115,9 @@ public class QuestsDAO {
         try {
             timer.start();
 
-            final TypedQuery<Quests> query = em.createQuery("SELECT q FROM Quests q WHERE q.id IN :ids ", Quests.class)
+            final TypedQuery<Quests> query = entityManager.createQuery("SELECT q FROM Quests q WHERE q.id IN :ids ", Quests.class)
                     .setParameter("ids", ids);
-            return new QuestsListWithACL(query::getResultList, em);
+            return new QuestsListWithACL(query::getResultList, entityManager);
         } catch (final PersistenceException e) {
             Logger.error("Error finding in progress quests ::  Exception => " + e, e);
             return emptyListWithACL();
@@ -122,7 +128,7 @@ public class QuestsDAO {
         }
     }
 
-    public static QuestsListWithACL getQuestsBySearchCriteria(String value, EntityManager entityManager) {
+    public QuestsListWithACL getQuestsBySearchCriteria(String value) {
 
         try {
             FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
@@ -149,23 +155,23 @@ public class QuestsDAO {
         }
     }
 
-    public static List<Quests> createdBy(final User user, final EntityManager em) {
+    public List<Quests> createdBy(final User user) {
         if (user == null) {
             throw new RequiredParameterMissingException("user");
         }
-        return em.createQuery("SELECT q FROM Quests q WHERE q.createdBy = :userId ORDER BY q.dateCreated DESC", Quests.class)
+        return entityManager.createQuery("SELECT q FROM Quests q WHERE q.createdBy = :userId ORDER BY q.dateCreated DESC", Quests.class)
                 .setParameter("userId", user.getId())
                 .getResultList();
     }
 
-    public static Quests findQuestForDoer(final Integer questId, final User doer, final EntityManager em) {
+    public Quests findQuestForDoer(final Integer questId, final User doer) {
         if (questId == null) {
             throw new RequiredParameterMissingException("questId");
         }
         if (doer == null) {
             throw new RequiredParameterMissingException("doer");
         }
-        return em.createQuery("SELECT q " +
+        return entityManager.createQuery("SELECT q " +
                 "FROM Quests q " +
                 "INNER JOIN QuestActivity qa ON qa.questId = q.id " +
                 "WHERE qa.questId = :questId AND qa.userId = :doerId " +
@@ -178,11 +184,11 @@ public class QuestsDAO {
                 .orElse(null);
     }
 
-    public static Quests createQuest(String questName, String questDescription, String shortDescription, Interests pillar,
+    public Quests createQuest(String questName, String questDescription, String shortDescription, Interests pillar,
                                      Integer userId, Integer originalUser, boolean copyAllowed, boolean isBackBtnDisabled, boolean editableMilestones,
                                      boolean milestoneControlsDisabled, boolean taskViewDisabled,
                                      boolean multiTeamsAllowed, Integer version, PrivacyLevel privacyLevel, QuestCreatorTypes type,
-                                     boolean fundraising, String photo, QuestMode mode, EntityManager em) {
+                                     boolean fundraising, String photo, QuestMode mode) {
         if (questName == null
                 || questDescription == null
                 || userId == null
@@ -224,8 +230,8 @@ public class QuestsDAO {
         newQuest.setMode(mode);
 
         try {
-            em.persist(newQuest);
-            em.flush();
+        	entityManager.persist(newQuest);
+        	entityManager.flush();
 
             return newQuest;
         } catch (final PersistenceException e) {
@@ -235,19 +241,20 @@ public class QuestsDAO {
         }
     }
 
-    public static Integer addQuestPhotoByQuestId(Integer questId, Integer userId, String photoURL, EntityManager em) {
+    public Integer addQuestPhotoByQuestId(Integer questId, Integer userId, String photoURL) {
         Date date = new Date();
 
         try {
             if (questId != null && userId != null && photoURL != null) {
-                Quests quest = QuestsDAO.findById(questId, em);
+            	//FIXME Vinayak
+//                Quests quest = QuestsDAO.findById(questId);
 
-                quest.setPhoto(photoURL);
-                quest.setDateModified(date);
+//                quest.setPhoto(photoURL);
+//                quest.setDateModified(date);
+//
+//                entityManager.merge(quest);
 
-                em.merge(quest);
-
-                return quest.getId();
+//                return quest.getId();
             }
         } catch (Exception ex) {
             Logger.info("QuestsDAO :: addQuestPhotoByQuestId : error adding photo for quest => " + ex, ex);
@@ -257,7 +264,7 @@ public class QuestsDAO {
         return questId;
     }
 
-    private static void setQuestOwners(Quests newQuest, Integer originalUserId, Integer newUserId) {
+    private void setQuestOwners(Quests newQuest, Integer originalUserId, Integer newUserId) {
         if (originalUserId != null) {
             newQuest.setCreatedBy(newUserId);
             newQuest.setOrigCreatedBy(originalUserId);
@@ -267,10 +274,10 @@ public class QuestsDAO {
         }
     }
 
-    public static void update(Quests quest, EntityManager em) {
+    public void update(Quests quest) {
         try {
             if (quest != null) {
-                em.merge(quest);
+            	entityManager.merge(quest);
                 Logger.info("Commit Successful for updating quest");
             }
         } catch (RuntimeException re) {
@@ -280,14 +287,14 @@ public class QuestsDAO {
         }
     }
 
-    public static Quests findById(Integer id, EntityManager em) {
+    public Quests findById(Integer id) {
         if (id == null) {
             return null;
         }
-        return em.find(Quests.class, id);
+        return entityManager.find(Quests.class, id);
     }
 
-    public static Quests2 getQuest(Connection c, long questId) {
+    public Quests2 getQuest(Connection c, long questId) {
         try (PreparedStatement ps = c.prepareStatement("select title from quest_feed where id = ?")) {
 			ps.setLong(1, questId);
 			
@@ -296,7 +303,8 @@ public class QuestsDAO {
                     String title = rs.getString(1);
 
                     // only expect 1 result (or none)
-					return new Quests2(questId, title);
+                    //FIXME Vinayak
+//					return new Quests2(questId, title);
 				}
 			}
 		} catch (Exception e) {
@@ -306,9 +314,9 @@ public class QuestsDAO {
 		return null;
     }
 
-    public static Quests findByIdPublicQuests(Integer id, EntityManager em) {
+    public Quests findByIdPublicQuests(Integer id) {
         try {
-            Query query = em.createQuery("SELECT q FROM Quests q WHERE q.id = :id " +
+            Query query = entityManager.createQuery("SELECT q FROM Quests q WHERE q.id = :id " +
                     "AND q.privacyLevel != :privacy");
             query.setParameter("id", id);
             query.setParameter("privacy", PRIVATE);
@@ -322,16 +330,17 @@ public class QuestsDAO {
         }
     }
 
-    public static List<Quests> findByCategory(String category, User user, EntityManager em) {
+    public List<Quests> findByCategory(String category, User user) {
         try {
-            Query query = em.createNamedQuery("findByCategory", Quests.class);
+            Query query = entityManager.createNamedQuery("findByCategory", Quests.class);
             query.setParameter("categoryCodeIn", category);
             List<Quests> quests = query.getResultList();
 
-            List<Quests> questsPendingForUser = QuestActivityHome.getInProgressQuestsForUser(user, em, null, null).getList(user);
+            //FIXME Vinayak
+//            List<Quests> questsPendingForUser = QuestActivityHome.getInProgressQuestsForUser(user, null, null).getList(user);
 
             //Removing all duplicate quests so we do not show user the quests they are currently doing
-            quests.removeAll(new HashSet<>(questsPendingForUser));
+//            quests.removeAll(new HashSet<>(questsPendingForUser));
 
             return quests;
         } catch (Exception e) {
@@ -340,7 +349,7 @@ public class QuestsDAO {
         }
     }
 
-    public static QuestsListWithACL findByCategoryWithACL(final String category, final EntityManager entityManager) {
+    public QuestsListWithACL findByCategoryWithACL(final String category) {
         try {
             Query query = entityManager.createQuery("SELECT q FROM Quests q WHERE q.pillar = :category ORDER BY q.dateCreated DESC");
             query.setParameter("category", category);
@@ -355,10 +364,10 @@ public class QuestsDAO {
         }
     }
 
-    public static void incrementShareCountByQuestId(Integer questId, EntityManager em) {
+    public void incrementShareCountByQuestId(Integer questId) {
 
         try {
-            Quests quest = findById(questId, em);
+            Quests quest = findById(questId);
 
             if (quest != null) {
                 quest.setSharedCount(quest.getSharedCount() + 1);
@@ -368,7 +377,7 @@ public class QuestsDAO {
         }
     }
 
-    public static void incrementViewCountByQuestId(final Quests quest, EntityManager entityManager) {
+    public void incrementViewCountByQuestId(final Quests quest) {
         try {
             if (quest != null) {
                 quest.setViews(quest.getViews() + 1);
@@ -380,15 +389,15 @@ public class QuestsDAO {
         }
     }
 
-    public static QuestsListWithACL findAllQuestsByIdsWithACL(final List<Integer> questIds, EntityManager em) {
+    public QuestsListWithACL findAllQuestsByIdsWithACL(final List<Integer> questIds) {
         List<Quests> quests = new ArrayList<>();
         questIds.forEach(id -> {
-            quests.add(findById(id, em));
+            quests.add(findById(id));
         });
-        return new QuestsListWithACL(() -> quests, em);
+        return new QuestsListWithACL(() -> quests, entityManager);
     }
     
-    public static Integer  addlogActivity(Integer questId, Integer userId, LogActivityForm form, String imageURL, EntityManager em) {
+    public Integer  addlogActivity(Integer questId, Integer userId, LogActivityForm form, String imageURL) {
         Date date = new Date();
         
         AsActivityRecordValue asActivityRecordValue = new AsActivityRecordValue();
@@ -410,13 +419,13 @@ public class QuestsDAO {
         //asActivityRecordValue.setValueNumeric(valueNumeric);
         //asActivityRecordValue.setValueString(valueString);
         asActivityRecordValue.setDeleted(false);
-        em.persist(asActivityRecordValue);
+        entityManager.persist(asActivityRecordValue);
         
         QuestRecordValue questRecordValue = new QuestRecordValue(); 
         questRecordValue.setQuestId(questId);
         questRecordValue.setActvityRecordValueId(asActivityRecordValue.getId());
         questRecordValue.setPillarId(form.getPillarId());
-        em.merge(questRecordValue);
+        entityManager.merge(questRecordValue);
         
       return  asActivityRecordValue.getId();
        
@@ -424,23 +433,23 @@ public class QuestsDAO {
     /*
      * 
      */
-    public static void addtags(Integer actvityRecordValueId,List<String> tags, EntityManager em) {
+    public void addtags(Integer actvityRecordValueId,List<String> tags) {
     	
     	for (String tag : tags) {
     		AsUserTags asUserTags = new AsUserTags();
     		asUserTags.setTag(tag);
     		asUserTags.setActvityRecordValueId(actvityRecordValueId);
-    		em.persist(asUserTags);
+    		entityManager.persist(asUserTags);
 		}
     	
     }
     
     
-    public static List<LogActivityDTO> getlogActivity(Integer questId,Integer pageNumber,Integer pageSize, EntityManager em) {
+    public List<LogActivityDTO> getlogActivity(Integer questId,Integer pageNumber,Integer pageSize) {
     	
     	List<Object[]> results = new ArrayList<>();
     	if(pageSize!=null && pageSize>0) {
-    		results = em.createQuery("SELECT asArv.id, asArv.imageURL,asArv.comment,asArv.title,asArv.attributeValue,asArv.attributeId,asArv.actitvityId,asArv.unitId, asArv.createdBy,asArv.pillarId, asArv.createdDate, asArv.modifiedBy from AsActivityRecordValue asArv"
+    		results = entityManager.createQuery("SELECT asArv.id, asArv.imageURL,asArv.comment,asArv.title,asArv.attributeValue,asArv.attributeId,asArv.actitvityId,asArv.unitId, asArv.createdBy,asArv.pillarId, asArv.createdDate, asArv.modifiedBy from AsActivityRecordValue asArv"
     			+" where asArv.id IN(SELECT actvityRecordValueId from  QuestRecordValue where questId=:questId) AND asArv.deleted=false ORDER BY asArv.createdDate desc"  )
     		      .setParameter("questId", questId)
     		      .setFirstResult((pageNumber-1) * pageSize)
@@ -448,7 +457,7 @@ public class QuestsDAO {
     		      .getResultList();
     	}else {
     	
-    		results = em.createQuery("SELECT asArv.id, asArv.imageURL,asArv.comment,asArv.title,asArv.attributeValue,asArv.attributeId,asArv.actitvityId,asArv.unitId, asArv.createdBy,asArv.pillarId, asArv.createdDate, asArv.modifiedBy from AsActivityRecordValue asArv"
+    		results = entityManager.createQuery("SELECT asArv.id, asArv.imageURL,asArv.comment,asArv.title,asArv.attributeValue,asArv.attributeId,asArv.actitvityId,asArv.unitId, asArv.createdBy,asArv.pillarId, asArv.createdDate, asArv.modifiedBy from AsActivityRecordValue asArv"
     			+" where asArv.id IN(SELECT actvityRecordValueId from  QuestRecordValue where questId=:questId) AND asArv.deleted=false ORDER BY asArv.createdDate desc"  )
     		      .setParameter("questId", questId)
     		      .getResultList();
@@ -465,38 +474,38 @@ public class QuestsDAO {
     		logActivityDTO.setTitle((String)row[3]);
     		logActivityDTO.setAttributeValue((String)row[4]);
     		if((Integer)row[5]!=null)
-    		logActivityDTO.setAttributeName(getAttributeNameById((Integer)row[5],em));
+    		logActivityDTO.setAttributeName(getAttributeNameById((Integer)row[5]));
     		
     		if((Integer)row[6]!=null)
-    		logActivityDTO.setActivityName(getActivityNameById((Integer)row[6],em));
+    		logActivityDTO.setActivityName(getActivityNameById((Integer)row[6]));
     		
     		if((Integer)row[7]!=null) {
-	    		AsAttributeUnit asAttributeUnit = getAttributeUnitById((Integer)row[7], em); 
+	    		AsAttributeUnit asAttributeUnit = getAttributeUnitById((Integer)row[7]); 
 	    		
 	    		logActivityDTO.setAbbreviation(asAttributeUnit.getAbbreviation());
 	    		logActivityDTO.setUnitNamePlural(asAttributeUnit.getUnitNamePlural());
 	    		logActivityDTO.setUnitNameSingular(asAttributeUnit.getUnitNameSingular());
 	    		}
-    		logActivityDTO.setTags(getTagsByActivityRecordValue(logActivityDTO.getActvityRecordValueId(),em));
+    		logActivityDTO.setTags(getTagsByActivityRecordValue(logActivityDTO.getActvityRecordValueId()));
     		
     		logActivityDTO.setUserId((Integer)row[8]);
     		
-    		User user = getUserById(logActivityDTO.getUserId(),em);
+    		User user = getUserById(logActivityDTO.getUserId());
     		logActivityDTO.setUserFirstName(user.getFirstName());
     		logActivityDTO.setUserLastName(user.getLastName());
     		logActivityDTO.setUserName(user.getUserName());
     		logActivityDTO.setUserImageUrl(user.getProfilePictureURL());
     		logActivityDTO.setEmail(user.getEmail());
     		
-    		logActivityDTO.setPillarName((getPillarById((Integer)row[9],em)).getName());
+    		logActivityDTO.setPillarName((getPillarById((Integer)row[9])).getName());
     		
     		logActivityDTO.setCreationDateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date)row[10]));
     		logActivityDTO.setCreationDate(new SimpleDateFormat("yyyy-MM-dd").format((Date)row[10]));
     		
-    		List<AsCommentsDTO> userComments = getLogActivityComments(logActivityDTO.getActvityRecordValueId(),em);
+    		List<AsCommentsDTO> userComments = getLogActivityComments(logActivityDTO.getActvityRecordValueId());
     		
     		logActivityDTO.setUserComments(userComments);
-    		logActivityDTO.setLikes(getUserLikes(logActivityDTO.getActvityRecordValueId(),em));
+    		logActivityDTO.setLikes(getUserLikes(logActivityDTO.getActvityRecordValueId()));
     		
     		if((Integer)row[11]!=null) {
     			logActivityDTO.setUpdated(true);
@@ -512,9 +521,9 @@ public class QuestsDAO {
     }
     
     
-    public static List<String> getTagsByActivityRecordValue(Integer actvityRecordValueId, EntityManager em){
+    public List<String> getTagsByActivityRecordValue(Integer actvityRecordValueId){
     	
-    	List<String> results = em.createQuery("SELECT asut.tag from AsUserTags asut"
+    	List<String> results = entityManager.createQuery("SELECT asut.tag from AsUserTags asut"
     			+" where asut.actvityRecordValueId = :actvityRecordValueId")
     		      .setParameter("actvityRecordValueId", actvityRecordValueId)
     		      .getResultList();
@@ -524,9 +533,9 @@ public class QuestsDAO {
     }
     
     
-public static String getAttributeNameById(Integer attributeId, EntityManager em){
+public String getAttributeNameById(Integer attributeId){
     	
-    	String result = (String)em.createQuery("SELECT asa.name from AsAttribute asa"
+    	String result = (String)entityManager.createQuery("SELECT asa.name from AsAttribute asa"
     			+" where asa.id = :attributeId")
     		      .setParameter("attributeId", attributeId)
     		      .getSingleResult();
@@ -534,9 +543,9 @@ public static String getAttributeNameById(Integer attributeId, EntityManager em)
     	return result;
     }
 
-public static String getActivityNameById(Integer activityId, EntityManager em){
+public String getActivityNameById(Integer activityId){
 	
-	String result = (String)em.createQuery("SELECT asact.name from AsActivity asact"
+	String result = (String)entityManager.createQuery("SELECT asact.name from AsActivity asact"
 			+" where asact.id = :activityId")
 		      .setParameter("activityId", activityId)
 		      .getSingleResult();
@@ -544,9 +553,9 @@ public static String getActivityNameById(Integer activityId, EntityManager em){
 	return result;
 }
 
-public static AsAttributeUnit getAttributeUnitById(Integer attributeUnitId, EntityManager em){
+public AsAttributeUnit getAttributeUnitById(Integer attributeUnitId){
 	
-	AsAttributeUnit result = (AsAttributeUnit)em.createQuery("From AsAttributeUnit asau"
+	AsAttributeUnit result = (AsAttributeUnit)entityManager.createQuery("From AsAttributeUnit asau"
 			+" where asau.id = :attributeUnitId")
 		      .setParameter("attributeUnitId", attributeUnitId)
 		      .getSingleResult();
@@ -554,33 +563,33 @@ public static AsAttributeUnit getAttributeUnitById(Integer attributeUnitId, Enti
 	return result;
 }
 
-public static User getUserById(Integer userId,EntityManager em) {
+public User getUserById(Integer userId) {
 	
-	return em.find(User.class,userId);
+	return entityManager.find(User.class,userId);
 }
 
-public static List<AllPillarsCount> getTotalPillarCountByUserIds(List<Integer> userIds , EntityManager em){
+public List<AllPillarsCount> getTotalPillarCountByUserIds(List<Integer> userIds){
 	
 	List<AllPillarsCount> allPillarsCounts = new ArrayList<>();
 	
-	User user = getUserById(userIds.get(0),em);
+	User user = getUserById(userIds.get(0));
 	
 	List<Object[]> results = new ArrayList<>();
 	
 	if(!("Y".equalsIgnoreCase(user.getIsUserBrand()))){
-			results = em.createQuery("SELECT count(asArv.pillarId),asArv.pillarId from AsActivityRecordValue asArv"
+			results = entityManager.createQuery("SELECT count(asArv.pillarId),asArv.pillarId from AsActivityRecordValue asArv"
     			+" where asArv.createdBy IN(:userIds) AND asArv.deleted=false group by asArv.pillarId"  )
     		      .setParameter("userIds", userIds)
     		      .getResultList();
 	}else {
 	
-	List<Integer> quests = em.createQuery("SELECT questTask.questId from QuestTasks questTask"
+	List<Integer> quests = entityManager.createQuery("SELECT questTask.questId from QuestTasks questTask"
 			+" where questTask.createdBy IN(:userIds) group by questTask.questId",Integer.class)
 		      .setParameter("userIds", userIds)
 		      .getResultList();
 		
 		if(quests!=null && quests.size()>0) {
-			results = em.createQuery("SELECT count(qrval.pillarId),qrval.pillarId from QuestRecordValue qrval, AsActivityRecordValue asArv"
+			results = entityManager.createQuery("SELECT count(qrval.pillarId),qrval.pillarId from QuestRecordValue qrval, AsActivityRecordValue asArv"
 					+" where qrval.questId IN(:quests) AND qrval.actvityRecordValueId=asArv.id AND asArv.deleted=false group by qrval.pillarId") 
 				      .setParameter("quests", quests)
 				      .getResultList();
@@ -599,12 +608,12 @@ public static List<AllPillarsCount> getTotalPillarCountByUserIds(List<Integer> u
 	return allPillarsCounts;
 }
 
-public static AsPillar getPillarById(Integer pillarId,EntityManager em) {
+public AsPillar getPillarById(Integer pillarId) {
 	
-	return em.find(AsPillar.class,pillarId);
+	return entityManager.find(AsPillar.class, pillarId);
 }
 
-public static List<AsCommentsDTO> addComments(Integer questId, Integer userId, CommentsForm form,EntityManager em) {
+public List<AsCommentsDTO> addComments(Integer questId, Integer userId, CommentsForm form) {
 	AsComments asComments = new AsComments();
 	
 	asComments.setActivityRecordValueId(form.getActivityRecordValueId());
@@ -613,21 +622,22 @@ public static List<AsCommentsDTO> addComments(Integer questId, Integer userId, C
 	asComments.setCreatedBy(userId);
 	asComments.setCreatedDate(new Date());
 	asComments.setDeleted(false);
-	asComments.setParentCommentsId(form.getParentCommentsId());
+	//FIXME Vinayak
+//	asComments.setParentCommentsId(form.getParentCommentsId());
 	
-	em.persist(asComments);
+	entityManager.persist(asComments);
 	
 	
-	List<AsCommentsDTO> userComments = getLogActivityComments(form.getActivityRecordValueId(),em);
+	List<AsCommentsDTO> userComments = getLogActivityComments(form.getActivityRecordValueId());
 	
 	return userComments;
 }
 
-public static AsLikesDTO addLikes(Integer questId, Integer userId, Integer activityRecordListValueId, EntityManager em) {
+public AsLikesDTO addLikes(Integer questId, Integer userId, Integer activityRecordListValueId) {
 	
-	AsLikes likes = isLikeAlreadyExist(userId,activityRecordListValueId,em);
+	AsLikes likes = isLikeAlreadyExist(userId,activityRecordListValueId);
 	if(likes!=null && likes.getId()>0) {
-		em.remove(likes);
+		entityManager.remove(likes);
 	}else {
 		
 		AsLikes asLikes = new AsLikes();
@@ -635,20 +645,20 @@ public static AsLikesDTO addLikes(Integer questId, Integer userId, Integer activ
 		asLikes.setQuestId(questId);
 		asLikes.setCreatedBy(userId);
 		asLikes.setCreatedDate(new Date());
-		em.persist(asLikes);
+		entityManager.persist(asLikes);
 	}
 	
-	AsLikesDTO asLikesDTO = getUserLikes(activityRecordListValueId,em);
+	AsLikesDTO asLikesDTO = getUserLikes(activityRecordListValueId);
 	
 	return asLikesDTO;
 }
 
 
-public static List<AsCommentsDTO> getLogActivityComments(Integer activityRecordValueId,EntityManager em ){
+public List<AsCommentsDTO> getLogActivityComments(Integer activityRecordValueId){
 	
 	List<AsCommentsDTO> asCommentsDTOs = new ArrayList<>();
 	
-	List<AsComments> results = em.createQuery("SELECT asComments from AsComments asComments where asComments.activityRecordValueId=:activityRecordValueId AND asComments.parentCommentsId IS NULL order by asComments.createdDate desc",AsComments.class)
+	List<AsComments> results = entityManager.createQuery("SELECT asComments from AsComments asComments where asComments.activityRecordValueId=:activityRecordValueId AND asComments.parentCommentsId IS NULL order by asComments.createdDate desc",AsComments.class)
 		      .setParameter("activityRecordValueId", activityRecordValueId)
 		      .getResultList();
 	
@@ -662,7 +672,7 @@ public static List<AsCommentsDTO> getLogActivityComments(Integer activityRecordV
 			asCommentsDTO.setCreationDate(new SimpleDateFormat("yyyy-MM-dd").format(asComments.getCreatedDate()));
 			asCommentsDTO.setCreationDateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(asComments.getCreatedDate()));
 			asCommentsDTO.setUserId(asComments.getCreatedBy());
-			User user = getUserById(asComments.getCreatedBy(),em);
+			User user = getUserById(asComments.getCreatedBy());
 			asCommentsDTO.setUserFirstName(user.getFirstName());
 			asCommentsDTO.setUserLastName(user.getLastName());
 			asCommentsDTO.setUserName(user.getUserName());
@@ -673,16 +683,16 @@ public static List<AsCommentsDTO> getLogActivityComments(Integer activityRecordV
 	return asCommentsDTOs;
 }
 
-public static AsLikesDTO getUserLikes(Integer activityRecordValueId,EntityManager em){
+public AsLikesDTO getUserLikes(Integer activityRecordValueId){
 	
 	AsLikesDTO likes = new AsLikesDTO();
 	List<UserSummaryDTO> userSummaryDTOs = new ArrayList<>();
-	Long count = em.createQuery("SELECT count(asLikes.createdBy) from AsLikes asLikes"
+	Long count = entityManager.createQuery("SELECT count(asLikes.createdBy) from AsLikes asLikes"
 			+" where asLikes.activityRecordValueId=:activityRecordValueId", Long.class  )
 		      .setParameter("activityRecordValueId", activityRecordValueId)
 		      .getSingleResult();
 	
-	List<User> results = em.createQuery("SELECT user from User user where user.id IN(SELECT asLikes.createdBy from AsLikes asLikes where asLikes.activityRecordValueId=:activityRecordValueId order by asLikes.createdDate desc)",User.class)
+	List<User> results = entityManager.createQuery("SELECT user from User user where user.id IN(SELECT asLikes.createdBy from AsLikes asLikes where asLikes.activityRecordValueId=:activityRecordValueId order by asLikes.createdDate desc)",User.class)
 		      .setParameter("activityRecordValueId", activityRecordValueId)
 		      .getResultList();
 	
@@ -706,13 +716,13 @@ public static AsLikesDTO getUserLikes(Integer activityRecordValueId,EntityManage
 }
 
 
-public static AsLikes isLikeAlreadyExist(Integer userId, Integer activityRecordValueId,EntityManager em) {
+public AsLikes isLikeAlreadyExist(Integer userId, Integer activityRecordValueId) {
 	boolean alreadyExist = false;
 	
 	AsLikes asLikes = null;
 			
 		try {
-			asLikes = em.createQuery("SELECT asLikes from AsLikes asLikes"
+			asLikes = entityManager.createQuery("SELECT asLikes from AsLikes asLikes"
 			+" where asLikes.activityRecordValueId=:activityRecordValueId AND asLikes.createdBy=:userId", AsLikes.class  )
 		      .setParameter("activityRecordValueId", activityRecordValueId)
 		      .setParameter("userId", userId)
@@ -725,22 +735,22 @@ public static AsLikes isLikeAlreadyExist(Integer userId, Integer activityRecordV
 }
 
 
-public static Quests getQuestById(Integer questId,EntityManager em) {
+public Quests getQuestById(Integer questId) {
 	
-	return em.find(Quests.class,questId);
+	return entityManager.find(Quests.class,questId);
 }
 
-public static Boolean editLogActivity(Integer activityRecordValueId, String imageURL, String comment,String title,Integer userId,EntityManager em) {
+public Boolean editLogActivity(Integer activityRecordValueId, String imageURL, String comment,String title,Integer userId) {
 	
 	try {
-	AsActivityRecordValue asActivityRecordValue = 	em.find(AsActivityRecordValue.class, activityRecordValueId);
+	AsActivityRecordValue asActivityRecordValue =  entityManager.find(AsActivityRecordValue.class, activityRecordValueId);
 		if(asActivityRecordValue!=null) {
 			asActivityRecordValue.setComment(comment);
 			asActivityRecordValue.setTitle(title);
 			asActivityRecordValue.setImageURL(imageURL);
 			asActivityRecordValue.setModifiedBy(userId);
 			asActivityRecordValue.setModifiedDate(new Date());
-			em.merge(asActivityRecordValue);
+			entityManager.merge(asActivityRecordValue);
 		
 		
 			return true;
@@ -752,16 +762,16 @@ public static Boolean editLogActivity(Integer activityRecordValueId, String imag
 	return false;
 }
 
-public static Boolean deleteLogActivity(Integer activityRecordValueId,Integer userId,EntityManager em) {
+public Boolean deleteLogActivity(Integer activityRecordValueId,Integer userId) {
 	
 	try {
-	AsActivityRecordValue asActivityRecordValue = 	em.find(AsActivityRecordValue.class, activityRecordValueId);
+	AsActivityRecordValue asActivityRecordValue = 	entityManager.find(AsActivityRecordValue.class, activityRecordValueId);
 		if(asActivityRecordValue!=null) {
 
 			asActivityRecordValue.setDeleted(true);
 			asActivityRecordValue.setModifiedBy(userId);
 			asActivityRecordValue.setModifiedDate(new Date());
-			em.merge(asActivityRecordValue);
+			entityManager.merge(asActivityRecordValue);
 		
 		
 			return true;
@@ -773,12 +783,12 @@ public static Boolean deleteLogActivity(Integer activityRecordValueId,Integer us
 	return false;
 }
 
-public static List<LeaderboardMaxActivityDTO> leaderboardMaxActivity(Integer questId,Integer pageNumber,Integer pageSize,EntityManager em) {
+public List<LeaderboardMaxActivityDTO> leaderboardMaxActivity(Integer questId,Integer pageNumber,Integer pageSize) {
 	
 	
 	String sql = "SELECT count(*) as total, createdBy, actitvityId FROM AsActivityRecordValue where id in (Select actvityRecordValueId from QuestRecordValue where questId=:questId) group by actitvityId,createdBy order by total desc";
 	
-	List<Object[]> results = em.createQuery(sql) 
+	List<Object[]> results = entityManager.createQuery(sql) 
 			      .setParameter("questId", questId)
 			      .setFirstResult((pageNumber-1) * pageSize)
     		      .setMaxResults(pageSize)
@@ -791,8 +801,8 @@ public static List<LeaderboardMaxActivityDTO> leaderboardMaxActivity(Integer que
 			
 			leaderboardMaxActivityDTO.setScore((Long)row[0]);
 			Integer userId  = ((Integer)row[1]);
-			User user = findUserById(userId,em);
-			AsActivity activity = findActivityById( ((Integer)row[2]),em);
+			User user = findUserById(userId);
+			AsActivity activity = findActivityById( ((Integer)row[2]));
 			
 			leaderboardMaxActivityDTO.setUserName(user.getUserName());
 			leaderboardMaxActivityDTO.setUserFirstName(user.getFirstName());
@@ -807,26 +817,26 @@ public static List<LeaderboardMaxActivityDTO> leaderboardMaxActivity(Integer que
 	return leaderboardMaxActivityDTOList;
 }
 
-public static User findUserById(Integer id, EntityManager em) {
+public User findUserById(Integer id) {
     if (id == null) {
         return null;
     }
-    return em.find(User.class, id);
+    return entityManager.find(User.class, id);
 }
 
-public static AsActivity findActivityById(Integer id, EntityManager em) {
+public AsActivity findActivityById(Integer id) {
     if (id == null) {
         return null;
     }
-    return em.find(AsActivity.class, id);
+    return entityManager.find(AsActivity.class, id);
 }
 
 
-public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer questId,Integer pageNumber,Integer pageSize,String userName, List<Integer> activityIds, EntityManager em) {
+public List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer questId,Integer pageNumber,Integer pageSize,String userName, List<Integer> activityIds) {
 
 	List<Integer> userIds = new ArrayList();
 	if(userName!=null && userName.length()>0) {
-		userIds = em.createQuery("SELECT id from User where firstName like '"+userName+"%'",Integer.class) 
+		userIds = entityManager.createQuery("SELECT id from User where firstName like '"+userName+"%'",Integer.class) 
 				.getResultList();
 	}
 	
@@ -842,7 +852,7 @@ public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer qu
 	List<Object[]> results = new ArrayList<>(); 
 	
 		  if(userIds.size()>0 &&  activityIds!=null && activityIds.size()>0) {
-			results = em.createQuery(sql) 
+			results = entityManager.createQuery(sql) 
 			      .setParameter("questId", questId)
 			      .setParameter("userIds", userIds)
 			      .setParameter("activityIds", activityIds)
@@ -850,14 +860,14 @@ public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer qu
     		      .setMaxResults(pageSize)
 			      .getResultList();
 		  }else if(userIds.size()>0) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setParameter("userIds", userIds)
 				      .setFirstResult((pageNumber-1) * pageSize)
 	    		      .setMaxResults(pageSize)
 				      .getResultList();
 		  }else if(activityIds!=null && activityIds.size()>0) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setParameter("activityIds", activityIds)
 				      .setFirstResult((pageNumber-1) * pageSize)
@@ -865,7 +875,7 @@ public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer qu
 				      .getResultList();
 		  }
 		  else if((activityIds==null || activityIds.size()==0) && (userName==null || userName.length()==0)) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setFirstResult((pageNumber-1) * pageSize)
 	    		      .setMaxResults(pageSize)
@@ -879,8 +889,8 @@ public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer qu
 			
 			leaderboardMaxActivityDTO.setScore((Long)row[0]);
 			Integer userId  = ((Integer)row[1]);
-			User user = findUserById(userId,em);
-			AsActivity activity = findActivityById( ((Integer)row[2]),em);
+			User user = findUserById(userId);
+			AsActivity activity = findActivityById( ((Integer)row[2]));
 			
 			leaderboardMaxActivityDTO.setUserName(user.getUserName());
 			leaderboardMaxActivityDTO.setUserFirstName(user.getFirstName());
@@ -895,11 +905,11 @@ public static List<LeaderboardMaxActivityDTO> filterByUserAndActivity(Integer qu
 	return leaderboardMaxActivityDTOList;
 }
 
-public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer questId,Integer pageNumber,Integer pageSize,String userName, List<Integer> activityIds, EntityManager em) {
+public List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer questId,Integer pageNumber,Integer pageSize,String userName, List<Integer> activityIds) {
 
 	List<Integer> userIds = new ArrayList();
 	if(userName!=null && userName.length()>0) {
-		userIds = em.createQuery("SELECT id from User where firstName like '"+userName+"%'",Integer.class) 
+		userIds = entityManager.createQuery("SELECT id from User where firstName like '"+userName+"%'",Integer.class) 
 				.getResultList();
 	}
 	
@@ -914,7 +924,7 @@ public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer que
 	List<Object[]> results = new ArrayList<>(); 
 	
 		  if(userIds.size()>0 &&  activityIds!=null && activityIds.size()>0) {
-			results = em.createQuery(sql) 
+			results = entityManager.createQuery(sql) 
 			      .setParameter("questId", questId)
 			      .setParameter("userIds", userIds)
 			      .setParameter("activityIds", activityIds)
@@ -922,14 +932,14 @@ public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer que
     		      .setMaxResults(pageSize)
 			      .getResultList();
 		  }else if(userIds.size()>0) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setParameter("userIds", userIds)
 				      .setFirstResult((pageNumber-1) * pageSize)
 	    		      .setMaxResults(pageSize)
 				      .getResultList();
 		  }else if(activityIds!=null && activityIds.size()>0) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setParameter("activityIds", activityIds)
 				      .setFirstResult((pageNumber-1) * pageSize)
@@ -937,7 +947,7 @@ public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer que
 				      .getResultList();
 		  }
 		  else if((activityIds==null || activityIds.size()==0) && (userName==null || userName.length()==0)) {
-			  results = em.createQuery(sql) 
+			  results = entityManager.createQuery(sql) 
 				      .setParameter("questId", questId)
 				      .setFirstResult((pageNumber-1) * pageSize)
 	    		      .setMaxResults(pageSize)
@@ -951,8 +961,8 @@ public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer que
 			
 			leaderboardMaxActivityDTO.setAttributeValue((String)row[0]);
 			Integer userId  = ((Integer)row[1]);
-			User user = findUserById(userId,em);
-			AsActivity activity = findActivityById( ((Integer)row[2]),em);
+			User user = findUserById(userId);
+			AsActivity activity = findActivityById( ((Integer)row[2]));
 			
 			leaderboardMaxActivityDTO.setUserName(user.getUserName());
 			leaderboardMaxActivityDTO.setUserFirstName(user.getFirstName());
@@ -969,11 +979,11 @@ public static List<LeaderboardMaxActivityDTO> getCountOfeachActivity(Integer que
 	return leaderboardMaxActivityDTOList;
 }
 
-public static List<AsCommentsDTO> commentsReplies(Integer commentsId,EntityManager em ){
+public List<AsCommentsDTO> commentsReplies(Integer commentsId){
 	
 	List<AsCommentsDTO> asCommentsDTOs = new ArrayList<>();
 	
-	List<AsComments> results = em.createQuery("SELECT asComments from AsComments asComments where asComments.parentCommentsId=:parentCommentsId order by asComments.createdDate desc",AsComments.class)
+	List<AsComments> results = entityManager.createQuery("SELECT asComments from AsComments asComments where asComments.parentCommentsId=:parentCommentsId order by asComments.createdDate desc",AsComments.class)
 		      .setParameter("parentCommentsId", commentsId)
 		      .getResultList();
 	
@@ -986,7 +996,7 @@ public static List<AsCommentsDTO> commentsReplies(Integer commentsId,EntityManag
 			asCommentsDTO.setCreationDate(new SimpleDateFormat("yyyy-MM-dd").format(asComments.getCreatedDate()));
 			asCommentsDTO.setCreationDateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(asComments.getCreatedDate()));
 			asCommentsDTO.setUserId(asComments.getCreatedBy());
-			User user = getUserById(asComments.getCreatedBy(),em);
+			User user = getUserById(asComments.getCreatedBy());
 			asCommentsDTO.setUserFirstName(user.getFirstName());
 			asCommentsDTO.setUserLastName(user.getLastName());
 			asCommentsDTO.setUserName(user.getUserName());

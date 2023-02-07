@@ -18,9 +18,10 @@ public class CompanyRoleDAO extends TypedSingletonDAO<CompanyRole> {
 	
     public CompanyRole createRole(Brand company, User user, String role) {
         final CompanyRole representative = new CompanyRole();
-        representative.setCompany(company);
-        representative.setUser(user);
-        representative.setRole(role);
+        //FIXME Vinayak
+//        representative.setCompany(company);
+//        representative.setUser(user);
+//        representative.setRole(role);
 
         return save(representative, CompanyRole.class);
     }

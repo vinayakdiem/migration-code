@@ -27,7 +27,8 @@ public class PushNotificationDeviceDAO {
         try {
         	entityManager.persist(device);
         } catch (ConstraintViolationException e) {
-            Logger.warn("device token already exists, not saving again for user [{}]", device.getUserId());
+        	//FIXME Vinayak
+//            Logger.warn("device token already exists, not saving again for user [{}]", device.getUserId());
         }
     }
 
@@ -49,6 +50,8 @@ public class PushNotificationDeviceDAO {
     }
 
     public PushNotificationDevice findById(PushNotificationDevice device) {
-        return entityManager.find(PushNotificationDevice.class, device.getToken());
+    	//FIXME Vinayak
+//        return entityManager.find(PushNotificationDevice.class, device.getToken());
+    	return null;
     }
 }

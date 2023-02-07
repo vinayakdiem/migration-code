@@ -135,7 +135,8 @@ public class LeaderboardDAO {
         String result = null;
         
         try (PreparedStatement ps = c.prepareStatement("select stripe_sku_id from event_leaderboard_config where leaderboard_attribute_id_slug = ? and event_id = ?")) {
-            ps.setString(1, attribute.getId());
+        	//FIXME Vinayak
+//            ps.setString(1, attribute.getId());
 
             // FIXME: this is an int in the DB but should be a long
             ps.setInt(2, (int) event.getId().longValue());
@@ -280,20 +281,22 @@ public class LeaderboardDAO {
             final LeaderboardMember existing = !Util.isEmpty(existingWithUser)
                     ? existingWithUser.iterator().next()
                     : existingWithPersonal.iterator().next();
-            existing.setQuest(quest);
-            existing.setPlatformUser(platformUser == null ? existing.getPlatformUser() : platformUser);
-            existing.setPersonalInfo(personalInfo == null ? existing.getPersonalInfo() : personalInfo);
-            existing.setAddress(address == null ? existing.getAddress() : address);
+          //FIXME Vinayak
+//            existing.setQuest(quest);
+//            existing.setPlatformUser(platformUser == null ? existing.getPlatformUser() : platformUser);
+//            existing.setPersonalInfo(personalInfo == null ? existing.getPersonalInfo() : personalInfo);
+//            existing.setAddress(address == null ? existing.getAddress() : address);
 
             Logger.info("Updated existing leaderboard member with ID " + existing.getId());
 
             return entityManager.merge(existing);
         } else {
             final LeaderboardMember member = new LeaderboardMember();
-            member.setQuest(quest);
-            member.setPlatformUser(platformUser);
-            member.setPersonalInfo(personalInfo);
-            member.setAddress(address);
+          //FIXME Vinayak
+//            member.setQuest(quest);
+//            member.setPlatformUser(platformUser);
+//            member.setPersonalInfo(personalInfo);
+//            member.setAddress(address);
             entityManager.persist(member);
 
             Logger.info("Created new leaderboard member with ID " + member.getId());
@@ -309,13 +312,15 @@ public class LeaderboardDAO {
         if (member == null || attribute == null) {
             return null;
         }
-        return Optional.of(getOrCreateScore(c, member.getId(), attribute.getId()))
-                .map(score -> {
-                    score.setScore(scoreValue == null ? score.getScore() : scoreValue);
-                    score.setMemberStatus(status == null ? score.getMemberStatus() : status.ordinal());
-                    return score;
-                })
-                .get();
+      //FIXME Vinayak
+        return null;
+//        return Optional.of(getOrCreateScore(c, member.getId(), attribute.getId()))
+//                .map(score -> {
+//                    score.setScore(scoreValue == null ? score.getScore() : scoreValue);
+//                    score.setMemberStatus(status == null ? score.getMemberStatus() : status.ordinal());
+//                    return score;
+//                })
+//                .get();
     }
 
     public List<LeaderboardScore> getScoresByQuest(Connection c, long questId, String attributeSlug, boolean ascScore, boolean includeImplicitScores, boolean includeHiddenMembers) {

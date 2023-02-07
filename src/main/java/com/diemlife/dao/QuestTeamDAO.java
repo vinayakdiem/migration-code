@@ -8,6 +8,10 @@ import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,11 +27,11 @@ import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 
+@Repository
 public class QuestTeamDAO extends TypedDAO<QuestTeam> {
 
-    public QuestTeamDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public List<QuestTeam> listTeamsForQuest(final Quests quest, final boolean excludeDefault, final boolean excludeIndividual) {
         if (quest == null) {
@@ -267,12 +271,13 @@ public class QuestTeamDAO extends TypedDAO<QuestTeam> {
                                 final boolean isDefault,
                                 final boolean isIndividual) {
         final QuestTeam team = new QuestTeam();
-        team.setName(name);
-        team.setLogoUrl(logoUrl);
-        team.setQuest(quest);
-        team.setCreator(creator);
-        team.setDefaultTeam(isDefault);
-        team.setIndividualTeam(isIndividual);
+        //FIXME Vinayak
+//        team.setName(name);
+//        team.setLogoUrl(logoUrl);
+//        team.setQuest(quest);
+//        team.setCreator(creator);
+//        team.setDefaultTeam(isDefault);
+//        team.setIndividualTeam(isIndividual);
         return save(team, QuestTeam.class);
     }
 
@@ -287,10 +292,12 @@ public class QuestTeamDAO extends TypedDAO<QuestTeam> {
 	// See if the user is already active for this quest on some team
 	public boolean isUserActiveTeamMemberForQuest(Quests quest, User user) {
 		final List<QuestTeam> questTeams = listTeamsForQuest(quest, true, false);
-        return questTeams.stream()
-                .flatMap(questTeam -> questTeam.getMembers().stream())
-                .filter(QuestTeamMember::isActive)
-                .anyMatch(member -> member.getMember().getId().equals(user.getId()));
+		//FIXME Vinayak
+		return true;
+//        return questTeams.stream()
+//                .flatMap(questTeam -> questTeam.getMembers().stream())
+//                .filter(QuestTeamMember::isActive)
+//                .anyMatch(member -> member.getMember().getId().equals(user.getId()));
 	}
 
 	public void leaveAllTeams(final User user, final Quests quest) {
@@ -306,20 +313,23 @@ public class QuestTeamDAO extends TypedDAO<QuestTeam> {
         if (team == null || team.getId() == null || joiningUser == null || joiningUser.getId() == null) {
             return false;
         }
-        if (isUserActiveTeamMemberForQuest(team.getQuest(), joiningUser)) {
-			Logger.warn(format("User '%s' attempted to join the team '%s' but is already an active member of another team of the same Quest [%s]", joiningUser.getEmail(), team.getName(), team.getQuest().getId()));
-            return false;
-		}
+        //FIXME Vinayak
+//        if (isUserActiveTeamMemberForQuest(team.getQuest(), joiningUser)) {
+//			Logger.warn(format("User '%s' attempted to join the team '%s' but is already an active member of another team of the same Quest [%s]", joiningUser.getEmail(), team.getName(), team.getQuest().getId()));
+//            return false;
+//		}
 		
         final QuestTeamMember existingMember = getQuestTeamMember(team, joiningUser);
-        if (existingMember == null) {
-            team.getMembers().add((createAsInactive ? new QuestTeamMember(team, joiningUser, false) : new QuestTeamMember(team, joiningUser)));
-        } else {
-            existingMember.setSince(Date.from(Instant.now()));
-            existingMember.setActive(true);
-        }
+      //FIXME Vinayak
+//        if (existingMember == null) {
+//            team.getMembers().add((createAsInactive ? new QuestTeamMember(team, joiningUser, false) : new QuestTeamMember(team, joiningUser)));
+//        } else {
+//            existingMember.setSince(Date.from(Instant.now()));
+//            existingMember.setActive(true);
+//        }
 
-        Logger.debug(format("User '%s' joined the team '%s' of the Quest [%s]", joiningUser.getEmail(), team.getName(), team.getQuest().getId()));
+      //FIXME Vinayak
+//        Logger.debug(format("User '%s' joined the team '%s' of the Quest [%s]", joiningUser.getEmail(), team.getName(), team.getQuest().getId()));
 
         return save(team, QuestTeam.class) != null;
     }
@@ -330,27 +340,31 @@ public class QuestTeamDAO extends TypedDAO<QuestTeam> {
         } else {
             final QuestTeamMember existingMember = getQuestTeamMember(team, leavingUser);
             if (existingMember == null) {
-                Logger.warn(format("User '%s' attempted to leave the team '%s' of Quest [%s] but is not an active member of it", leavingUser.getEmail(), team.getQuest().getId(), team.getName()));
+            	//FIXME Vinayak
+//                Logger.warn(format("User '%s' attempted to leave the team '%s' of Quest [%s] but is not an active member of it", leavingUser.getEmail(), team.getQuest().getId(), team.getName()));
             } else {
-                final QuestTeam teamToLeave = existingMember.getTeam();
-                if (teamToLeave.isIndividualTeam()) {
-                    entityManager.remove(teamToLeave);
-                } else if (teamToLeave.isDefaultTeam()) {
-                    entityManager.remove(existingMember);
-                } else {
-                    existingMember.setActive(false);
-                    entityManager.merge(existingMember);
-                }
+            	//FIXME Vinayak
+//                final QuestTeam teamToLeave = existingMember.getTeam();
+//                if (teamToLeave.isIndividualTeam()) {
+//                    entityManager.remove(teamToLeave);
+//                } else if (teamToLeave.isDefaultTeam()) {
+//                    entityManager.remove(existingMember);
+//                } else {
+//                    existingMember.setActive(false);
+//                    entityManager.merge(existingMember);
+//                }
             }
         }
     }
 
-    private static QuestTeamMember getQuestTeamMember(final QuestTeam team, final User user) {
-        return team.getMembers()
-                .stream()
-                .filter(member -> member.getMember().getId().equals(user.getId()))
-                .findFirst()
-                .orElse(null);
+    private QuestTeamMember getQuestTeamMember(final QuestTeam team, final User user) {
+    	return null;
+    	//FIXME Vinayak
+//        return team.getMembers()
+//                .stream()
+//                .filter(member -> member.getMember().getId().equals(user.getId()))
+//                .findFirst()
+//                .orElse(null);
     }
 
     // Returns (memberUserId, teamUserId)

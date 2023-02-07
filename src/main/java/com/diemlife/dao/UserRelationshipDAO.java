@@ -6,11 +6,14 @@ import com.diemlife.exceptions.RequiredParameterMissingException;
 import com.diemlife.models.UserRelationship;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.stereotype.Repository;
+
 import play.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -33,9 +36,13 @@ import static java.util.Collections.emptyList;
 /**
  * Created by andrew on 10/31/16.
  */
+@Repository
 public class UserRelationshipDAO {
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 
-    public void persist(UserRelationship transientInstance, EntityManager entityManager) {
+    public void persist(UserRelationship transientInstance) {
 
         EntityTransaction tx = null;
         try {
@@ -51,7 +58,7 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static void remove(UserRelationship persistentInstance, EntityManager entityManager) {
+    public void remove(UserRelationship persistentInstance) {
 
         try {
             entityManager.remove(persistentInstance);
@@ -60,7 +67,7 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static void addFriendsByUserId(Integer userId, String friendId, EntityManager em) {
+    public void addFriendsByUserId(Integer userId, String friendId) {
 
         try {
             UserRelationship userRelationship = new UserRelationship();
@@ -69,50 +76,47 @@ public class UserRelationshipDAO {
             userRelationship.setStatus(0);
             userRelationship.setActionUserId(userId);
 
-            em.persist(userRelationship);
+            entityManager.persist(userRelationship);
 
         } catch (Exception ex) {
             Logger.error("UserRelationshipDAO :: addFriendsByUserId failed for userId and friendId => " + userId + " " + friendId + " " + ex, ex);
         }
     }
 
-    public static void updateUserRelationshipStatus(final UserRelationship relationship,
-                                                    final UserRelationshipStatus status,
-                                                    final EntityManager em) {
+    public void updateUserRelationshipStatus(final UserRelationship relationship,
+                                                    final UserRelationshipStatus status) {
         if (relationship == null) {
             throw new RequiredParameterMissingException("relationship");
         } else {
             relationship.setStatus(status.ordinal());
-            em.merge(relationship);
+            entityManager.merge(relationship);
         }
     }
 
-    public static void updateUserRelationshipStatus(final Integer userId,
+    public void updateUserRelationshipStatus(final Integer userId,
                                                     final Integer friendId,
-                                                    final UserRelationshipStatus status,
-                                                    final EntityManager em) {
-        final UserRelationship relationship = findAnyUsersRelationship(userId, friendId, em);
+                                                    final UserRelationshipStatus status) {
+        final UserRelationship relationship = findAnyUsersRelationship(userId, friendId);
         if (relationship == null) {
             Logger.info(format("No relationship found between users [%s] and [%s] - nothing to update", userId, friendId));
         } else {
             relationship.setStatus(status.ordinal());
-            em.merge(relationship);
+            entityManager.merge(relationship);
         }
     }
 
-    public static UserRelationship findAnyUsersRelationship(final Integer userId,
-                                                            final Integer friendId,
-                                                            final EntityManager em) {
+    public UserRelationship findAnyUsersRelationship(final Integer userId,
+                                                            final Integer friendId) {
         Logger.debug("UserRelationshipDAO :: Searching for user relationship of userId = " + userId + " and friendId = " + friendId);
-        final UserRelationship userToFriend = findUserRelationship(userId, friendId, em);
-        return userToFriend == null ? findUserRelationship(friendId, userId, em) : userToFriend;
+        final UserRelationship userToFriend = findUserRelationship(userId, friendId);
+        return userToFriend == null ? findUserRelationship(friendId, userId) : userToFriend;
     }
 
-    private static UserRelationship findUserRelationship(final Integer userId, final Integer friendId, final EntityManager em) {
+    private UserRelationship findUserRelationship(final Integer userId, final Integer friendId) {
         Logger.debug("UserRelationshipDAO :: findUserRelationship userId = : " + userId + " friendId = " + friendId);
 
         try {
-            return em.createQuery("SELECT ur FROM UserRelationship ur where ur.userOneId = :userId AND ur.userTwoId = :friendId", UserRelationship.class)
+            return entityManager.createQuery("SELECT ur FROM UserRelationship ur where ur.userOneId = :userId AND ur.userTwoId = :friendId", UserRelationship.class)
                     .setParameter("userId", userId)
                     .setParameter("friendId", friendId)
                     .getSingleResult();
@@ -123,11 +127,11 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static Integer checkForFriendshipStatus(Integer userId, Integer friendId, EntityManager em) {
+    public Integer checkForFriendshipStatus(Integer userId, Integer friendId) {
         Integer relationshipStatus;
 
         try {
-            Query query = em.createQuery("SELECT ur from UserRelationship ur where ur.userOneId = :userId AND ur.userTwoId = :friendId");
+            Query query = entityManager.createQuery("SELECT ur from UserRelationship ur where ur.userOneId = :userId AND ur.userTwoId = :friendId");
             query.setParameter("userId", userId);
             query.setParameter("friendId", friendId);
             UserRelationship userRelationship = (UserRelationship) query.getSingleResult();
@@ -146,7 +150,7 @@ public class UserRelationshipDAO {
             //Trying to see if the other user requested it now, since first was wrong:
             //Need to ensure that they are not friends already
             try {
-                Query querySecond = em.createQuery("SELECT ur from UserRelationship ur where ur.userTwoId = :userId AND ur.userOneId = :friendId");
+                Query querySecond = entityManager.createQuery("SELECT ur from UserRelationship ur where ur.userTwoId = :userId AND ur.userOneId = :friendId");
                 querySecond.setParameter("userId", userId);
                 querySecond.setParameter("friendId", friendId);
                 UserRelationship userRelationshipSecond = (UserRelationship) querySecond.getSingleResult();
@@ -171,17 +175,17 @@ public class UserRelationshipDAO {
         return null;
     }
 
-    public static List<UserRelationship> getPendingFriendRequestsByUserIdNeedingAction(Integer userId, EntityManager em) {
+    public List<UserRelationship> getPendingFriendRequestsByUserIdNeedingAction(Integer userId) {
 
         ArrayList<UserRelationship> pendingFriendRequests = new ArrayList<>();
         try {
-            Query query = em.createQuery("SELECT ur FROM UserRelationship ur where ur.userTwoId = :userId AND ur.status = 0 AND ur.actionUserId <> :userId");
+            Query query = entityManager.createQuery("SELECT ur FROM UserRelationship ur where ur.userTwoId = :userId AND ur.status = 0 AND ur.actionUserId <> :userId");
             query.setParameter("userId", userId);
             ArrayList<UserRelationship> userRelationships = (ArrayList<UserRelationship>) query.getResultList();
             if (userRelationships.size() != 0) {
                 return userRelationships;
             } else {
-                Query querySecond = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.userOneId = :userId AND ur.status = 0 AND ur.actionUserId <> :userId");
+                Query querySecond = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.userOneId = :userId AND ur.status = 0 AND ur.actionUserId <> :userId");
                 querySecond.setParameter("userId", userId);
                 userRelationships = (ArrayList<UserRelationship>) querySecond.getResultList();
                 if (userRelationships.size() != 0) {
@@ -199,15 +203,15 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static List<UserRelationship> getPendingFriendRequestsByUserIdNoAction(Integer userId, EntityManager em) {
+    public List<UserRelationship> getPendingFriendRequestsByUserIdNoAction(Integer userId) {
         try {
-            Query query = em.createQuery("SELECT ur FROM UserRelationship ur where ur.userTwoId = :userId AND ur.status = 0 AND ur.actionUserId = :userId");
+            Query query = entityManager.createQuery("SELECT ur FROM UserRelationship ur where ur.userTwoId = :userId AND ur.status = 0 AND ur.actionUserId = :userId");
             query.setParameter("userId", userId);
             ArrayList<UserRelationship> userRelationships = (ArrayList<UserRelationship>) query.getResultList();
             if (userRelationships.size() != 0) {
                 return userRelationships;
             } else {
-                Query querySecond = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.userOneId = :userId AND ur.status = 0 AND ur.actionUserId = :userId");
+                Query querySecond = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.userOneId = :userId AND ur.status = 0 AND ur.actionUserId = :userId");
                 querySecond.setParameter("userId", userId);
                 userRelationships = (ArrayList<UserRelationship>) querySecond.getResultList();
                 if (userRelationships.size() != 0) {
@@ -224,14 +228,14 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static List<Integer> getCurrentFriendsByUserId(Integer userId, EntityManager em) {
+    public List<Integer> getCurrentFriendsByUserId(Integer userId) {
         ArrayList<Integer> currentFriendIds = new ArrayList<>();
         try {
-            TypedQuery<UserRelationship> query = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId", UserRelationship.class);
+            TypedQuery<UserRelationship> query = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId", UserRelationship.class);
             query.setParameter("userId", userId);
             List<UserRelationship> userRelationshipsOne = query.getResultList();
 
-            TypedQuery<UserRelationship> querySecond = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userTwoId = :userId", UserRelationship.class);
+            TypedQuery<UserRelationship> querySecond = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userTwoId = :userId", UserRelationship.class);
             querySecond.setParameter("userId", userId);
             List<UserRelationship> userRelationshipsTwo = querySecond.getResultList();
 
@@ -257,11 +261,11 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static List<Pair<Integer, FriendRequestDirection>> getFriendRequestsByUserId(final Integer userId, final EntityManager em) {
+    public List<Pair<Integer, FriendRequestDirection>> getFriendRequestsByUserId(final Integer userId) {
         if (userId == null) {
             return emptyList();
         }
-        return em.createQuery("SELECT r FROM UserRelationship r WHERE r.status IN (:status) AND (r.userOneId = :userId OR r.userTwoId = :userId)", UserRelationship.class)
+        return entityManager.createQuery("SELECT r FROM UserRelationship r WHERE r.status IN (:status) AND (r.userOneId = :userId OR r.userTwoId = :userId)", UserRelationship.class)
                 .setParameter("status", asList(PENDING.ordinal(), ACCEPTED.ordinal()))
                 .setParameter("userId", userId)
                 .getResultList()
@@ -289,16 +293,16 @@ public class UserRelationshipDAO {
                 .collect(Collectors.toList());
     }
 
-    public static List<Integer> getPendingFriendsByUserId(Integer userId, EntityManager em) {
+    public List<Integer> getPendingFriendsByUserId(Integer userId) {
 
         ArrayList<Integer> currentFriendIds = new ArrayList<>();
         try {
             Logger.info("UserRelationshipDAO :: getPendingFriendsByUserId : userId => " + userId);
-            TypedQuery<UserRelationship> query = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 0 AND ur.userOneId = :userId", UserRelationship.class);
+            TypedQuery<UserRelationship> query = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 0 AND ur.userOneId = :userId", UserRelationship.class);
             query.setParameter("userId", userId);
             List<UserRelationship> userRelationshipsOne = query.getResultList();
 
-            TypedQuery<UserRelationship> querySecond = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 0 AND ur.userTwoId = :userId", UserRelationship.class);
+            TypedQuery<UserRelationship> querySecond = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 0 AND ur.userTwoId = :userId", UserRelationship.class);
             querySecond.setParameter("userId", userId);
             List<UserRelationship> userRelationshipsTwo = querySecond.getResultList();
 
@@ -324,11 +328,11 @@ public class UserRelationshipDAO {
         }
     }
 
-    public static UserRelationship getUserRelationshipByUserIdAndFriendId(Integer userId, Integer friendId, EntityManager em) {
+    public UserRelationship getUserRelationshipByUserIdAndFriendId(Integer userId, Integer friendId) {
 
         if (userId != null && friendId != null) {
             try {
-                Query query = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId AND ur.userTwoId = :friendId");
+                Query query = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId AND ur.userTwoId = :friendId");
                 query.setParameter("userId", userId);
                 query.setParameter("friendId", friendId);
                 UserRelationship userRelationship = (UserRelationship) query.getSingleResult();
@@ -336,7 +340,7 @@ public class UserRelationshipDAO {
                 return userRelationship;
             } catch (NoResultException nre) {
 
-                Query secondQuery = em.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId AND ur.userTwoId = :friendId");
+                Query secondQuery = entityManager.createQuery("SELECT ur FROM UserRelationship ur WHERE ur.status = 1 AND ur.userOneId = :userId AND ur.userTwoId = :friendId");
                 secondQuery.setParameter("userId", friendId);
                 secondQuery.setParameter("friendId", userId);
                 UserRelationship userRelationship = (UserRelationship) secondQuery.getSingleResult();

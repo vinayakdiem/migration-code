@@ -45,7 +45,9 @@ public class QuestEdgeDAO {
 				if (rs.next()) {
 					String tags = rs.getString(1);
 
-					return new QuestEdge(questSrc, type, questDst, tags);
+					//FIXME Vinayak
+//					return new QuestEdge(questSrc, type, questDst, tags);
+					return null;
 				}
 			}
 		} catch (Exception e) {
@@ -68,7 +70,9 @@ public class QuestEdgeDAO {
 					Long questSrc = rs.getLong(1);
 					String tags = rs.getString(2);
 
-					return new QuestEdge(questSrc, type, questDst, tags);
+					//FIXME Vinayak
+//					return new QuestEdge(questSrc, type, questDst, tags);
+					return null;
 				}
 			}
 		} catch (Exception e) {
@@ -91,7 +95,9 @@ public class QuestEdgeDAO {
 					long questDst = rs.getLong(1);
 					String tags = rs.getString(2);
 
-					result.add(new QuestEdge(questSrc, type, questDst, tags));
+					//FIXME Vinayak
+//					result.add(new QuestEdge(questSrc, type, questDst, tags));
+					return null;
 				}
 			}
 		} catch (Exception e) {

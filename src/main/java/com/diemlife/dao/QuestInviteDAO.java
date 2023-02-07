@@ -6,13 +6,17 @@ import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
+@Repository
 public class QuestInviteDAO extends TypedDAO<QuestInvite> {
 
-    public QuestInviteDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public List<QuestInvite> getInvitesForQuest(final Quests quest) {
         if (quest == null) {

@@ -5,14 +5,22 @@ import com.diemlife.models.QuestTags;
 import play.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 import static java.lang.String.format;
 
+@Repository
 public class QuestTagsDAO {
 
-    public static List<QuestTags> getQuestTagsById(final Integer questId, final EntityManager em) {
+	@PersistenceContext
+	EntityManager em;
+	
+    public List<QuestTags> getQuestTagsById(final Integer questId) {
         if (questId == null) {
             throw new RequiredParameterMissingException("questId");
         }
@@ -27,7 +35,7 @@ public class QuestTagsDAO {
         }
     }
 
-    public static List<QuestTags> getQuestTagsByTag(final String tag, final EntityManager em) {
+    public List<QuestTags> getQuestTagsByTag(final String tag) {
         if (tag == null) {
             throw new RequiredParameterMissingException("tag");
         }

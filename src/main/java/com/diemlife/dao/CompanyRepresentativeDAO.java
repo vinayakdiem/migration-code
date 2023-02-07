@@ -12,10 +12,11 @@ public class CompanyRepresentativeDAO extends TypedSingletonDAO<CompanyRepresent
 
     public CompanyRepresentative createCompanyRepresentative(String email, User user, Brand company, String stripeCustomerId){
         final CompanyRepresentative companyRepresentative = new CompanyRepresentative();
-        companyRepresentative.setEmail(email);
-        companyRepresentative.setCompany(company);
-        companyRepresentative.setUser(user);
-        companyRepresentative.setStripeCustomerId(stripeCustomerId);
+      //FIXME Vinayak
+//        companyRepresentative.setEmail(email);
+//        companyRepresentative.setCompany(company);
+//        companyRepresentative.setUser(user);
+//        companyRepresentative.setStripeCustomerId(stripeCustomerId);
 
         return save(companyRepresentative,CompanyRepresentative.class);
     }

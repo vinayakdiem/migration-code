@@ -3,13 +3,17 @@ package com.diemlife.dao;
 import com.diemlife.models.QuestMapRouteWaypoint;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
+@Repository
 public class QuestMapRouteWaypointDAO extends TypedDAO<QuestMapRouteWaypoint> {
 
-    public QuestMapRouteWaypointDAO(EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public List<QuestMapRouteWaypoint> findAllQuestMapRouteWaypoint(final Long questMapRouteId) {
         return entityManager.createQuery("SELECT qmrw FROM QuestMapRouteWaypoint qmrw " +

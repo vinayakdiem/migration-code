@@ -43,9 +43,11 @@ public class PersonalInfoDAO extends TypedDAO<PersonalInfo> {
                             " WHERE qb.paymentTransaction.id IN (:paymentTransactionId)", PaymentPersonalInfoDTO.class);
             query.setParameter("paymentTransactionId", transactions);
 
-            return query.getResultList()
-                    .stream()
-                    .collect(Collectors.toMap(PaymentPersonalInfoDTO::getPaymentTransactionId, o -> o));
+          //FIXME Vinayak
+            return null;
+//            return query.getResultList()
+//                    .stream()
+//                    .collect(Collectors.toMap(PaymentPersonalInfoDTO::getPaymentTransactionId, o -> o));
 
         } catch (final PersistenceException | IllegalStateException e) {
             return Collections.emptyMap();

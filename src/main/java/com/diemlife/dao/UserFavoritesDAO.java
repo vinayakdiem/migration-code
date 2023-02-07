@@ -6,15 +6,23 @@ import play.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 /**
  * Created by andrew on 5/8/17.
  */
+@Repository
 public class UserFavoritesDAO {
 
-    public void persist(UserFavorites transientInstance, EntityManager entityManager) {
+	@PersistenceContext
+	private EntityManager entityManager;
+	
+    public void persist(UserFavorites transientInstance) {
 
         EntityTransaction tx = null;
         try {
@@ -31,7 +39,7 @@ public class UserFavoritesDAO {
         }
     }
 
-    public void remove(UserFavorites persistentInstance, EntityManager entityManager) {
+    public void remove(UserFavorites persistentInstance) {
 
         EntityTransaction tx = null;
         try {
@@ -48,10 +56,10 @@ public class UserFavoritesDAO {
         }
     }
 
-    public static List<String> getUserFavorites(User user, EntityManager em) {
+    public List<String> getUserFavorites(User user) {
 
         try {
-            Query query = em.createQuery("SELECT uf.favorite from UserFavorites uf WHERE uf.user_id = :userId");
+            Query query = entityManager.createQuery("SELECT uf.favorite from UserFavorites uf WHERE uf.user_id = :userId");
             query.setParameter("userId", user.getId());
             List<String> userFavorites = (List<String>)query.getResultList();
             return userFavorites;

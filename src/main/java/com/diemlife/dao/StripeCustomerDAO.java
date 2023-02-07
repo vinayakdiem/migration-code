@@ -9,17 +9,20 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+@Repository
 public class StripeCustomerDAO extends TypedDAO<StripeEntity> {
 
-    public StripeCustomerDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
-
+	@PersistenceContext
+	EntityManager entityManager;
+	
     public <T extends StripeEntity> T getByUserId(final Integer userId, final Class<T> type) {
         if (userId == null) {
             throw new RequiredParameterMissingException("userId");

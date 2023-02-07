@@ -68,19 +68,20 @@ public class NotificationsDAO {
         if (!doesNotificationAlreadyExist(userId, notificationType, fromUserId, fromQuestId, fromCommentId, entityManager)) {
             try {
                 Notification notification = new Notification();
-                notification.setType(notificationType.name());
-                notification.setUserId(userId);
-                notification.setRead(false);
-                notification.setCreatedDate(new Date());
-                if (fromUserId != null) {
-                    notification.setFromUser(fromUserId);
-                }
-                if (fromQuestId != null) {
-                    notification.setFromQuest(fromQuestId);
-                }
-                if (fromCommentId != null) {
-                    notification.setFromComment(fromCommentId);
-                }
+              //FIXME Vinayak
+//                notification.setType(notificationType.name());
+//                notification.setUserId(userId);
+//                notification.setRead(false);
+//                notification.setCreatedDate(new Date());
+//                if (fromUserId != null) {
+//                    notification.setFromUser(fromUserId);
+//                }
+//                if (fromQuestId != null) {
+//                    notification.setFromQuest(fromQuestId);
+//                }
+//                if (fromCommentId != null) {
+//                    notification.setFromComment(fromCommentId);
+//                }
                 entityManager.persist(notification);
             } catch (PersistenceException e) {
                 Logger.error("NotificationsDAO :: createNotification : error persisting notification");

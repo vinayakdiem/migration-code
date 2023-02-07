@@ -9,9 +9,12 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import models.SecurityRole;
+import org.springframework.stereotype.Repository;
+
+import com.diemlife.models.SecurityRole;
 import play.Logger;
 
 /**
@@ -19,9 +22,13 @@ import play.Logger;
  * @see models.SecurityRole
  * @author Hibernate Tools
  */
+@Repository
 public class SecurityRoleHome {
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
-	public void persist(SecurityRole transientInstance, EntityManager entityManager) {
+	public void persist(SecurityRole transientInstance) {
 
 		EntityTransaction tx = null;
 		try {
@@ -38,7 +45,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public void remove(SecurityRole persistentInstance, EntityManager entityManager) {
+	public void remove(SecurityRole persistentInstance) {
 
 		EntityTransaction tx = null;
 		try {
@@ -55,7 +62,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public SecurityRole merge(SecurityRole detachedInstance, EntityManager entityManager) {
+	public SecurityRole merge(SecurityRole detachedInstance) {
 
 		EntityTransaction tx = null;
 		try {
@@ -74,7 +81,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public SecurityRole findById(Integer id, EntityManager entityManager) {
+	public SecurityRole findById(Integer id) {
 		Logger.debug("getting SecurityRole instance with id: " + id);
 		try {
 			SecurityRole instance = entityManager.find(SecurityRole.class, id);
@@ -86,7 +93,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public Set<SecurityRole> findByIds(List<Integer> ids, EntityManager entityManager) {
+	public Set<SecurityRole> findByIds(List<Integer> ids) {
 		//log.debug("getting SecurityRole instance with id: " + id);
 		try {
 			Query query = entityManager.createQuery("SELECT r FROM SecurityRole r WHERE r.id IN :ids");
@@ -104,7 +111,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public SecurityRole findByRoleName(String name, EntityManager entityManager) {
+	public SecurityRole findByRoleName(String name) {
 		try {
 			Query query = entityManager.createQuery("SELECT r FROM SecurityRole r WHERE r.roleName = :name");
 			query.setParameter("name", name);
@@ -121,7 +128,7 @@ public class SecurityRoleHome {
 		}
 	}
 
-	public Boolean hasInitialData(EntityManager entityManager) {
+	public Boolean hasInitialData() {
 		//log.debug("getting SecurityRole instance with id: " + id);
 		try {
 			Query query = entityManager.createQuery("SELECT COUNT(*) FROM SecurityRole");

@@ -233,36 +233,40 @@ public class QuestActivityHome {
         try {
             if (user != null) {
                 // get user friends to check which quests to show
-                List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(user.getId(), em);
-                Logger.info("current friends = " + Arrays.toString(friends.toArray()));
+            	//FIXME Vinayak
+//                List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(user.getId());
+//                Logger.info("current friends = " + Arrays.toString(friends.toArray()));
                 // ensure that user's friends are not brands
-                List<Integer> userFriends = UserHome.getUsersByIdWithBrand(friends, em);
-                Logger.info("user friends = " + Arrays.toString(userFriends.toArray()));
+            	//FIXME Vinayak
+//                List<Integer> userFriends = UserHome.getUsersByIdWithBrand(friends);
+//                Logger.info("user friends = " + Arrays.toString(userFriends.toArray()));
 
                 long startTime = System.currentTimeMillis();
                 Logger.info("Getting quests not in progress for user => " + user.getId() + " StartTime = " + startTime);
-                final TypedQuery<Quests> query = em.createQuery("SELECT q from Quests q " +
-                        "WHERE q.id NOT IN (SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId) " +
-                        "AND q.id NOT IN (SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) " +
-                        (userFriends.isEmpty() ? "" : "AND q.createdBy IN (:userFriends) ") +
-                        "ORDER BY q.sharedCount desc, q.savedCount desc", Quests.class);
-                query.setParameter("userId", user.getId());
-                if (!userFriends.isEmpty()) {
-                    query.setParameter("userFriends", userFriends);
-                }
-                if (limit != null) {
-                    query.setMaxResults(limit);
-                }
-                query.setHint("org.hibernate.readOnly", true);
-                query.setHint("org.hibernate.cacheable", true);
-                query.setHint("javax.persistence.cache.retrieveMode", javax.persistence.CacheRetrieveMode.USE);
-                query.setHint("org.hibernate.fetchSize", 9);
-                List<Quests> quests = query.getResultList();
+//                final TypedQuery<Quests> query = em.createQuery("SELECT q from Quests q " +
+//                        "WHERE q.id NOT IN (SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId) " +
+//                        "AND q.id NOT IN (SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) " +
+//                        (userFriends.isEmpty() ? "" : "AND q.createdBy IN (:userFriends) ") +
+//                        "ORDER BY q.sharedCount desc, q.savedCount desc", Quests.class);
+//                query.setParameter("userId", user.getId());
+//                if (!userFriends.isEmpty()) {
+//                    query.setParameter("userFriends", userFriends);
+//                }
+//                if (limit != null) {
+//                    query.setMaxResults(limit);
+//                }
+//                query.setHint("org.hibernate.readOnly", true);
+//                query.setHint("org.hibernate.cacheable", true);
+//                query.setHint("javax.persistence.cache.retrieveMode", javax.persistence.CacheRetrieveMode.USE);
+//                query.setHint("org.hibernate.fetchSize", 9);
+//                List<Quests> quests = query.getResultList();
                 long stopTime = System.currentTimeMillis();
                 long elapsedTime = ((stopTime - startTime) / 1000);
                 Logger.info("Finished quest fetch, time elapsed: " + elapsedTime);
 
-                return new QuestsListWithACL(() -> quests, em);
+              //FIXME Vinayak
+//                return new QuestsListWithACL(() -> quests, em);
+                return null;
             }
         } catch (final PersistenceException e) {
             Logger.error("Error getting quests for user => " + user.getId() + " ex => " + e, e);
@@ -280,64 +284,69 @@ public class QuestActivityHome {
             query.setMaxResults(limit);
             return new QuestsListWithACL(() -> query.getResultList(), em);
         } else {
-            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(user.getId(), em);
-            List<Integer> userFriends = UserHome.getUsersByIdWithBrand(friends, em);
+        	//FIXME Vinayak
+//            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(user.getId());
+//            List<Integer> userFriends = UserHome.getUsersByIdWithBrand(friends);
 
-            final TypedQuery<Quests> query = em.createQuery("SELECT q from Quests q " +
-                    "WHERE q.id NOT IN (SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId) " +
-                    "AND q.id NOT IN (SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) " +
-                    (userFriends.isEmpty() ? "" : "AND q.createdBy IN (:userFriends) ") +
-                    "AND q.pillar = :category " +
-                    "ORDER BY q.sharedCount desc, q.savedCount desc", Quests.class);
-            query.setParameter("userId", user.getId());
-            query.setParameter("category", category);
-            if (!userFriends.isEmpty()) {
-                query.setParameter("userFriends", userFriends);
-            }
-            query.setMaxResults(limit);
-
-            return new QuestsListWithACL(query::getResultList, em);
+//            final TypedQuery<Quests> query = em.createQuery("SELECT q from Quests q " +
+//                    "WHERE q.id NOT IN (SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId) " +
+//                    "AND q.id NOT IN (SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) " +
+//                    (userFriends.isEmpty() ? "" : "AND q.createdBy IN (:userFriends) ") +
+//                    "AND q.pillar = :category " +
+//                    "ORDER BY q.sharedCount desc, q.savedCount desc", Quests.class);
+//            query.setParameter("userId", user.getId());
+//            query.setParameter("category", category);
+//            if (!userFriends.isEmpty()) {
+//                query.setParameter("userFriends", userFriends);
+//            }
+//            query.setMaxResults(limit);
+//
+//            return new QuestsListWithACL(query::getResultList, em);
+        	return null;
         }
     }
 
     public QuestsListWithACL getQuestsNotInProgressForUserPaginated(User user, int start, int limit, List<String> pillars, String category, String place) {
-        List<Integer> friends = user == null ? emptyList() : UserRelationshipDAO.getCurrentFriendsByUserId(user.getId(), em);
-        List<Integer> userFriendsWithBrands = UserHome.getUsersByIdWithBrand(friends, em);
+    	//FIXME Vinayak
+//        List<Integer> friends = user == null ? emptyList() : UserRelationshipDAO.getCurrentFriendsByUserId(user.getId());
+//        List<Integer> userFriendsWithBrands = UserHome.getUsersByIdWithBrand(friends);
 
         try {
-            final TypedQuery<Quests> query = em.createQuery("SELECT q FROM Quests q " +
-                    "WHERE q.id NOT IN " +
-                    (user == null ? "(0) " : "(SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId AND qa.status IN ('IN_PROGRESS', 'COMPLETE')) ") +
-                    (!isEmpty(pillars) ? "AND q.pillar in ( :pillars ) " : "") +
-                    (!isBlank(category) ? "AND q.category = :category " : "") +
-                    (!isBlank(place) ? "AND q.place = :place " : "") +
-                    "AND q.id NOT IN " +
-                    (user == null ? "(0) " : "(SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) ") +
-                    "AND ((q.privacyLevel = 'PUBLIC') " +
-                    (isEmpty(userFriendsWithBrands)
-                            ? ") "
-                            : "OR (q.privacyLevel = 'FRIENDS' AND q.createdBy IN :userFriendsWithBrands)) ") +
-                    "ORDER BY CASE WHEN q.weight > 0 THEN (-LOG(1.0 + q.weight) * LOG(1.0 - (RAND() + RAND()) / 2) * 100) ELSE (LOG(1.0 - RAND()) * 100) END DESC", Quests.class);
-            query.setFirstResult(start);
-            query.setMaxResults(limit + 1);
-            if (user != null) {
-                query.setParameter("userId", user.getId());
-            }
-            if (!Util.isEmpty(pillars)) {
-                query.setParameter("pillars", pillars);
-            }
-            if (!isBlank(category)) {
-                query.setParameter("category", category);
-            }
-            if (!isBlank(place)) {
-                query.setParameter("place", place);
-            }
-            if (!Util.isEmpty(userFriendsWithBrands)) {
-                query.setParameter("userFriendsWithBrands", userFriendsWithBrands);
-            }
-
-            List<Quests> quests = query.getResultList();
-            return new QuestsListWithACL(() -> quests, em);
+        	//FIXME Vinayak
+        	return null;
+//            final TypedQuery<Quests> query = em.createQuery("SELECT q FROM Quests q " +
+//                    "WHERE q.id NOT IN " +
+//                    (user == null ? "(0) " : "(SELECT qa.questId FROM QuestActivity qa WHERE qa.userId = :userId AND qa.status IN ('IN_PROGRESS', 'COMPLETE')) ") +
+//                    (!isEmpty(pillars) ? "AND q.pillar in ( :pillars ) " : "") +
+//                    (!isBlank(category) ? "AND q.category = :category " : "") +
+//                    (!isBlank(place) ? "AND q.place = :place " : "") +
+//                    "AND q.id NOT IN " +
+//                    (user == null ? "(0) " : "(SELECT qs.questId FROM QuestSaved qs WHERE qs.userId = :userId) ") +
+//                    "AND ((q.privacyLevel = 'PUBLIC') " +
+//                    (isEmpty(userFriendsWithBrands)
+//                            ? ") "
+//                            : "OR (q.privacyLevel = 'FRIENDS' AND q.createdBy IN :userFriendsWithBrands)) ") +
+//                    "ORDER BY CASE WHEN q.weight > 0 THEN (-LOG(1.0 + q.weight) * LOG(1.0 - (RAND() + RAND()) / 2) * 100) ELSE (LOG(1.0 - RAND()) * 100) END DESC", Quests.class);
+//            query.setFirstResult(start);
+//            query.setMaxResults(limit + 1);
+//            if (user != null) {
+//                query.setParameter("userId", user.getId());
+//            }
+//            if (!Util.isEmpty(pillars)) {
+//                query.setParameter("pillars", pillars);
+//            }
+//            if (!isBlank(category)) {
+//                query.setParameter("category", category);
+//            }
+//            if (!isBlank(place)) {
+//                query.setParameter("place", place);
+//            }
+//            if (!Util.isEmpty(userFriendsWithBrands)) {
+//                query.setParameter("userFriendsWithBrands", userFriendsWithBrands);
+//            }
+//
+//            List<Quests> quests = query.getResultList();
+//            return new QuestsListWithACL(() -> quests, em);
         } catch (PersistenceException pe) {
             Logger.error("Error getting paginated quests", pe);
             return emptyListWithACL();
@@ -400,13 +409,15 @@ public class QuestActivityHome {
         try {
 
             // get user friends to check which quests to show
-            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(userId, em);
+        	//FIXME Vinayak
+//            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(userId);
 
             em.setFlushMode(FlushModeType.AUTO);
             Query query = em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = 'IN_PROGRESS' " +
                     "AND qa.userId NOT IN :userId AND qa.userId IN (:friends) ORDER BY qa.addedDate DESC");
             query.setParameter("userId", userId);
-            query.setParameter("friends", Util.isEmpty(friends) ? singletonList(Integer.MIN_VALUE) : friends);
+          //FIXME Vinayak
+//            query.setParameter("friends", Util.isEmpty(friends) ? singletonList(Integer.MIN_VALUE) : friends);
             query.setHint("org.hibernate.cacheable", true);
             query.setHint("org.hibernate.readOnly", true);
             query.setFirstResult(offset);
@@ -423,13 +434,15 @@ public class QuestActivityHome {
 
         try {
             // get user friends to check which quests to show
-            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(userId, em);
+        	//FIXME Vinayak
+//            List<Integer> friends = UserRelationshipDAO.getCurrentFriendsByUserId(userId);
 
             em.setFlushMode(FlushModeType.AUTO);
             Query query = em.createQuery("SELECT qa FROM QuestActivity qa WHERE qa.status = 'COMPLETE' " +
                     "AND qa.userId NOT IN :userId AND qa.userId IN (:friends) ORDER BY qa.addedDate DESC");
             query.setParameter("userId", userId);
-            query.setParameter("friends", friends);
+          //FIXME Vinayak
+//            query.setParameter("friends", friends);
             query.setHint("org.hibernate.cacheable", true);
             query.setHint("org.hibernate.readOnly", true);
             query.setMaxResults(limit);

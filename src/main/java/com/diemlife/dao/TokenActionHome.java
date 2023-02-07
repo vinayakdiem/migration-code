@@ -10,8 +10,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.Date;
 import java.util.List;
 
@@ -22,11 +26,15 @@ import static java.lang.String.format;
  * @see models.TokenAction
  * @author Hibernate Tools
  */
+@Repository
 public class TokenActionHome {
 
+	@PersistenceContext
+	EntityManager entityManager;
+	
 	private final static long VERIFICATION_TIME = 7L * 24 * 3600;
 
-	public void persist(TokenAction transientInstance, EntityManager entityManager) {
+	public void persist(TokenAction transientInstance) {
 
 		try {
 			Logger.info("ABOUT TO PERSIST");
@@ -38,7 +46,7 @@ public class TokenActionHome {
 		}
 	}
 
-	public void remove(TokenAction persistentInstance, EntityManager entityManager) {
+	public void remove(TokenAction persistentInstance) {
 
 		EntityTransaction tx = null;
 		try {
@@ -49,7 +57,7 @@ public class TokenActionHome {
 		}
 	}
 
-	public TokenAction merge(TokenAction detachedInstance, EntityManager entityManager) {
+	public TokenAction merge(TokenAction detachedInstance) {
 
 		EntityTransaction tx = null;
 		try {
@@ -68,7 +76,7 @@ public class TokenActionHome {
 		}
 	}
 
-	public TokenAction findById(Integer id, EntityManager entityManager) {
+	public TokenAction findById(Integer id) {
 		Logger.debug("getting TokenAction instance with id: " + id);
 		try {
 			TokenAction instance = entityManager.find(TokenAction.class, id);
@@ -80,30 +88,33 @@ public class TokenActionHome {
 		}
 	}
 
-	public TokenAction create(String type, String token, User targetUser, EntityManager entityManager) {
+	public TokenAction create(String type, String token, User targetUser) {
 
 		Logger.info("targetUser.id = " + targetUser.getId());
-		User user = UserHome.findById(targetUser.getId(), entityManager);
+		//FIXME Vinayak
+//		User user = UserHome.findById(targetUser.getId(), entityManager);
 
-		if (user == null) {
-			user = UserHome.findByIdReference(targetUser.getId(), entityManager);
-			Logger.info("GOT BY REF = " + user.getId());
-		}
+		//FIXME Vinayak
+//		if (user == null) {
+//			user = UserHome.findByIdReference(targetUser.getId(), entityManager);
+//			Logger.info("GOT BY REF = " + user.getId());
+//		}
 
 		TokenAction ua = new TokenAction();
-		ua.setUser(user);
+		//FIXME Vinayak
+//		ua.setUser(user);
 		ua.setToken(token);
 		ua.setType(type);
 		Date created = new Date();
 		ua.setCreatedOn(created);
 		ua.setExpiresOn(new Date(created.getTime() + VERIFICATION_TIME * 1000));
 
-		persist(ua, entityManager);
+		persist(ua);
 		Logger.info("PERSISTED = " + ua.getToken() + "user " + ua.getUser().getId());
 		return ua;
 	}
 
-	public TokenAction findByToken(final String token, final String type, final EntityManager entityManager) {
+	public TokenAction findByToken(final String token, final String type) {
 		try {
 			return entityManager
                     .createQuery("SELECT t FROM TokenAction t WHERE lower(t.token) = :token AND lower(t.type) = :type", TokenAction.class)
@@ -122,7 +133,7 @@ public class TokenActionHome {
 		}
 	}
 
-	public static TokenAction findByUserId(Integer userId, String type, EntityManager entityManager) {
+	public TokenAction findByUserId(Integer userId, String type) {
 		try {
 			Query query = entityManager.createQuery("SELECT t FROM TokenAction t WHERE t.user.id = :userId AND lower(t.type) = :type");
 			query.setParameter("userId", userId);
@@ -148,7 +159,7 @@ public class TokenActionHome {
 
 			for(TokenAction token: tokens)
 			{
-				this.remove(token, entityManager);
+				this.remove(token);
 			}
 
 		}catch (NoResultException e){

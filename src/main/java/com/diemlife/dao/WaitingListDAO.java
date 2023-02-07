@@ -5,11 +5,19 @@ import play.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.Date;
 
+@Repository
 public class WaitingListDAO {
+	
+  @PersistenceContext
+  private EntityManager entityManager;
 
-  public void persist(WaitingList transientInstance, EntityManager entityManager) {
+  public void persist(WaitingList transientInstance) {
 
     EntityTransaction tx = null;
     try {
@@ -26,7 +34,7 @@ public class WaitingListDAO {
     }
   }
 
-  public void remove(WaitingList persistentInstance, EntityManager entityManager) {
+  public void remove(WaitingList persistentInstance) {
 
     EntityTransaction tx = null;
     try {
@@ -43,7 +51,7 @@ public class WaitingListDAO {
     }
   }
 
-  public static void addNewUserToWaitingList(WaitingList waitingListUser, EntityManager em) {
+  public void addNewUserToWaitingList(WaitingList waitingListUser) {
 
     try {
       Date date = new Date();
@@ -59,7 +67,7 @@ public class WaitingListDAO {
         waitingList.setLastModifiedDate(date);
         waitingList.setRsvp(waitingListUser.getRsvp());
 
-        em.persist(waitingList);
+        entityManager.persist(waitingList);
       }
     } catch (Exception ex) {
       Logger.error("WaitingListDAO :: addNewUserToWaitingList :: Error => " + ex,ex);

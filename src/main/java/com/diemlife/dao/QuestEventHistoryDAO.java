@@ -53,7 +53,8 @@ public class QuestEventHistoryDAO {
             eventHistory.setEventDesc(questEvent);
             eventHistory.setOrigQuestId(origQuestId);
             eventHistory.setAddedDate(Timestamp.from(Instant.now()));
-            eventHistory.setPoint(QuestTasksDAO.buildGeoPoint(point));
+            //FIXME Vinayak
+//            eventHistory.setPoint(QuestTasksDAO.buildGeoPoint(point));
 
             em.persist(eventHistory);
 

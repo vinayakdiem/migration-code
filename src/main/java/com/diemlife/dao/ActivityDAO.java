@@ -159,9 +159,11 @@ public class ActivityDAO extends DynamoDAO {
     //
     // On success, returns the new Activity.  On failure returns null
     public Activity insert(ActivityRaw activityRaw) {
-        return insert(activityRaw.getTs(), activityRaw.getIdType(), activityRaw.getSequence(), activityRaw.getEventType(), activityRaw.getMsg(), activityRaw.getUsername(), activityRaw.getTeamId(),
-            activityRaw.getQuestId(), activityRaw.getTaskId(), activityRaw.getLat(), activityRaw.getLon(), activityRaw.getComment(), activityRaw.getCommentImgUrl(), null, null, 
-            activityRaw.getQuantity(), activityRaw.getUnit(), activityRaw.getTag());
+    	return null;
+    	//FIXME Vinayak
+//        return insert(activityRaw.getTs(), activityRaw.getIdType(), activityRaw.getSequence(), activityRaw.getEventType(), activityRaw.getMsg(), activityRaw.getUsername(), activityRaw.getTeamId(),
+//            activityRaw.getQuestId(), activityRaw.getTaskId(), activityRaw.getLat(), activityRaw.getLon(), activityRaw.getComment(), activityRaw.getCommentImgUrl(), null, null, 
+//            activityRaw.getQuantity(), activityRaw.getUnit(), activityRaw.getTag());
     }
 
     // On success, returns the new Activity.  On failure returns null
@@ -247,11 +249,15 @@ public class ActivityDAO extends DynamoDAO {
             return null;
         }
 
-        return new Activity(uid, ts, eventType, idType, sequence, username, teamId, questId, taskId, lat, lon, msg, comment, commentImgUrl, targetActivityUid, null, postalCode, null, quantity, unit, tag);
+        return null;
+//      FIXME Vinayak
+//        return new Activity(uid, ts, eventType, idType, sequence, username, teamId, questId, taskId, lat, lon, msg, comment, commentImgUrl, targetActivityUid, null, postalCode, null, quantity, unit, tag);
     }
 
     private boolean delete(Activity activity) {
-        return delete(activity.getUid());
+    	return true;
+    	//FIXME Vinayak
+//        return delete(activity.getUid());
     }
 
     // Deletes an activity.  Returns true on success, false otherwise
@@ -273,7 +279,9 @@ public class ActivityDAO extends DynamoDAO {
     }
 
     private boolean softDelete(Activity activity) {
-        return softDelete(activity.getUid());
+    	return true;
+	//FIXME Vinayak
+//        return softDelete(activity.getUid());
     }
 
     // Tags an activity as deleted ... allows us to keep the record for auditing OR allows us to do what Twitter does by just not showing
@@ -358,7 +366,8 @@ public class ActivityDAO extends DynamoDAO {
 
             // To construct an in order "unique" timestamp, multiply timestamp by 100000 which effectively converts millisecond TS to nanoseconds, the add the sequence value.
             // This should work because the query based lookups are using a particular id type
-            orderedResults.put((activity.getTs() * 1000000 + activity.getSequence()), activity);
+          //FIXME Vinayak
+//            orderedResults.put((activity.getTs() * 1000000 + activity.getSequence()), activity);
         }
 
         return new LinkedList<Activity>(orderedResults.values());
@@ -533,40 +542,43 @@ public class ActivityDAO extends DynamoDAO {
     public String cheerActivity(Activity targetActivity, String username) {
         String result = null;
 
-        String targetActivityUid = targetActivity.getUid();
+      //FIXME Vinayak
+//        String targetActivityUid = targetActivity.getUid();
 
         // See if a cheer already exits
         // Lookup all the meta activity for this activity item for a given user.  This should be a short list.
         // TODO: it would be better to use an insert-fail-if-exists pattern to check this
-        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
-        for (Activity metaActivity : metaActivityList) {
-            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
-                // short circuit
-                Logger.debug("Uncheering activity " + targetActivityUid + " for user " + username);
-                uncheerActivity(targetActivity, username);
-                return "UNCHEERED";
-            }
-        }
+      //FIXME Vinayak
+//        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
+//        for (Activity metaActivity : metaActivityList) {
+//            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
+//                // short circuit
+//                Logger.debug("Uncheering activity " + targetActivityUid + " for user " + username);
+//                uncheerActivity(targetActivity, username);
+//                return "UNCHEERED";
+//            }
+//        }
 
         // Add the record for the cheer
-        String msg = username + " cheered activity " + targetActivityUid;
-        Activity activity = insert(System.currentTimeMillis(), ActivityRawDAO.IDTYPE_USER, 0, ActivityEventType.CHEER, msg, username, null, null, null, null, null, null, null, targetActivityUid, null,
-            null, null, null);
-        if (activity != null) {
-
-            // Increment the cheer count and don't panic if it fails
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec();
-            updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
-            updateItemSpec.withAttributeUpdate(new AttributeUpdate(CHEER_COUNT).addNumeric(1));
-            try {
-                UpdateItemOutcome updateItemOutcome = this.table.updateItem(updateItemSpec);
-                result = "CHEERED";
-            } catch (Exception e) {
-                Logger.error("update - failed", e);
-            }
-        } else {
-            Logger.warn("cheerActivity - warn unable to create cheer activity for " + targetActivityUid + ", skipping counter increment.");
-        }
+      //FIXME Vinayak
+//        String msg = username + " cheered activity " + targetActivityUid;
+//        Activity activity = insert(System.currentTimeMillis(), ActivityRawDAO.IDTYPE_USER, 0, ActivityEventType.CHEER, msg, username, null, null, null, null, null, null, null, targetActivityUid, null,
+//            null, null, null);
+//        if (activity != null) {
+//
+//            // Increment the cheer count and don't panic if it fails
+//            UpdateItemSpec updateItemSpec = new UpdateItemSpec();
+//            updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
+//            updateItemSpec.withAttributeUpdate(new AttributeUpdate(CHEER_COUNT).addNumeric(1));
+//            try {
+//                UpdateItemOutcome updateItemOutcome = this.table.updateItem(updateItemSpec);
+//                result = "CHEERED";
+//            } catch (Exception e) {
+//                Logger.error("update - failed", e);
+//            }
+//        } else {
+//            Logger.warn("cheerActivity - warn unable to create cheer activity for " + targetActivityUid + ", skipping counter increment.");
+//        }
 
         return result;
     }
@@ -574,28 +586,31 @@ public class ActivityDAO extends DynamoDAO {
     public boolean uncheerActivity(Activity targetActivity, String username) {
         boolean result = false;
 
-        String targetActivityUid = targetActivity.getUid();
+      //FIXME Vinayak
+//        String targetActivityUid = targetActivity.getUid();
 
         // See if a cheer already exits
         // Lookup all the meta activity for this activity item for a given user.  This should be a short list.
         // TODO: it would be better to just do a delete on a primary key and check if the result count > 0
         boolean didDelete = false;
-        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
-        for (Activity metaActivity : metaActivityList) {
-            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
-                // delete it
-                if (delete(metaActivity)) {
-                    didDelete = true;
-                }
-            }
-        }
+      //FIXME Vinayak
+//        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
+//        for (Activity metaActivity : metaActivityList) {
+//            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
+//                // delete it
+//                if (delete(metaActivity)) {
+//                    didDelete = true;
+//                }
+//            }
+//        }
 
         // Remove the record for the cheer
         if (didDelete) {
 
             // Decrement the cheer count and don't panic if it fails
             UpdateItemSpec updateItemSpec = new UpdateItemSpec();
-            updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
+          //FIXME Vinayak
+//            updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
             updateItemSpec.withAttributeUpdate(new AttributeUpdate(CHEER_COUNT).addNumeric(-1));
             try {
                 // TODO: check for new field value < 0, if so, set it to 0 and log a warning.
@@ -605,7 +620,8 @@ public class ActivityDAO extends DynamoDAO {
                 Logger.error("update - failed", e);
             }
         } else {
-            Logger.warn("uncheerActivity - warn unable to delete cheer activity for " + targetActivityUid + ", skipping counter increment.");
+        	//FIXME Vinayak
+//            Logger.warn("uncheerActivity - warn unable to delete cheer activity for " + targetActivityUid + ", skipping counter increment.");
         }
 
         return result;
@@ -613,15 +629,17 @@ public class ActivityDAO extends DynamoDAO {
 
     // TODO: it would be better to do a direct GetItem with a primary key
     public boolean isCheeredByUser(Activity targetActivity, String username) {
-        String targetActivityUid = targetActivity.getUid();
+    	//FIXME Vinayak
+//        String targetActivityUid = targetActivity.getUid();
 
-        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
-        for (Activity metaActivity : metaActivityList) {
-            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
-                // short circuit
-                return true;
-            }
-        }
+    	//FIXME Vinayak
+//        List<Activity> metaActivityList = getByTargetActivityAndUsername(targetActivityUid, username, null, false);
+//        for (Activity metaActivity : metaActivityList) {
+//            if (ActivityEventType.CHEER.equals(metaActivity.getEventType())) {
+//                // short circuit
+//                return true;
+//            }
+//        }
 
         // no cheer found
         return false;
@@ -629,10 +647,12 @@ public class ActivityDAO extends DynamoDAO {
 
     public boolean updateComment(Activity targetActivity, String newComment, String newCommentImgUrl, String addToCommentHistory, String addToCommentImgUrlHistory) {
 
-        String targetActivityUid = targetActivity.getUid();
+    	//FIXME Vinayak
+//        String targetActivityUid = targetActivity.getUid();
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec();
-        updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
+      //FIXME Vinayak
+//        updateItemSpec.withPrimaryKey(HASH_KEY, targetActivityUid);
 
         if (newComment != null) {
             updateItemSpec.withAttributeUpdate(new AttributeUpdate(COMMENT).put(newComment));
@@ -665,29 +685,31 @@ public class ActivityDAO extends DynamoDAO {
     }
 
     private static Activity itemToActivity(Item item) {
-        return new Activity(
-            item.getString(UID),
-            item.getLong(TS),
-            ActivityEventType.valueOf(item.getString(EVENTTYPE)),
-            item.getString(IDTYPE),
-            item.getInt(SEQUENCE),
-            (item.isPresent(USERNAME) ? item.getString(USERNAME) : null),
-            (item.isPresent(TEAM_ID) ? item.getLong(TEAM_ID) : null),
-            (item.isPresent(QUEST_ID) ? item.getLong(QUEST_ID) : null),
-            (item.isPresent(TASK_ID) ? item.getLong(TASK_ID) : null),
-            (item.isPresent(LAT) ? item.getDouble(LAT) : null),
-            (item.isPresent(LON) ? item.getDouble(LON) : null),
-            item.getString(MSG),
-            (item.isPresent(COMMENT) ? item.getString(COMMENT) : null),
-            (item.isPresent(COMMENT_IMG_URL) ? item.getString(COMMENT_IMG_URL) : null),
-            (item.isPresent(TARGET_ACTIVITY_UID) ? item.getString(TARGET_ACTIVITY_UID) : null),
-            (item.isPresent(CHEER_COUNT) ? item.getLong(CHEER_COUNT) : null),
-            (item.isPresent(POSTAL_CODE) ? item.getString(POSTAL_CODE) : null),
-            (item.isPresent(DELETED) ? item.getBoolean(DELETED) : null),
-            (item.isPresent(QUANTITY) ? item.getDouble(QUANTITY) : null),
-            (item.isPresent(UNIT) ? ActivityUnit.valueOf(item.getString(UNIT)) : null),
-            (item.isPresent(TAG) ? item.getString(TAG) : null)
-        );
+    	return null;
+    	//FIXME Vinayak
+//        return new Activity(
+//            item.getString(UID),
+//            item.getLong(TS),
+//            ActivityEventType.valueOf(item.getString(EVENTTYPE)),
+//            item.getString(IDTYPE),
+//            item.getInt(SEQUENCE),
+//            (item.isPresent(USERNAME) ? item.getString(USERNAME) : null),
+//            (item.isPresent(TEAM_ID) ? item.getLong(TEAM_ID) : null),
+//            (item.isPresent(QUEST_ID) ? item.getLong(QUEST_ID) : null),
+//            (item.isPresent(TASK_ID) ? item.getLong(TASK_ID) : null),
+//            (item.isPresent(LAT) ? item.getDouble(LAT) : null),
+//            (item.isPresent(LON) ? item.getDouble(LON) : null),
+//            item.getString(MSG),
+//            (item.isPresent(COMMENT) ? item.getString(COMMENT) : null),
+//            (item.isPresent(COMMENT_IMG_URL) ? item.getString(COMMENT_IMG_URL) : null),
+//            (item.isPresent(TARGET_ACTIVITY_UID) ? item.getString(TARGET_ACTIVITY_UID) : null),
+//            (item.isPresent(CHEER_COUNT) ? item.getLong(CHEER_COUNT) : null),
+//            (item.isPresent(POSTAL_CODE) ? item.getString(POSTAL_CODE) : null),
+//            (item.isPresent(DELETED) ? item.getBoolean(DELETED) : null),
+//            (item.isPresent(QUANTITY) ? item.getDouble(QUANTITY) : null),
+//            (item.isPresent(UNIT) ? ActivityUnit.valueOf(item.getString(UNIT)) : null),
+//            (item.isPresent(TAG) ? item.getString(TAG) : null)
+//        );
     }
     
 }

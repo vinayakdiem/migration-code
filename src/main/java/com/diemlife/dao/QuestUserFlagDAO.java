@@ -1,28 +1,32 @@
 package com.diemlife.dao;
 
-import constants.QuestUserFlagKey;
-import models.QuestUserFlag;
-import models.Quests;
-import models.User;
+import com.diemlife.constants.QuestUserFlagKey;
+import com.diemlife.models.QuestUserFlag;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static constants.QuestUserFlagKey.FOLLOWED;
-import static constants.QuestUserFlagKey.STARRED;
+import static com.diemlife.constants.QuestUserFlagKey.FOLLOWED;
+import static com.diemlife.constants.QuestUserFlagKey.STARRED;
 import static java.lang.String.format;
 
+@Repository
 public class QuestUserFlagDAO extends TypedDAO<QuestUserFlag> {
 
-    public QuestUserFlagDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 
     public QuestUserFlag followQuestForUser(final @Nonnull Quests quest, final @Nonnull User user) {
         return addQuestFlagForUser(quest, user, FOLLOWED);

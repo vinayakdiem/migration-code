@@ -1,9 +1,9 @@
 package com.diemlife.dao;
 
-import constants.QuestActivityStatus;
-import constants.QuestMode;
-import constants.QuestUserFlagKey;
-import dto.MyQuestDTO;
+import com.diemlife.constants.QuestActivityStatus;
+import com.diemlife.constants.QuestMode;
+import com.diemlife.constants.QuestUserFlagKey;
+import com.diemlife.dto.MyQuestDTO;
 import play.Logger;
 
 import java.sql.Connection;

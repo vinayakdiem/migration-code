@@ -4,6 +4,10 @@ import com.diemlife.dto.GPXQuestMapRoutePointsDTO;
 import com.diemlife.models.QuestMapRoutePoints;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
@@ -19,16 +23,11 @@ import java.util.stream.Stream;
  *
  * @author SYushchenko
  */
+@Repository
 public class QuestMapRoutePointDAO extends TypedDAO<QuestMapRoutePoints> {
-
-    /**
-     * Constructor with parameters
-     *
-     * @param entityManager {@link EntityManager}
-     */
-    public QuestMapRoutePointDAO(EntityManager entityManager) {
-        super(entityManager);
-    }
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
     public Map<Long, List<GPXQuestMapRoutePointsDTO>> findAllQuestMapRoutesPointByQuestMapRouteId(Set<Long> questMapRoutesId) {
         if (questMapRoutesId.isEmpty()) {
@@ -65,9 +64,10 @@ public class QuestMapRoutePointDAO extends TypedDAO<QuestMapRoutePoints> {
             if (routeId != null) {
                 pointsMap.put(routeId, new ArrayList<>());
                 for (final GPXQuestMapRoutePointsDTO point : points) {
-                    if (routeId.equals(point.getQuestMapRouteId())) {
-                        pointsMap.get(routeId).add(point);
-                    }
+                	//FIXME Vinayak
+//                    if (routeId.equals(point.getQuestMapRouteId())) {
+//                        pointsMap.get(routeId).add(point);
+//                    }
                 }
             }
         }

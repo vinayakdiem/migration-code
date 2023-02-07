@@ -2,13 +2,15 @@ package com.diemlife.dao;
 
 import static com.diemlife.constants.QuestMode.PACE_YOURSELF;
 import static com.diemlife.constants.QuestMode.TEAM;
-import static com.diemlife.dao.QuestActivityHome.getQuestActivityForQuestIdAndUser;
+//FIXME Vinayak
+//import static com.diemlife.dao.QuestActivityHome.getQuestActivityForQuestIdAndUser;
 import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.MD;
 import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.SM;
 import static com.diemlife.models.EmbeddedVideo.ThumbnailSizes.XS;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang.BooleanUtils.toBoolean;
+//FIXME Vinayak
+//import static org.apache.commons.lang.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.upperCase;
 
 import java.text.NumberFormat;
@@ -22,8 +24,11 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
+
+import org.springframework.stereotype.Repository;
 
 import com.diemlife.constants.QuestMode;
 import com.diemlife.constants.VideoProvider;
@@ -55,14 +60,18 @@ import play.Logger;
 /**
  * Created by acoleman1 on 6/5/17.
  */
+@Repository
 public class QuestTasksDAO {
 
-    public static class CompletionPercentage {
+	@PersistenceContext
+	EntityManager em;
+	
+    public class CompletionPercentage {
         public Integer questId;
         public String completionPercentage;
     }
 
-    public void persist(QuestTasks transientInstance, EntityManager em) {
+    public void persist(QuestTasks transientInstance) {
 
         try {
             em.persist(transientInstance);
@@ -71,7 +80,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static void remove(QuestTasks persistentInstance, EntityManager em) {
+    public void remove(QuestTasks persistentInstance) {
         try {
             em.createQuery("SELECT ch " +
                     "FROM QuestTaskCompletionHistory ch " +
@@ -85,7 +94,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static QuestTasks findById(Integer id, EntityManager em) {
+    public QuestTasks findById(Integer id) {
         try {
             QuestTasks questTask = em.find(QuestTasks.class, id);
             if (questTask != null) {
@@ -97,18 +106,18 @@ public class QuestTasksDAO {
         return null;
     }
 
-    public static Point buildGeoPoint(final QuestActionPointForm togglePoint) {
+    public Point buildGeoPoint(final QuestActionPointForm togglePoint) {
         return togglePoint == null ? null : new GeometryFactory().createPoint(new Coordinate(
-                togglePoint.getLatitude().doubleValue(),
-                togglePoint.getLongitude().doubleValue()
+        		//FIXME Vinayak
+//                togglePoint.getLatitude().doubleValue(),
+//                togglePoint.getLongitude().doubleValue()
         ));
     }
 
-    public static QuestTasks addNewTask(final User creator,
+    public QuestTasks addNewTask(final User creator,
                                         final User assignee,
                                         final Quests quest,
-                                        final TaskCreateForm task,
-                                        final EntityManager em) {
+                                        final TaskCreateForm task) {
         if (creator == null) {
             throw new RequiredParameterMissingException("creator");
         }
@@ -122,33 +131,38 @@ public class QuestTasksDAO {
             throw new RequiredParameterMissingException("task");
         }
         
-        ActivityRecordList activityRecordList =  newActivityRecordList(creator.getId(),task.getActivitiesIds(),em);
+        //FIXME Vinayak
+//        ActivityRecordList activityRecordList =  newActivityRecordList(creator.getId(),task.getActivitiesIds());
         
         try {
             final Date now = new Date();
             final QuestTasks questTask = new QuestTasks();
 
-            if (task.getVideo() != null) {
-                questTask.setVideo(createEmbeddedVideo(task.getVideo(), em));
-            }
+          //FIXME Vinayak
+//            if (task.getVideo() != null) {
+//                questTask.setVideo(createEmbeddedVideo(task.getVideo(), em));
+//            }
 
             questTask.setQuestId(quest.getId());
             questTask.setUserId(assignee.getId());
-            questTask.setTask(task.getTask());
+          //FIXME Vinayak
+//            questTask.setTask(task.getTask());
             questTask.setTaskCompleted(Boolean.FALSE.toString().toUpperCase());
             questTask.setCreatedBy(creator.getId());
             questTask.setCreatedDate(now);
-            questTask.setLinkedQuestId(task.getLinkedQuestId());
-            questTask.setPoint(buildGeoPoint(task.getPoint()));
-            questTask.setRadiusInKm(task.getRadiusInKm());
-            questTask.setQuestTasksGroup(task.getGroupId() == null ? null : em.find(QuestTasksGroup.class, task.getGroupId()));
-            questTask.setImageUrl(task.getImageUrl());
-            questTask.setLinkUrl(task.getLinkUrl());
-            questTask.setActivityRecordListId(activityRecordList.getId());
-            questTask.setTitle(task.getTitle());
+          //FIXME Vinayak
+//            questTask.setLinkedQuestId(task.getLinkedQuestId());
+//            questTask.setPoint(buildGeoPoint(task.getPoint()));
+//            questTask.setRadiusInKm(task.getRadiusInKm());
+//            questTask.setQuestTasksGroup(task.getGroupId() == null ? null : em.find(QuestTasksGroup.class, task.getGroupId()));
+//            questTask.setImageUrl(task.getImageUrl());
+//            questTask.setLinkUrl(task.getLinkUrl());
+//            questTask.setActivityRecordListId(activityRecordList.getId());
+//            questTask.setTitle(task.getTitle());
 
-            final int lastOrder = getLastTaskOrder(assignee.getId(), quest.getId(), task.getGroupId(), em);
-            questTask.setOrder(lastOrder + 1);
+          //FIXME Vinayak
+//            final int lastOrder = getLastTaskOrder(assignee.getId(), quest.getId(), task.getGroupId());
+//            questTask.setOrder(lastOrder + 1);
 
             em.persist(questTask);
 
@@ -160,7 +174,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static EmbeddedVideo createEmbeddedVideo(final EmbeddedVideoForm videoForm, final EntityManager em) {
+    public EmbeddedVideo createEmbeddedVideo(final EmbeddedVideoForm videoForm) {
         final EmbeddedVideo video = new EmbeddedVideo();
         video.url = videoForm.getUrl();
         video.provider = VideoProvider.valueOf(upperCase(videoForm.getProvider()));
@@ -174,10 +188,9 @@ public class QuestTasksDAO {
         return video;
     }
 
-    public static QuestTasks copyTaskWithoutGroupToUser(final QuestTasks task,
+    public QuestTasks copyTaskWithoutGroupToUser(final QuestTasks task,
                                                         final User user,
-                                                        final Quests quest,
-                                                        final EntityManager em) {
+                                                        final Quests quest) {
         if (task == null) {
             throw new RequiredParameterMissingException("task");
         }
@@ -212,7 +225,7 @@ public class QuestTasksDAO {
             questTask.setQuestMapRouteWaypointId(task.getQuestMapRouteWaypointId());
             questTask.setActivityRecordListId(task.getActivityRecordListId());
             questTask.setTitle(task.getTitle());
-            final int lastOrder = getLastTaskOrder(user.getId(), quest.getId(), null, em);
+            final int lastOrder = getLastTaskOrder(user.getId(), quest.getId(), null);
             questTask.setOrder(lastOrder + 1);
 
             em.persist(questTask);
@@ -225,7 +238,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static int getLastTaskOrder(final Integer userId, final Integer questId, final Integer groupId, final EntityManager em) {
+    public int getLastTaskOrder(final Integer userId, final Integer questId, final Integer groupId) {
         try {
             final TypedQuery<Integer> orderQuery = em
                     .createQuery("" +
@@ -248,7 +261,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static List<QuestListDetailDTO> getQuestsCompletionPercentage(final User user, final EntityManager em) {
+    public List<QuestListDetailDTO> getQuestsCompletionPercentage(final User user) {
         if (user == null) {
             throw new RequiredParameterMissingException("user");
         }
@@ -274,10 +287,9 @@ public class QuestTasksDAO {
                 .getResultList();
     }
 
-    public static QuestTasks getLinkedQuestTaskForMegaQuest(final Integer megaQuestId,
+    public QuestTasks getLinkedQuestTaskForMegaQuest(final Integer megaQuestId,
                                                             final Integer linkedQuestId,
-                                                            final Integer userId,
-                                                            final EntityManager em) {
+                                                            final Integer userId) {
         return em.createQuery("SELECT qt FROM QuestTasks qt " +
                 "WHERE qt.questId = :megaQuestId " +
                 "AND qt.linkedQuestId = :linkedQuestId " +
@@ -291,23 +303,21 @@ public class QuestTasksDAO {
                 .orElse(null);
     }
 
-    public static List<QuestTasks> getQuestTasks(final Integer questId,
-                                                 final EntityManager em) {
+    public List<QuestTasks> getQuestTasks(final Integer questId) {
         return em.createQuery("SELECT qt FROM QuestTasks qt " +
                 "WHERE qt.questId = :questId", QuestTasks.class)
                 .setParameter("questId", questId)
                 .getResultList();
     }
 
-    public static List<QuestTasks> getLinkedQuestTasks(final Integer linkedQuestId,
-                                                       final EntityManager em) {
+    public List<QuestTasks> getLinkedQuestTasks(final Integer linkedQuestId) {
         return em.createQuery("SELECT qt FROM QuestTasks qt " +
                 "WHERE qt.linkedQuestId = :linkedQuestId", QuestTasks.class)
                 .setParameter("linkedQuestId", linkedQuestId)
                 .getResultList();
     }
 
-    public static QuestTaskCompletionHistory getLastTaskCompletion(final Integer taskId, final Integer userId, final EntityManager em) {
+    public QuestTaskCompletionHistory getLastTaskCompletion(final Integer taskId, final Integer userId) {
         return em.createQuery("SELECT ch FROM QuestTaskCompletionHistory ch " +
                 "WHERE ch.milestoneId = :taskId " +
                 "AND ch.userTriggeredId = :userId " +
@@ -321,13 +331,13 @@ public class QuestTasksDAO {
                 .orElse(null);
     }
 
-    public static List<QuestTaskCompletionHistory> getLastTaskCompletions(final Integer taskId, final EntityManager em) {
+    public List<QuestTaskCompletionHistory> getLastTaskCompletions(final Integer taskId) {
         return em.createQuery("SELECT ch FROM QuestTaskCompletionHistory ch WHERE ch.milestoneId = :taskId", QuestTaskCompletionHistory.class)
                 .setParameter("taskId", taskId)
                 .getResultList();
     }
 
-    public static List<QuestTasks> getQuestTasksByQuestIdAndWaypointIsNotNull(final Integer questId, final Integer userId, final EntityManager em) {
+    public List<QuestTasks> getQuestTasksByQuestIdAndWaypointIsNotNull(final Integer questId, final Integer userId) {
         if (questId == null) {
             return Collections.emptyList();
         }
@@ -346,7 +356,7 @@ public class QuestTasksDAO {
         }
     }
 
-    public static List<QuestTasks> getQuestTasksByQuestIdAndUserId(final Integer questId, final Integer userId, final EntityManager em) {
+    public List<QuestTasks> getQuestTasksByQuestIdAndUserId(final Integer questId, final Integer userId) {
         if (questId == null || userId == null) {
             return Collections.emptyList();
         }
@@ -356,7 +366,7 @@ public class QuestTasksDAO {
                 .setParameter("userId", userId)
                 .getResultList();
 
-        Map<Integer, QuestTaskGeometryDTO> taskGeometryDTOMap = findAllGeometryByQuestAndUser(questId, userId, em);
+        Map<Integer, QuestTaskGeometryDTO> taskGeometryDTOMap = findAllGeometryByQuestAndUser(questId, userId);
 
         return questTasks.stream().peek(l -> {
             Geometry geometry = taskGeometryDTOMap.get(l.getId()).getGeometry();
@@ -367,7 +377,7 @@ public class QuestTasksDAO {
         }).collect(Collectors.toList());
     }
 
-    public static Map<Integer, QuestTaskGeometryDTO> findAllGeometryByQuestAndUser(final Integer questId, final Integer userId, final EntityManager em) {
+    public Map<Integer, QuestTaskGeometryDTO> findAllGeometryByQuestAndUser(final Integer questId, final Integer userId) {
         List<QuestTaskGeometryDTO> questTaskGeometryDTOS =
                 em.createQuery("SELECT NEW dto.QuestTaskGeometryDTO (" +
                         " qt.id, " +
@@ -383,7 +393,7 @@ public class QuestTasksDAO {
         return questTaskGeometryDTOS.stream().collect(toMap(QuestTaskGeometryDTO::getQuestTaskId, k -> k));
     }
 
-    public static List<QuestTaskGeometryDTO> findAllGeometryByQuestWaypointId(final List<Long> waypointIds, final EntityManager em) {
+    public List<QuestTaskGeometryDTO> findAllGeometryByQuestWaypointId(final List<Long> waypointIds) {
         return em.createQuery("SELECT NEW dto.QuestTaskGeometryDTO (" +
                 " qt.id, " +
                 " CASE WHEN qmrw.point IS NOT NULL THEN qmrw.point ELSE qt.point END " +
@@ -395,18 +405,21 @@ public class QuestTasksDAO {
                 .getResultList();
     }
 
-    public static String getQuestCompletionPercentage(final List<QuestTasks> milestones) {
-        final long complete = milestones.stream().filter(milestone -> toBoolean(milestone.getTaskCompleted())).count();
+    public String getQuestCompletionPercentage(final List<QuestTasks> milestones) {
+    	//FIXME Vinayak
+//        final long complete = milestones.stream().filter(milestone -> toBoolean(milestone.getTaskCompleted())).count();
         final int total = milestones.size();
         final NumberFormat numberFormat = NumberFormat.getPercentInstance();
         numberFormat.setMinimumFractionDigits(0);
         if (total == 0) {
             return numberFormat.format(0.0d);
         }
-        return numberFormat.format((double) complete / (double) total);
+      //FIXME Vinayak
+        return numberFormat.format(0);
+//        return numberFormat.format((double) complete / (double) total);
     }
 
-    public static void setTaskCompleted(final QuestTasks task, final User modifier, final boolean checked, final EntityManager em) {
+    public void setTaskCompleted(final QuestTasks task, final User modifier, final boolean checked) {
         final Date now = Date.from(Instant.now());
         task.setTaskCompleted(Boolean.valueOf(checked).toString().toUpperCase());
         task.setLastModifiedDate(now);
@@ -415,30 +428,35 @@ public class QuestTasksDAO {
         em.merge(task);
     }
 
-    public static User getTasksOwnerUserForQuest(final Quests quest, final User user, final EntityManager em) {
+    public User getTasksOwnerUserForQuest(final Quests quest, final User user) {
         if (quest == null) {
             throw new RequiredParameterMissingException("quest");
         }
         if (user == null) {
             throw new RequiredParameterMissingException("user");
         }
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
-        final QuestMode mode = activity == null ? quest.getMode() : activity.getMode();
-        if (PACE_YOURSELF.equals(mode)) {
-            return user;
-        } else if (TEAM.equals(mode)) {
-            final QuestTeamMember teamMember = new QuestTeamDAO(em).getTeamMember(quest, user);
+      //FIXME Vinayak
+//        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
+//        final QuestMode mode = activity == null ? quest.getMode() : activity.getMode();
+//        if (PACE_YOURSELF.equals(mode)) {
+//            return user;
+//        } else if (TEAM.equals(mode)) {
+        	//FIXME Vinayak
+            final QuestTeamMember teamMember = new QuestTeamDAO().getTeamMember(quest, user);
             if (teamMember == null) {
-                return UserHome.findById(quest.getCreatedBy(), em);
+//                return UserHome.findById(quest.getCreatedBy());
             } else {
-                return teamMember.getTeam().getCreator();
+//                return teamMember.getTeam().getCreator();
             }
-        } else {
-            return UserHome.findById(quest.getCreatedBy(), em);
-        }
+//        } else {
+        	//FIXME Vinayak
+//            return UserHome.findById(quest.getCreatedBy());
+//        }
+          //FIXME Vinayak
+        return null;
     }
 
-    public static ActivityRecordList newActivityRecordList(Integer userId, final List<Integer> getActivitiesIds,EntityManager em) {
+    public ActivityRecordList newActivityRecordList(Integer userId, final List<Integer> getActivitiesIds) {
         Logger.debug("new Activity Record List>");
         		
         ActivityRecordList transientInstance = new ActivityRecordList();
@@ -447,9 +465,7 @@ public class QuestTasksDAO {
         transientInstance.setCreatedDate(new Date());
         transientInstance.setModifiedBy(userId);
         transientInstance.setModifiedDate(new Date());
-        
-        //EntityManager em = this.jpaApi.em();
-        
+            
         ActivityRecordListDAO arlDao = new ActivityRecordListDAO();
         
         ActivityRecordList activityRecordList = arlDao.persist(transientInstance, em);
@@ -464,7 +480,7 @@ public class QuestTasksDAO {
 	        	activityRecord.setCreatedDate(new Date());
 	        	
 	        	ActivityRecordDAO arDAO = new ActivityRecordDAO();
-	        	arDAO.persist(activityRecord, em);
+	        	arDAO.persist(activityRecord);
 	        }
         
        	  }
@@ -474,7 +490,7 @@ public class QuestTasksDAO {
     }
     
     
-    public static List<Integer> getActivityRecordListIdsByUser(Integer userId,final EntityManager em){
+    public List<Integer> getActivityRecordListIdsByUser(Integer userId){
     	
     	return em.createQuery("SELECT qt.activityRecordListId FROM QuestTasks qt " +
                 " WHERE qt.userId = :userId", Integer.class)
@@ -483,7 +499,7 @@ public class QuestTasksDAO {
 
     }
 
-public static Long getTotalQuestByUserAndActivityRecordService(Integer userId,List<Integer> activityRecordListIds,final EntityManager em){
+public Long getTotalQuestByUserAndActivityRecordService(Integer userId,List<Integer> activityRecordListIds){
     	
 	final TypedQuery<Long> countQuery = em.createQuery("SELECT count(qt.questId) FROM QuestTasks qt " +
                 " WHERE qt.userId = :userId AND qt.activityRecordListId IN(:activityRecordListIds) GROUP BY qt.userId", Long.class);

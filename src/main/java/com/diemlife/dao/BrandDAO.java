@@ -36,9 +36,10 @@ public class BrandDAO extends TypedSingletonDAO<Brand> {
 	// If create is called for an existing item, this method returns null
 	public Brand createBrand(String name, String orgType, String website) {
 		final Brand brand = new Brand();
-		brand.setName(name);
-		brand.setOrgType(orgType);
-		brand.setWebsite(website);
+		//FIXME Vinayak
+//		brand.setName(name);
+//		brand.setOrgType(orgType);
+//		brand.setWebsite(website);
 
 		return save(brand, Brand.class);
 	}
@@ -49,7 +50,8 @@ public class BrandDAO extends TypedSingletonDAO<Brand> {
 		if (brand == null) {
 			return false;
 		}
-		brand.setAddress(address);
+		//FIXME Vinayak
+//		brand.setAddress(address);
 		save(brand, Brand.class);
 		return true;
 	}
@@ -59,7 +61,8 @@ public class BrandDAO extends TypedSingletonDAO<Brand> {
 		if (brand == null) {
 			return false;
 		}
-		brand.setPhone(phone);
+		//FIXME Vinayak
+//		brand.setPhone(phone);
 		save(brand, Brand.class);
 		return true;
 	}

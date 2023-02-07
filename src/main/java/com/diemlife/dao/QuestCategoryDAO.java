@@ -61,7 +61,9 @@ public class QuestCategoryDAO extends TypedDAO<QuestCategory> {
             ret.addAll(cats);
         }
 
-        return ret.stream().map(QuestCategory::getQuestId).collect(Collectors.toList());
+      //FIXME Vinayak
+//        return ret.stream().map(QuestCategory::getQuestId).collect(Collectors.toList());
+        return null;
     }
 
     public List<QuestCategory> findAll() {

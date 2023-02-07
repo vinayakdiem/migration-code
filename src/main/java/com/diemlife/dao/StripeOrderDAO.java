@@ -1,9 +1,12 @@
 package com.diemlife.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 
 import com.typesafe.config.Config;
 
+@Repository
 public class StripeOrderDAO extends DynamoDAO {
     
     private static final String EMAIL = "email";

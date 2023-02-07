@@ -4,18 +4,25 @@ package com.diemlife.dao;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 import play.Logger;
-import models.UserProfile;
+import com.diemlife.models.UserProfile;
 
 /**
  * Home object for domain model class User.
  * @see models.User
  * @author Hibernate Tools
  */
+@Repository
 public class UserProfileHome {
 	
-	public void persist(UserProfile transientInstance, EntityManager entityManager) {
+	@PersistenceContext
+	private EntityManager entityManager;
+	
+	public void persist(UserProfile transientInstance) {
 		
 		try {
 		    entityManager.persist(transientInstance);
@@ -25,7 +32,7 @@ public class UserProfileHome {
 		}
 	}
 
-	public void remove(UserProfile persistentInstance, EntityManager entityManager) {
+	public void remove(UserProfile persistentInstance) {
 
 		try {
 		    entityManager.remove(persistentInstance);
@@ -35,7 +42,7 @@ public class UserProfileHome {
 		}
 	}
 
-	public UserProfile merge(UserProfile detachedInstance, EntityManager entityManager) {
+	public UserProfile merge(UserProfile detachedInstance) {
 
 		try {
 		    UserProfile result = entityManager.merge(detachedInstance);
@@ -46,7 +53,7 @@ public class UserProfileHome {
 		}
 	}
 
-	public UserProfile findById(Integer id, EntityManager entityManager) {
+	public UserProfile findById(Integer id) {
 		Logger.debug("getting User instance with id: " + id);
 		try {
 			UserProfile instance = entityManager.find(UserProfile.class, id);

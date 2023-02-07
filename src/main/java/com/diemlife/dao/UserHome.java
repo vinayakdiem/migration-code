@@ -3,20 +3,20 @@ package com.diemlife.dao;
 
 // Generated Jul 4, 2015 5:57:00 PM by Hibernate Tools 4.3.1
 
-import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
-import com.feth.play.module.pa.user.AuthUser;
-import com.feth.play.module.pa.user.AuthUserIdentity;
-import com.feth.play.module.pa.user.EmailIdentity;
-import com.feth.play.module.pa.user.FirstLastNameIdentity;
-import com.feth.play.module.pa.user.NameIdentity;
+//FIXME Vinayak
+//import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
+//import com.feth.play.module.pa.user.AuthUser;
+//import com.feth.play.module.pa.user.AuthUserIdentity;
+//import com.feth.play.module.pa.user.EmailIdentity;
+//import com.feth.play.module.pa.user.FirstLastNameIdentity;
+//import com.feth.play.module.pa.user.NameIdentity;
 import com.diemlife.constants.Util;
 import com.diemlife.dto.QuestMemberDTO;
 import com.diemlife.dto.UserToInviteDTO;
-import forms.ParticipantInfoForm;
-import forms.RegistrationForm;
+import com.diemlife.forms.ParticipantInfoForm;
+import com.diemlife.forms.RegistrationForm;
 import com.diemlife.models.*;
 import play.Logger;
-import play.db.jpa.JPAApi;
 import com.diemlife.providers.MyUsernamePasswordAuthUser;
 import com.diemlife.security.UsernamePasswordAuth;
 import com.diemlife.services.UserService;
@@ -24,9 +24,13 @@ import com.diemlife.services.UserService;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
+import org.springframework.stereotype.Repository;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,9 +54,13 @@ import static org.springframework.util.CollectionUtils.isEmpty;
  * @author Hibernate Tools
  * @see models.User
  */
+@Repository
 public class UserHome {
 
-    public void persist(User transientInstance, EntityManager entityManager) {
+	@PersistenceContext
+	private EntityManager entityManager;
+	
+    public void persist(User transientInstance) {
 
         try {
             entityManager.persist(transientInstance);
@@ -61,7 +69,7 @@ public class UserHome {
         }
     }
 
-    public void remove(User persistentInstance, EntityManager entityManager) {
+    public void remove(User persistentInstance) {
 
         try {
             entityManager.remove(persistentInstance);
@@ -70,7 +78,7 @@ public class UserHome {
         }
     }
 
-    public User merge(User detachedInstance, EntityManager entityManager) {
+    public User merge(User detachedInstance) {
 
         try {
 
@@ -82,14 +90,14 @@ public class UserHome {
         }
     }
 
-    public static User findById(final Integer id, final EntityManager entityManager) {
+    public User findById(final Integer id) {
         if (id == null) {
             return null;
         }
         return entityManager.find(User.class, id);
     }
 
-    public static User2 getUserByUsername(Connection c, String username) {
+    public User2 getUserByUsername(Connection c, String username) {
         try (PreparedStatement ps = c.prepareStatement("select first_name, last_name from user where user_name = ?")) {
 			ps.setString(1, username);
 			
@@ -99,7 +107,8 @@ public class UserHome {
                     String lastname = rs.getString(2);
 
                     // only expect 1 result (or none)
-					return new User2(username, firstname, lastname);
+                  //FIXME Vinayak
+//					return new User2(username, firstname, lastname);
 				}
 			}
 		} catch (Exception e) {
@@ -109,7 +118,7 @@ public class UserHome {
 		return null;
     }
 
-    public static User findByIdReference(Integer id, EntityManager entityManager) {
+    public User findByIdReference(Integer id) {
         try {
             return entityManager.getReference(User.class, id);
         } catch (NoResultException e) {
@@ -121,50 +130,53 @@ public class UserHome {
         }
     }
 
-    public LinkedAccount getAccountByProvider(User user, String providerKey, EntityManager entityManager) {
+    public LinkedAccount getAccountByProvider(User user, String providerKey) {
         LinkedAccountHome dao = new LinkedAccountHome();
 
         return dao.findByProviderKey(user, providerKey, entityManager);
     }
 
-    public void changePassword(User user, MyUsernamePasswordAuthUser authUser, EntityManager entityManager) {
-        LinkedAccount a = this.getAccountByProvider(user, authUser.getProvider(), entityManager);
+    public void changePassword(User user, MyUsernamePasswordAuthUser authUser) {
+    	//FIXME Vinayak
+//        LinkedAccount a = this.getAccountByProvider(user, authUser.getProvider(), entityManager);
 
-        LinkedAccountHome dao = new LinkedAccountHome();
-
-        if (a == null) {
-            a = dao.create(user, authUser.getProvider(), authUser.getId(), entityManager);
-            a.setUser(user);
-        }
-
-        a.setProviderUserId(authUser.getHashedPassword());
-        a.getUser().setEmailValidated(true);
-
-        dao.merge(a, entityManager);
+//        LinkedAccountHome dao = new LinkedAccountHome();
+//
+//        if (a == null) {
+//            a = dao.create(user, authUser.getProvider(), authUser.getId(), entityManager);
+//            a.setUser(user);
+//        }
+//
+//        a.setProviderUserId(authUser.getHashedPassword());
+//        a.getUser().setEmailValidated(true);
+//
+//        dao.merge(a, entityManager);
     }
 
-    public void resetPassword(User user, MyUsernamePasswordAuthUser authUser, EntityManager entityManager) {
+    public void resetPassword(User user, MyUsernamePasswordAuthUser authUser) {
         // You might want to wrap this into a transaction
-        this.changePassword(user, authUser, entityManager);
+        this.changePassword(user, authUser);
 
         TokenActionHome tokenDao = new TokenActionHome();
 
         tokenDao.deleteByUser(user, "PASSWORD_RESET", entityManager);
     }
 
-    public boolean existsByAuthUserIdentity(AuthUserIdentity identity, EntityManager entityManager) {
-        User exp = null;
-        if (identity instanceof UsernamePasswordAuthUser) {
-            exp = findByUsernamePasswordIdentity(((UsernamePasswordAuthUser) identity).getEmail(), UsernamePasswordAuth.PROVIDER_KEY, entityManager);
-        } else {
-            exp = getAuthUserFind(identity, entityManager);
-        }
+  //FIXME Vinayak
+//    public boolean existsByAuthUserIdentity(AuthUserIdentity identity) {
+//        User exp = null;
+      //FIXME Vinayak
+//        if (identity instanceof UsernamePasswordAuthUser) {
+//            exp = findByUsernamePasswordIdentity(((UsernamePasswordAuthUser) identity).getEmail(), UsernamePasswordAuth.PROVIDER_KEY, entityManager);
+//        } else {
+//            exp = getAuthUserFind(identity, entityManager);
+//        }
 
-        return exp != null;
+//        return exp != null;
         //return exp.findRowCount() > 0;
-    }
+//    }
 
-    public static User findByEmail(String email, EntityManager entityManager) {
+    public User findByEmail(String email) {
         if (isBlank(email)) {
             return null;
         }
@@ -182,7 +194,7 @@ public class UserHome {
         }
     }
 
-    public static User findByName(String username, EntityManager entityManager) {
+    public User findByName(String username) {
         return entityManager.createQuery("SELECT DISTINCT u FROM User u " +
                 " WHERE lower(u.userName) = :username AND u.active = true ", User.class)
                 .setParameter("username", username)
@@ -192,7 +204,7 @@ public class UserHome {
                 .orElse(null);
     }
 
-    public User findByUsernamePasswordIdentity(final String email, final String provider, final EntityManager entityManager) {
+    public User findByUsernamePasswordIdentity(final String email, final String provider) {
         try {
             return entityManager.createQuery("SELECT DISTINCT u FROM LinkedAccount l " +
                     "JOIN l.user u " +
@@ -213,12 +225,15 @@ public class UserHome {
         }
     }
 
-    private User getAuthUserFind(AuthUserIdentity identity, EntityManager entityManager) {
+    private User getAuthUserFind(
+    		//FIXME Vinayak
+//    		AuthUserIdentity identity
+    		) {
 
         try {
             Query query = entityManager.createQuery("SELECT DISTINCT u FROM LinkedAccount l JOIN l.user u LEFT JOIN FETCH u.securityRoles LEFT JOIN FETCH u.userPermissions WHERE lower(l.providerKey) = :pKey AND lower(l.providerUserId) = :userId AND u.active = true");
-            query.setParameter("pKey", identity.getProvider().toLowerCase());
-            query.setParameter("userId", identity.getId().toLowerCase());
+//            query.setParameter("pKey", identity.getProvider().toLowerCase());
+//            query.setParameter("userId", identity.getId().toLowerCase());
 
             User user = (User) query.getSingleResult();
 
@@ -231,137 +246,139 @@ public class UserHome {
             throw re;
         }
     }
+  //FIXME Vinayak
+//    public User findByAuthUserIdentity(AuthUserIdentity identity) {
+//        if (identity == null) {
+//            return null;
+//        }
+//        if (identity instanceof UsernamePasswordAuthUser) {
+//            return findByUsernamePasswordIdentity(((UsernamePasswordAuthUser) identity).getEmail(), UsernamePasswordAuth.PROVIDER_KEY,  entityManager);
+//        } else {
+//            return getAuthUserFind(identity, entityManager);
+//        }
+//    }
 
-    public User findByAuthUserIdentity(AuthUserIdentity identity, EntityManager entityManager) {
-        if (identity == null) {
-            return null;
-        }
-        if (identity instanceof UsernamePasswordAuthUser) {
-            return findByUsernamePasswordIdentity(((UsernamePasswordAuthUser) identity).getEmail(), UsernamePasswordAuth.PROVIDER_KEY,  entityManager);
-        } else {
-            return getAuthUserFind(identity, entityManager);
-        }
-    }
+//    public User create(AuthUser authUser) {
+//        return this.createByRole(authUser, controllers.Application.USER_ROLE, null, entityManager);
+//    }
 
-    public User create(AuthUser authUser, EntityManager entityManager) {
-        return this.createByRole(authUser, controllers.Application.USER_ROLE, null, entityManager);
-    }
+  //FIXME Vinayak
+//    public User createByRole(AuthUser authUser, String roleName, String tiUserId) {
+//        User user = new User();
+//        
+//        if (authUser instanceof MyUsernamePasswordAuthUser) {
+//        	MyUsernamePasswordAuthUser myUsernamePasswordAuthUser = (MyUsernamePasswordAuthUser) authUser;
+//            if(myUsernamePasswordAuthUser.getUserId()!=null) {
+//            	user.setId(myUsernamePasswordAuthUser.getUserId());
+//        	}
+//        }
+//        
+//        SecurityRoleHome roleDao = new SecurityRoleHome();
+//
+//        SecurityRole role = roleDao.findByRoleName(roleName, entityManager);
+//
+//        Set<SecurityRole> roles = user.getSecurityRoles();
+//        roles.add(role);
+//
+//        UserProfileHome userProfileDao = new UserProfileHome();
+//
+//        UserProfile userProfile = new UserProfile();
+//        userProfile.setTiUserId(tiUserId);
+//
+//        userProfile = userProfileDao.merge(userProfile, entityManager);
+//
+//        user.setSecurityRoles(roles);
+//        user.setUserProfile(userProfile);
+//
+//        user.setActive(true);
+//        user.setLastLogin(new Date());
+//        user.setCreatedOn(new Date());
+//        user.setUpdatedOn(new Date());
+//        user.setIsUserBrand("N");
+//
+//        if (authUser instanceof EmailIdentity) {
+//            EmailIdentity identity = (EmailIdentity) authUser;
+//            // Remember, even when getting them from FB & Co., emails should be
+//            // verified within the application as a security breach there might
+//            // break your security as well!
+//            user.setEmail(identity.getEmail());
+//            user.setEmailValidated(false);
+//        }
+//
+//        if (authUser instanceof NameIdentity) {
+//            NameIdentity identity = (NameIdentity) authUser;
+//            String name = identity.getName();
+//            if (name != null) {
+//                user.setName(name);
+//            }
+//        }
+//
+//        if (authUser instanceof FirstLastNameIdentity) {
+//            FirstLastNameIdentity identity = (FirstLastNameIdentity) authUser;
+//            String firstName = identity.getFirstName();
+//            String lastName = identity.getLastName();
+//            if (firstName != null) {
+//                user.setFirstName(firstName);
+//            }
+//            if (lastName != null) {
+//                user.setLastName(lastName);
+//            }
+//        }
+//
+//        user = this.merge(user, entityManager);
+//
+//        LinkedAccountHome accountsDao = new LinkedAccountHome();
+//
+//        accountsDao.create(user, "password", authUser.getId(), entityManager);
+//
+//        return user;
+//    }
 
-    public User createByRole(AuthUser authUser, String roleName, String tiUserId, EntityManager entityManager) {
-        User user = new User();
-        
-        if (authUser instanceof MyUsernamePasswordAuthUser) {
-        	MyUsernamePasswordAuthUser myUsernamePasswordAuthUser = (MyUsernamePasswordAuthUser) authUser;
-            if(myUsernamePasswordAuthUser.getUserId()!=null) {
-            	user.setId(myUsernamePasswordAuthUser.getUserId());
-        	}
-        }
-        
-        SecurityRoleHome roleDao = new SecurityRoleHome();
+    public User addNonAuthInfoToUser(User user, RegistrationForm input) {
 
-        SecurityRole role = roleDao.findByRoleName(roleName, entityManager);
-
-        Set<SecurityRole> roles = user.getSecurityRoles();
-        roles.add(role);
-
-        UserProfileHome userProfileDao = new UserProfileHome();
-
-        UserProfile userProfile = new UserProfile();
-        userProfile.setTiUserId(tiUserId);
-
-        userProfile = userProfileDao.merge(userProfile, entityManager);
-
-        user.setSecurityRoles(roles);
-        user.setUserProfile(userProfile);
-
-        user.setActive(true);
-        user.setLastLogin(new Date());
-        user.setCreatedOn(new Date());
-        user.setUpdatedOn(new Date());
-        user.setIsUserBrand("N");
-
-        if (authUser instanceof EmailIdentity) {
-            EmailIdentity identity = (EmailIdentity) authUser;
-            // Remember, even when getting them from FB & Co., emails should be
-            // verified within the application as a security breach there might
-            // break your security as well!
-            user.setEmail(identity.getEmail());
-            user.setEmailValidated(false);
-        }
-
-        if (authUser instanceof NameIdentity) {
-            NameIdentity identity = (NameIdentity) authUser;
-            String name = identity.getName();
-            if (name != null) {
-                user.setName(name);
-            }
-        }
-
-        if (authUser instanceof FirstLastNameIdentity) {
-            FirstLastNameIdentity identity = (FirstLastNameIdentity) authUser;
-            String firstName = identity.getFirstName();
-            String lastName = identity.getLastName();
-            if (firstName != null) {
-                user.setFirstName(firstName);
-            }
-            if (lastName != null) {
-                user.setLastName(lastName);
-            }
-        }
-
-        user = this.merge(user, entityManager);
-
-        LinkedAccountHome accountsDao = new LinkedAccountHome();
-
-        accountsDao.create(user, "password", authUser.getId(), entityManager);
-
-        return user;
-    }
-
-    public User addNonAuthInfoToUser(User user, RegistrationForm input, EntityManager em) {
-
-        user.setFirstName(input.getFirstName());
-        user.setLastName(input.getLastName());
+    	//FIXME Vinayak
+//        user.setFirstName(input.getFirstName());
+//        user.setLastName(input.getLastName());
 
         //by default set the username to whatever trails the @
-        int emailIndex = input.getEmail().indexOf("@");
+//        int emailIndex = input.getEmail().indexOf("@");
 
-        String proposedUserName = input.getEmail()
-                .substring(0, emailIndex)
-                .replaceAll("[^A-Za-z0-9]", "");
+//        String proposedUserName = input.getEmail()
+//                .substring(0, emailIndex)
+//                .replaceAll("[^A-Za-z0-9]", "");
 
-        Integer subStrLength = proposedUserName.length() > 21 ? 21 : proposedUserName.length();
-        final String finalUserName = proposedUserName.substring(0, subStrLength);
-
-        if (!UserService.doesUsernameExist(finalUserName, em)) {
-            user.setUserName(finalUserName);
-        } else {
-            Random random = new Random();
-            user.setUserName(finalUserName + random.nextInt(1000));
-        }
-
-        if (input.getGoals() != null) {
-            user.setMissionStatement(input.getGoals());
-        }
-
-        if (input.getCountry() != null) {
-            user.setCountry(input.getCountry());
-        }
-
-        if (input.getZip() != null) {
-            user.setZip(input.getZip());
-        }
-
-        if (input.getReceiveEmail() != null) {
-            user.setReceiveEmail(input.getReceiveEmail());
-        } else {
-            user.setReceiveEmail("false");
-        }
+//        Integer subStrLength = proposedUserName.length() > 21 ? 21 : proposedUserName.length();
+//        final String finalUserName = proposedUserName.substring(0, subStrLength);
+//
+//        if (!UserService.doesUsernameExist(finalUserName, em)) {
+//            user.setUserName(finalUserName);
+//        } else {
+//            Random random = new Random();
+//            user.setUserName(finalUserName + random.nextInt(1000));
+//        }
+//
+//        if (input.getGoals() != null) {
+//            user.setMissionStatement(input.getGoals());
+//        }
+//
+//        if (input.getCountry() != null) {
+//            user.setCountry(input.getCountry());
+//        }
+//
+//        if (input.getZip() != null) {
+//            user.setZip(input.getZip());
+//        }
+//
+//        if (input.getReceiveEmail() != null) {
+//            user.setReceiveEmail(input.getReceiveEmail());
+//        } else {
+//            user.setReceiveEmail("false");
+//        }
 
         //ToDO: New: Check if personal info will be populated during registration
         //populatePersonalInfo(user,input.getParticipantInfo());
 
-        user = this.merge(user, em);
+        user = this.merge(user);
 
         return user;
     }
@@ -383,7 +400,7 @@ public class UserHome {
         user.setPersonalInfo(personalInfo);
     }
 
-    public void addUserFavoritesToUser(User user, String favorite, EntityManager em) {
+    public void addUserFavoritesToUser(User user, String favorite) {
         UserFavorites userFavorites = new UserFavorites();
         Date date = new Date();
         if (user != null) {
@@ -392,14 +409,14 @@ public class UserHome {
             userFavorites.setDateCreated(date);
             userFavorites.setDateModified(date);
 
-            em.persist(userFavorites);
+            entityManager.persist(userFavorites);
         }
     }
 
-    public void updateUserFavorites(User user, String favorite, EntityManager em) {
+    public void updateUserFavorites(User user, String favorite) {
         final Date now = new Date();
         if (user != null && favorite != null) {
-            final TypedQuery<String> query = em.createQuery("SELECT uf.favorite FROM UserFavorites uf WHERE uf.userId = :userId",
+            final TypedQuery<String> query = entityManager.createQuery("SELECT uf.favorite FROM UserFavorites uf WHERE uf.userId = :userId",
                     String.class);
             query.setParameter("userId", user.getId());
             final List<String> userFavorites = query.getResultList();
@@ -413,30 +430,30 @@ public class UserHome {
                 newUserFavorite.setDateCreated(now);
                 newUserFavorite.setDateModified(now);
 
-                em.persist(newUserFavorite);
+                entityManager.persist(newUserFavorite);
             }
         }
     }
 
-    public void removeUserFavoritesForUser(User user, String favorite, EntityManager em) {
+    public void removeUserFavoritesForUser(User user, String favorite) {
         if (user != null && favorite != null) {
-            final TypedQuery<UserFavorites> query = em.createQuery("SELECT uf FROM UserFavorites uf WHERE uf.userId = :userId",
+            final TypedQuery<UserFavorites> query = entityManager.createQuery("SELECT uf FROM UserFavorites uf WHERE uf.userId = :userId",
                     UserFavorites.class);
             query.setParameter("userId", user.getId());
             final List<UserFavorites> userFavorites = query.getResultList();
             for (final UserFavorites userFavorite : userFavorites) {
                 if (equalsIgnoreCase(userFavorite.getFavorite(), favorite)) {
                     Logger.info(format("Removing '%s' favorite of user [%s]", favorite, user.getEmail()));
-                    em.remove(userFavorite);
+                    entityManager.remove(userFavorite);
                 }
             }
         }
     }
 
-    public static List<UserFavorites> getUserFavoritesByUserId(Integer userId, EntityManager em) {
+    public List<UserFavorites> getUserFavoritesByUserId(Integer userId) {
         if (userId != null) {
             try {
-                Query query = em.createQuery("SELECT uf from UserFavorites uf WHERE uf.userId = :userId");
+                Query query = entityManager.createQuery("SELECT uf from UserFavorites uf WHERE uf.userId = :userId");
                 query.setParameter("userId", userId);
                 return (List<UserFavorites>) query.getResultList();
             } catch (NoResultException nre) {
@@ -449,10 +466,10 @@ public class UserHome {
         return null;
     }
 
-    public User verify(User unverified, EntityManager entityManager) {
+    public User verify(User unverified) {
         // You might want to wrap this into a transaction
         unverified.setEmailValidated(true);
-        final User verified = this.merge(unverified, entityManager);
+        final User verified = this.merge(unverified);
 
         TokenActionHome tokenDao = new TokenActionHome();
 
@@ -461,7 +478,7 @@ public class UserHome {
         return verified;
     }
 
-    public void merge(User currentUser, User otherUser, EntityManager entityManager) {
+    public void merge(User currentUser, User otherUser) {
 
         Set<LinkedAccount> currentUserAccounts = currentUser.getLinkedAccounts();
 
@@ -483,22 +500,23 @@ public class UserHome {
         // deactivate the merged user that got added to this one
         otherUser.setActive(false);
 
-        this.merge(otherUser, entityManager);
-        this.merge(currentUser, entityManager);
+        this.merge(otherUser);
+        this.merge(currentUser);
     }
 
-    public void merge(AuthUser oldUser, AuthUser newUser, EntityManager entityManager) {
+  //FIXME Vinayak
+//    public void merge(AuthUser oldUser, AuthUser newUser) {
+//
+//        User oldUserDb = this.findByAuthUserIdentity(oldUser);
+//        User newUserDb = this.findByAuthUserIdentity(newUser);
+//
+//        this.merge(oldUserDb, newUserDb);
+//    }
 
-        User oldUserDb = this.findByAuthUserIdentity(oldUser, entityManager);
-        User newUserDb = this.findByAuthUserIdentity(newUser, entityManager);
-
-        this.merge(oldUserDb, newUserDb, entityManager);
-    }
-
-    public static List<User> getAllUsersNotCurrentUser(int userId, EntityManager em) {
+    public List<User> getAllUsersNotCurrentUser(int userId) {
         try {
             Logger.info("UserHome.getAllUsers() :: getting all users.");
-            return em.createQuery("SELECT u from User u where u.id <> :userId", User.class)
+            return entityManager.createQuery("SELECT u from User u where u.id <> :userId", User.class)
                     .setParameter("userId", userId)
                     .getResultList();
         } catch (final PersistenceException e) {
@@ -507,10 +525,10 @@ public class UserHome {
         }
     }
 
-    public static List<UserToInviteDTO> getAllUsersToInviteDTOs(final int currentUserId, final EntityManager em) {
+    public List<UserToInviteDTO> getAllUsersToInviteDTOs(final int currentUserId) {
         try {
             Logger.info("UserHome.getAllUsersToInviteDTOs() :: getting all users to invite by " + currentUserId);
-            return em.createQuery("SELECT NEW dto.UserToInviteDTO(u.email, u.name) from User u where u.id <> :userId", UserToInviteDTO.class)
+            return entityManager.createQuery("SELECT NEW dto.UserToInviteDTO(u.email, u.name) from User u where u.id <> :userId", UserToInviteDTO.class)
                     .setParameter("userId", currentUserId)
                     .getResultList();
         } catch (final PersistenceException e) {
@@ -519,25 +537,26 @@ public class UserHome {
         }
     }
 
-    public static List<User> getUsersNotCurrentlyFriendsWithByUserId(Integer userId, String userName, EntityManager em) {
+    public List<User> getUsersNotCurrentlyFriendsWithByUserId(Integer userId, String userName) {
         EntityTransaction tx = null;
         try {
-            List<Integer> currentFriendIds = UserRelationshipDAO.getCurrentFriendsByUserId(userId, em);
-            Logger.info("UserHome.getUsersNotCurrentlyFriendsWithByUserId() :: got current friends");
-            if (!currentFriendIds.isEmpty()) {
-                tx = em.getTransaction();
-                tx.begin();
-                currentFriendIds.add(userId);
-                Logger.info("CurrentFriends => " + Arrays.toString(currentFriendIds.toArray()));
-                Query query = em.createQuery("SELECT u.id, u.name, u.email FROM User u where u.id NOT IN (:currentFriends) and u.name = :userName or u.email = :userName");
-                query.setParameter("currentFriends", currentFriendIds);
-                query.setParameter("userName", userName);
-                List<User> users = (List<User>) query.getResultList();
-                tx.commit();
-                return users;
-            } else {
-                return getAllUsersNotCurrentUser(userId, em);
-            }
+        	//FIXME Vinayak
+//            List<Integer> currentFriendIds = UserRelationshipDAO.getCurrentFriendsByUserId(userId);
+//            Logger.info("UserHome.getUsersNotCurrentlyFriendsWithByUserId() :: got current friends");
+//            if (!currentFriendIds.isEmpty()) {
+//                tx = entityManager.getTransaction();
+//                tx.begin();
+//                currentFriendIds.add(userId);
+//                Logger.info("CurrentFriends => " + Arrays.toString(currentFriendIds.toArray()));
+//                Query query = entityManager.createQuery("SELECT u.id, u.name, u.email FROM User u where u.id NOT IN (:currentFriends) and u.name = :userName or u.email = :userName");
+//                query.setParameter("currentFriends", currentFriendIds);
+//                query.setParameter("userName", userName);
+//                List<User> users = (List<User>) query.getResultList();
+//                tx.commit();
+//                return users;
+//            } else {
+                return getAllUsersNotCurrentUser(userId);
+//            }
         } catch (Exception e) {
             tx.rollback();
             Logger.error("UserHome.getAllUsers() :: unable to find users for search");
@@ -545,32 +564,33 @@ public class UserHome {
         }
     }
 
-    public static List<User> getUsersNotFriendsByUserId(Integer userId, EntityManager em) {
+    public List<User> getUsersNotFriendsByUserId(Integer userId) {
         try {
-            Set<Integer> friends = new HashSet<>(UserRelationshipDAO.getCurrentFriendsByUserId(userId, em));
-            friends.addAll(UserRelationshipDAO.getPendingFriendsByUserId(userId, em));
+			//FIXME Vinayak
+//            Set<Integer> friends = new HashSet<>(UserRelationshipDAO.getCurrentFriendsByUserId(userId));
+//            friends.addAll(UserRelationshipDAO.getPendingFriendsByUserId(userId));
 
-            if (!friends.isEmpty()) {
-                friends.add(userId);
-                Query query = em.createQuery("SELECT u FROM User u where u.id NOT IN (:friends) and u.id != :userId");
-                query.setParameter("friends", friends);
-                query.setParameter("userId", userId);
-                return query.getResultList();
-            } else {
-                return getAllUsersNotCurrentUser(userId, em);
-            }
+//            if (!friends.isEmpty()) {
+//                friends.add(userId);
+//                Query query = entityManager.createQuery("SELECT u FROM User u where u.id NOT IN (:friends) and u.id != :userId");
+//                query.setParameter("friends", friends);
+//                query.setParameter("userId", userId);
+//                return query.getResultList();
+//            } else {
+                return getAllUsersNotCurrentUser(userId);
+//            }
         } catch (PersistenceException e) {
             Logger.error("UserHome.getUsersNotFriendsByUserId() :: unable to find users for search => " + e, e);
             return emptyList();
         }
     }
 
-    public static List<User> getUsersByIds(List<Integer> userIds, EntityManager em) {
+    public List<User> getUsersByIds(List<Integer> userIds) {
         if (Util.isEmpty(userIds)) {
             return emptyList();
         }
         try {
-            return em.createQuery("SELECT u FROM User u WHERE u.id IN (:userIds)", User.class)
+            return entityManager.createQuery("SELECT u FROM User u WHERE u.id IN (:userIds)", User.class)
                     .setParameter("userIds", userIds)
                     .getResultList();
         } catch (final PersistenceException ex) {
@@ -579,16 +599,16 @@ public class UserHome {
         }
     }
 
-    public static List<Integer> getUsersByIdWithBrand(List<Integer> userIds, EntityManager em) {
+    public List<Integer> getUsersByIdWithBrand(List<Integer> userIds) {
         if (userIds != null && !userIds.isEmpty()) {
             try {
                 userIds.size();
-                Query query = em.createQuery("SELECT u.id FROM User u WHERE u.id IN (:userIds)");
+                Query query = entityManager.createQuery("SELECT u.id FROM User u WHERE u.id IN (:userIds)");
                 query.setParameter("userIds", userIds);
                 List<Integer> users = (List<Integer>) query.getResultList();
                 userIds.addAll(users);
                 // add brands into the mix to show in feed always.
-                return addBrandsToFriendsList(userIds, em);
+                return addBrandsToFriendsList(userIds);
             } catch (PersistenceException ex) {
                 throw new PersistenceException(ex);
             }
@@ -596,40 +616,42 @@ public class UserHome {
         return emptyList();
     }
 
-    public static void updateUserProfilePicture(Integer userId, String s3FileURL, EntityManager em) {
-        User user = UserHome.findById(userId, em);
-        if (user != null) {
-            Logger.info("UserHome :: updateUserProfilePicture :: for user => " + user.getId());
-            try {
-                // S3 does not handle spaces, lets change to a friendly link
-                user.setProfilePictureURL(s3FileURL.replace("+", "%2B"));
-                em.merge(user);
-                Logger.info("user.getProfPicURL = " + user.getProfilePictureURL());
-            } catch (Exception ex) {
-                Logger.error("UserHome :: updateUserProfilePicure => " + ex, ex);
-            }
-        }
+    public void updateUserProfilePicture(Integer userId, String s3FileURL) {
+    	//FIXME Vinayak
+//        User user = UserHome.findById(userId);
+//        if (user != null) {
+//            Logger.info("UserHome :: updateUserProfilePicture :: for user => " + user.getId());
+//            try {
+//                // S3 does not handle spaces, lets change to a friendly link
+//                user.setProfilePictureURL(s3FileURL.replace("+", "%2B"));
+//                entityManager.merge(user);
+//                Logger.info("user.getProfPicURL = " + user.getProfilePictureURL());
+//            } catch (Exception ex) {
+//                Logger.error("UserHome :: updateUserProfilePicure => " + ex, ex);
+//            }
+//        }
     }
 
-    public static void uploadUserCoverPicture(Integer userId, String s3FileURL, EntityManager em) {
-        User user = UserHome.findById(userId, em);
-        if (user != null) {
-            // S3 does not handle spaces, lets change to a friendly link
-            Logger.info("UserHome :: uploadUserCoverPicture :: for user => " + user.getId());
-            try {
-                user.setCoverPictureURL(s3FileURL.replace("+", "%2B"));
-                em.merge(user);
-                Logger.info("user.getCoverURL = " + user.getCoverPictureURL());
-            } catch (Exception ex) {
-                Logger.error("UserHome :: updateUserProfilePicure => " + ex, ex);
-            }
-        }
+    public void uploadUserCoverPicture(Integer userId, String s3FileURL) {
+    	//FIXME Vinayak
+//        User user = UserHome.findById(userId);
+//        if (user != null) {
+//            // S3 does not handle spaces, lets change to a friendly link
+//            Logger.info("UserHome :: uploadUserCoverPicture :: for user => " + user.getId());
+//            try {
+//                user.setCoverPictureURL(s3FileURL.replace("+", "%2B"));
+//                entityManager.merge(user);
+//                Logger.info("user.getCoverURL = " + user.getCoverPictureURL());
+//            } catch (Exception ex) {
+//                Logger.error("UserHome :: updateUserProfilePicure => " + ex, ex);
+//            }
+//        }
     }
 
-    public static String getUserProfilePictureByUserId(Integer userId, EntityManager em) {
+    public String getUserProfilePictureByUserId(Integer userId) {
         if (userId != null) {
             try {
-                Query query = em.createQuery("SELECT u.profilePictureURL FROM User u WHERE u.id = :userId");
+                Query query = entityManager.createQuery("SELECT u.profilePictureURL FROM User u WHERE u.id = :userId");
                 query.setParameter("userId", userId);
                 return (String) query.getSingleResult();
             } catch (NoResultException nre) {
@@ -642,14 +664,14 @@ public class UserHome {
         return null;
     }
 
-    public static List<QuestMemberDTO> getUserQuestActivityByQuestId(final Integer questId, final EntityManager em) {
+    public List<QuestMemberDTO> getUserQuestActivityByQuestId(final Integer questId) {
         if (questId == null) {
             return emptyList();
         }
         try {
 			// Note: hibernate doesn't like null here so 0 is used in place of null.  Since there is no corresponding records with id = 0,
 			// this is probably ok
-            return em.createQuery("SELECT " +
+            return entityManager.createQuery("SELECT " +
                     "NEW dto.QuestMemberDTO(" +
                     "   qa.questId, " +
                     "   COALESCE(u.id, 0), " +
@@ -694,11 +716,11 @@ public class UserHome {
         }
     }
 
-    public static List<QuestMemberDTO> getQuestBackings(final Integer questId, final Integer doerId, Integer fundraisingTeamCreatorId, final EntityManager em) {
+    public List<QuestMemberDTO> getQuestBackings(final Integer questId, final Integer doerId, Integer fundraisingTeamCreatorId) {
         if (questId == null || doerId == null) {
             return emptyList();
         }
-        TypedQuery<QuestMemberDTO> query = em.createQuery("SELECT NEW dto.QuestMemberDTO(" +
+        TypedQuery<QuestMemberDTO> query = entityManager.createQuery("SELECT NEW dto.QuestMemberDTO(" +
                 "  qrt.quest.id, " +
                 "  CASE WHEN qrt.isAnonymous = TRUE OR qrt.from.user.id IS NULL THEN 0 ELSE qrt.from.user.id END, " +
                 "  CASE WHEN qrt.isAnonymous = TRUE THEN 'anonymous' ELSE COALESCE(CAST(pi.id AS string), qrt.from.user.userName) END, " +
@@ -746,11 +768,11 @@ public class UserHome {
         return query.getResultList();
     }
 
-    public static List<QuestMemberDTO> getQuestRaisedFunds(final Integer questId, final Integer viaUserId, final EntityManager em) {
+    public List<QuestMemberDTO> getQuestRaisedFunds(final Integer questId, final Integer viaUserId) {
         if (questId == null || viaUserId == null) {
             return emptyList();
         }
-        return em.createQuery("SELECT NEW dto.QuestMemberDTO(" +
+        return entityManager.createQuery("SELECT NEW dto.QuestMemberDTO(" +
                 "  ft.quest.id, " +
                 "  ft.from.user.id, " +
                 "  qb.amountInCents, " +
@@ -768,11 +790,11 @@ public class UserHome {
                 .getResultList();
     }
 
-    public static List<QuestMemberDTO> getQuestParticipants(final Integer questId, final Integer doerId, final EntityManager em) {
+    public List<QuestMemberDTO> getQuestParticipants(final Integer questId, final Integer doerId) {
         if (questId == null || doerId == null) {
             return emptyList();
         }
-        return em.createQuery("SELECT NEW dto.QuestMemberDTO(" +
+        return entityManager.createQuery("SELECT NEW dto.QuestMemberDTO(" +
                 "  tpt.event.quest.id, " +
                 "  COALESCE(u.id, 0), " +
                 "  COALESCE(u.userName, CAST(pi.id AS string)), " +
@@ -809,10 +831,10 @@ public class UserHome {
                 .getResultList();
     }
 
-    private static List<Integer> addBrandsToFriendsList(List<Integer> userIds, EntityManager em) {
+    private List<Integer> addBrandsToFriendsList(List<Integer> userIds) {
         try {
             //changed to only diemlife brands to start - users need to follow brands in order to see them in feed.
-            Query query = em.createQuery("SELECT u.id FROM User u WHERE u.isUserBrand = 'Y'");
+            Query query = entityManager.createQuery("SELECT u.id FROM User u WHERE u.isUserBrand = 'Y'");
             ArrayList<Integer> brandIds = (ArrayList<Integer>) query.getResultList();
 
             if (brandIds.size() > 0) {
@@ -826,12 +848,13 @@ public class UserHome {
         }
     }
 
-    public static Brand getCompanyForUser(User user, JPAApi jpaApi) {
-        CompanyRoleDAO representativeDao = new CompanyRoleDAO(jpaApi);
+    public Brand getCompanyForUser(User user) {
+        CompanyRoleDAO representativeDao = new CompanyRoleDAO();
         CompanyRole representative = representativeDao.getCompanyRoleForUser(user);
 
         if (representative != null) {
-            return representative.getCompany();
+        	// FIXME Vinayak
+//            return representative.getCompany();
         }
 
         return null;

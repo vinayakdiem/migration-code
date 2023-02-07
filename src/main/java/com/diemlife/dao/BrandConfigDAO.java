@@ -50,14 +50,16 @@ public class BrandConfigDAO {
     }
 
     public boolean exists(final QuestBrandConfigId id) {
-        if (id == null || id.getQuestId() == null || id.getUserId() == null) {
-            return false;
-        }
-        return entityManager
-                .createQuery("SELECT COUNT(qbc) FROM QuestBrandConfig qbc WHERE qbc.id.questId = :questId AND qbc.id.userId = :userId", Long.class)
-                .setParameter("questId", id.getQuestId())
-                .setParameter("userId", id.getUserId())
-                .getSingleResult() > 0;
+    	return false;
+    	//FIXME Vinayak
+//        if (id == null || id.getQuestId() == null || id.getUserId() == null) {
+//            return false;
+//        }
+//        return entityManager
+//                .createQuery("SELECT COUNT(qbc) FROM QuestBrandConfig qbc WHERE qbc.id.questId = :questId AND qbc.id.userId = :userId", Long.class)
+//                .setParameter("questId", id.getQuestId())
+//                .setParameter("userId", id.getUserId())
+//                .getSingleResult() > 0;
     }
 
     public void enableForQuest(final BrandConfig brandConfig, final Quests quest) {
@@ -66,11 +68,12 @@ public class BrandConfigDAO {
         }
 
         final QuestBrandConfig questBrandConfig = new QuestBrandConfig();
-        final QuestBrandConfigId id = new QuestBrandConfigId(quest.getId(), brandConfig.getUserId());
-        questBrandConfig.setId(id);
-        questBrandConfig.setQuest(quest);
-        questBrandConfig.setBrandConfig(brandConfig);
-        questBrandConfig.setEnabled(true);
+      //FIXME Vinayak
+//        final QuestBrandConfigId id = new QuestBrandConfigId(quest.getId(), brandConfig.getUserId());
+//        questBrandConfig.setId(id);
+//        questBrandConfig.setQuest(quest);
+//        questBrandConfig.setBrandConfig(brandConfig);
+//        questBrandConfig.setEnabled(true);
 
         entityManager.persist(questBrandConfig);
     }

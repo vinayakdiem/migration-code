@@ -1,7 +1,7 @@
 package com.diemlife.dao;
 
 import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.TasksGroupForm;
+import com.diemlife.forms.TasksGroupForm;
 import com.diemlife.models.QuestTasks;
 import com.diemlife.models.QuestTasksGroup;
 import com.diemlife.models.Quests;
@@ -10,7 +10,11 @@ import play.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,10 +25,13 @@ import java.util.Objects;
 
 import static java.lang.String.format;
 
+@Repository
 public class QuestTasksGroupDAO {
 
+	@PersistenceContext
+	EntityManager em;
 
-    public static QuestTasksGroup findById(Integer taskGroupId, EntityManager em) {
+    public QuestTasksGroup findById(Integer taskGroupId) {
         try {
             QuestTasksGroup questTask = em.find(QuestTasksGroup.class, taskGroupId);
             if (questTask != null) {
@@ -37,7 +44,7 @@ public class QuestTasksGroupDAO {
         return null;
     }
 
-    private static List<QuestTasks> findAllByIds(List<Integer> ids, EntityManager em) {
+    private List<QuestTasks> findAllByIds(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -46,11 +53,11 @@ public class QuestTasksGroupDAO {
                 .getResultList();
     }
 
-    public static boolean exist(Integer questId, Integer userId, EntityManager em) {
-        return countQuestTasksGroupsByQuestIdAndUserId(questId, userId, em) > 0;
+    public boolean exist(Integer questId, Integer userId) {
+        return countQuestTasksGroupsByQuestIdAndUserId(questId, userId) > 0;
     }
 
-    public static long countQuestTasksGroupsByQuestIdAndUserId(final Integer questId, final Integer userId, final EntityManager em) {
+    public long countQuestTasksGroupsByQuestIdAndUserId(final Integer questId, final Integer userId) {
         if (questId == null || userId == null) {
             return 0L;
         }
@@ -60,18 +67,20 @@ public class QuestTasksGroupDAO {
                 .getSingleResult();
     }
 
-    public static boolean updateQuestTasksGroup(QuestTasksGroup tasksGroup, String name, EntityManager em) {
+    public boolean updateQuestTasksGroup(QuestTasksGroup tasksGroup, String name) {
         try {
-            tasksGroup.setGroupName(name);
+        	//FIXME Vinayak
+//            tasksGroup.setGroupName(name);
             em.merge(tasksGroup);
             return true;
         } catch (Exception e) {
-            Logger.error(format("Unable to update tasks group with ID %s due to '%s'", tasksGroup.getId(), e.getMessage()), e);
+        	//FIXME Vinayak
+//            Logger.error(format("Unable to update tasks group with ID %s due to '%s'", tasksGroup.getId(), e.getMessage()), e);
             return false;
         }
     }
 
-    public static List<QuestTasksGroup> getQuestTasksGroupsByQuestIdAndUserId(final Integer questId, final Integer userId, final EntityManager em) {
+    public List<QuestTasksGroup> getQuestTasksGroupsByQuestIdAndUserId(final Integer questId, final Integer userId) {
         if (questId == null || userId == null) {
             return Collections.emptyList();
         }
@@ -81,7 +90,7 @@ public class QuestTasksGroupDAO {
                 .getResultList();
     }
 
-    public static QuestTasksGroup addNewTasksGroup(User creator, User assignee, Quests quest, TasksGroupForm tasksGroupForm, EntityManager em) {
+    public QuestTasksGroup addNewTasksGroup(User creator, User assignee, Quests quest, TasksGroupForm tasksGroupForm) {
         if (creator == null) {
             throw new RequiredParameterMissingException("creator");
         }
@@ -96,22 +105,24 @@ public class QuestTasksGroupDAO {
         }
 
         try {
-            final Integer lastOrder = getLastTasksGroupOrder(assignee.getId(), quest.getId(), em);
+            final Integer lastOrder = getLastTasksGroupOrder(assignee.getId(), quest.getId());
             final Date now = new Date();
             final QuestTasksGroup tasksGroup = new QuestTasksGroup();
-            final List<QuestTasks> questTasks = findAllByIds(tasksGroupForm.getGroupTasks(), em);
+          //FIXME Vinayak
+//            final List<QuestTasks> questTasks = findAllByIds(tasksGroupForm.getGroupTasks());
 
-            tasksGroup.setQuestId(quest.getId());
-            tasksGroup.setUserId(assignee.getId());
-            tasksGroup.setQuestTasks(questTasks);
-            tasksGroup.setGroupName(tasksGroupForm.getGroupName());
-            tasksGroup.setCreatedDate(now);
-            tasksGroup.setGroupOrder(lastOrder + 1);
+          //FIXME Vinayak
+//            tasksGroup.setQuestId(quest.getId());
+//            tasksGroup.setUserId(assignee.getId());
+//            tasksGroup.setQuestTasks(questTasks);
+//            tasksGroup.setGroupName(tasksGroupForm.getGroupName());
+//            tasksGroup.setCreatedDate(now);
+//            tasksGroup.setGroupOrder(lastOrder + 1);
 
-            questTasks.forEach(task -> {
-                task.setQuestTasksGroup(tasksGroup);
-                em.merge(task);
-            });
+//            questTasks.forEach(task -> {
+//                task.setQuestTasksGroup(tasksGroup);
+//                em.merge(task);
+//            });
 
             em.persist(tasksGroup);
 
@@ -123,7 +134,7 @@ public class QuestTasksGroupDAO {
         }
     }
 
-    public static QuestTasksGroup addNewTasksGroup(final User assignee, final Quests quest, final String groupName, final EntityManager em) {
+    public QuestTasksGroup addNewTasksGroup(final User assignee, final Quests quest, final String groupName) {
         if (assignee == null) {
             throw new RequiredParameterMissingException("assignee");
         }
@@ -137,14 +148,16 @@ public class QuestTasksGroupDAO {
         try {
             final QuestTasksGroup tasksGroup = new QuestTasksGroup();
 
-            tasksGroup.setQuestId(quest.getId());
-            tasksGroup.setUserId(assignee.getId());
-            tasksGroup.setQuestTasks(new ArrayList<>());
-            tasksGroup.setGroupName(groupName);
-            tasksGroup.setCreatedDate(Timestamp.from(Instant.now()));
+          //FIXME Vinayak
+//            tasksGroup.setQuestId(quest.getId());
+//            tasksGroup.setUserId(assignee.getId());
+//            tasksGroup.setQuestTasks(new ArrayList<>());
+//            tasksGroup.setGroupName(groupName);
+//            tasksGroup.setCreatedDate(Timestamp.from(Instant.now()));
 
-            final Integer lastOrder = getLastTasksGroupOrder(assignee.getId(), quest.getId(), em);
-            tasksGroup.setGroupOrder(lastOrder + 1);
+            final Integer lastOrder = getLastTasksGroupOrder(assignee.getId(), quest.getId());
+          //FIXME Vinayak
+//            tasksGroup.setGroupOrder(lastOrder + 1);
 
             em.persist(tasksGroup);
 
@@ -156,7 +169,7 @@ public class QuestTasksGroupDAO {
         }
     }
 
-    public static void copyGroupToUser(final QuestTasksGroup taskGroup, final User doer, final Quests quest, final EntityManager em) {
+    public void copyGroupToUser(final QuestTasksGroup taskGroup, final User doer, final Quests quest) {
         if (taskGroup == null) {
             throw new RequiredParameterMissingException("taskGroup");
         }
@@ -166,29 +179,32 @@ public class QuestTasksGroupDAO {
         final Date now = new Date();
         final QuestTasksGroup clonedGroup = new QuestTasksGroup();
         try {
-            final Integer lastOrder = getLastTasksGroupOrder(doer.getId(), taskGroup.getQuestId(), em);
-
-            clonedGroup.setUserId(doer.getId());
-            clonedGroup.setQuestId(taskGroup.getQuestId());
-            clonedGroup.setGroupName(taskGroup.getGroupName());
-            clonedGroup.setCreatedDate(now);
-            clonedGroup.setGroupOrder(lastOrder + 1);
+        	//FIXME Vinayak
+//            final Integer lastOrder = getLastTasksGroupOrder(doer.getId(), taskGroup.getQuestId(), em);
+//
+//            clonedGroup.setUserId(doer.getId());
+//            clonedGroup.setQuestId(taskGroup.getQuestId());
+//            clonedGroup.setGroupName(taskGroup.getGroupName());
+//            clonedGroup.setCreatedDate(now);
+//            clonedGroup.setGroupOrder(lastOrder + 1);
 
             em.persist(clonedGroup);
 
-            taskGroup.getQuestTasks().stream()
-                    .filter(Objects::nonNull)
-                    .map(questTask -> QuestTasksDAO.copyTaskWithoutGroupToUser(questTask, doer, quest, em))
-                    .filter(Objects::nonNull)
-                    .peek(clonedTask -> clonedTask.setQuestTasksGroup(clonedGroup))
-                    .forEach(clonedTask -> em.merge(clonedGroup));
+          //FIXME Vinayak
+//            taskGroup.getQuestTasks().stream()
+//                    .filter(Objects::nonNull)
+//                    .map(questTask -> QuestTasksDAO.copyTaskWithoutGroupToUser(questTask, doer, quest, em))
+//                    .filter(Objects::nonNull)
+//                    .peek(clonedTask -> clonedTask.setQuestTasksGroup(clonedGroup))
+//                    .forEach(clonedTask -> em.merge(clonedGroup));
 
         } catch (final PersistenceException e) {
-            Logger.error("QuestTasksGroupDAO :: copyGroupToUser : error copying group " + taskGroup.getId(), e);
+        	//FIXME Vinayak
+//            Logger.error("QuestTasksGroupDAO :: copyGroupToUser : error copying group " + taskGroup.getId(), e);
         }
     }
 
-    private static Integer getLastTasksGroupOrder(final Integer userId, final Integer questId, final EntityManager em) {
+    private Integer getLastTasksGroupOrder(final Integer userId, final Integer questId) {
         try {
             final Integer order = em
                     .createQuery("SELECT MAX(qt.groupOrder) FROM QuestTasksGroup qt WHERE qt.questId = :questId AND qt.userId = :userId", Integer.class)
@@ -204,7 +220,7 @@ public class QuestTasksGroupDAO {
         }
     }
 
-     public static void updateGroupNameById(final String groupName, final Integer groupId, final EntityManager em) {
+     public void updateGroupNameById(final String groupName, final Integer groupId) {
         try {
             em
                     .createQuery("UPDATE QuestTasksGroup SET groupName=:groupName WHERE id = :groupId")

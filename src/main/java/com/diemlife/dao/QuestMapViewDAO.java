@@ -3,6 +3,9 @@ package com.diemlife.dao;
 import com.diemlife.models.QuestMapView;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 /**
  * DAO Quest map view
@@ -10,18 +13,11 @@ import javax.persistence.EntityManager;
  *
  * @author SYushchenko
  */
+@Repository
 public class QuestMapViewDAO {
-
-    private final EntityManager entityManager;
-
-    /**
-     * Constructor with parameters
-     *
-     * @param entityManager {@link EntityManager}
-     */
-    public QuestMapViewDAO(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
+	
+	@PersistenceContext
+	EntityManager entityManager;
 
     /**
      * Find quest map view by questMapViewId

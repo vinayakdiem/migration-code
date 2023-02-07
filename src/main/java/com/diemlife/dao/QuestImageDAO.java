@@ -5,22 +5,30 @@ import com.diemlife.models.QuestImage;
 import play.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.springframework.stereotype.Repository;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Repository
 public class QuestImageDAO {
 
-	 public static QuestImage findById(Integer id, EntityManager em) {
+	@PersistenceContext
+	EntityManager em;
+	
+	 public QuestImage findById(Integer id) {
         if (id == null) {
             return null;
         }
         return em.find(QuestImage.class, id);
     }
     
-    public static QuestImage addNewQuestImage(Integer userId, Integer questId, String url, String caption, EntityManager em) {
+    public QuestImage addNewQuestImage(Integer userId, Integer questId, String url, String caption) {
         if (userId == null) {
             throw new RequiredParameterMissingException("userId");
         }
@@ -53,7 +61,7 @@ public class QuestImageDAO {
         }
     }
 
-    public static List<QuestImage> getQuestImagesForQuest(final Integer questId, final EntityManager em) {
+    public List<QuestImage> getQuestImagesForQuest(final Integer questId) {
         if (questId == null) {
             throw new RequiredParameterMissingException("questId");
         }
@@ -67,7 +75,7 @@ public class QuestImageDAO {
         }
     }
 
-    public static void removeQuestPhotoById(Integer questPhotoId, Integer userId, EntityManager em) {
+    public void removeQuestPhotoById(Integer questPhotoId, Integer userId) {
         try {
             QuestImage image = em.find(QuestImage.class, questPhotoId);
 

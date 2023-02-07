@@ -1,27 +1,35 @@
 package com.diemlife.dao;
 
-import acl.QuestsListWithACL;
-import dto.QuestMemberDTO;
-import models.QuestSaved;
-import models.Quests;
-import models.User;
+import com.diemlife.acl.QuestsListWithACL;
+import com.diemlife.dto.QuestMemberDTO;
+import com.diemlife.models.QuestSaved;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
 import play.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.Date;
 import java.util.List;
 
-import static acl.QuestsListWithACL.emptyListWithACL;
+import static com.diemlife.acl.QuestsListWithACL.emptyListWithACL;
 import static java.util.Collections.emptyList;
 
 /**
  * Created by acoleman1 on 6/15/17.
  */
+@Repository
 public class QuestSavedDAO {
 
-    public static void remove(QuestSaved persistentInstance, EntityManager em) {
+	@PersistenceContext
+	EntityManager em;
+	
+    public void remove(QuestSaved persistentInstance) {
 
         try {
             em.remove(persistentInstance);
@@ -30,7 +38,7 @@ public class QuestSavedDAO {
         }
     }
 
-    public static void saveQuestForUser(Quests quest, User user, EntityManager em) {
+    public void saveQuestForUser(Quests quest, User user) {
 
         Date date = new Date();
 
@@ -58,7 +66,7 @@ public class QuestSavedDAO {
         }
     }
 
-    public static void removeQuestForUser(Integer questId, Integer userId, EntityManager em) {
+    public void removeQuestForUser(Integer questId, Integer userId) {
         if (questId == null || userId == null) {
             Logger.warn("QuestSavedDAO :: removeQuestForUser : empty arguments passed");
         }
@@ -75,7 +83,7 @@ public class QuestSavedDAO {
         }
     }
 
-    public static boolean doesQuestSavedExistForUser(Integer questId, Integer userId, EntityManager em) {
+    public boolean doesQuestSavedExistForUser(Integer questId, Integer userId) {
         if (questId == null || userId == null) {
             return false;
         }
@@ -92,7 +100,7 @@ public class QuestSavedDAO {
         }
     }
 
-    public static QuestsListWithACL getSavedQuestsForUser(final User user, final EntityManager em) {
+    public QuestsListWithACL getSavedQuestsForUser(final User user) {
         if (user == null) {
             return emptyListWithACL();
         }
@@ -110,7 +118,7 @@ public class QuestSavedDAO {
         }
     }
 
-    public static List<Integer> getSavedQuestIdsForUser(final User user, final EntityManager em) {
+    public List<Integer> getSavedQuestIdsForUser(final User user) {
         if (user == null) {
             return emptyList();
         }
@@ -121,11 +129,11 @@ public class QuestSavedDAO {
                 .getResultList();
     }
 
-    public static List<QuestMemberDTO> getSavedMembersForQuest(final Quests quest, final EntityManager em) {
-        return getSavedMembersForQuest(quest.getId(), em);
+    public List<QuestMemberDTO> getSavedMembersForQuest(final Quests quest) {
+        return getSavedMembersForQuest(quest.getId());
     }
 
-    public static List<QuestMemberDTO> getSavedMembersForQuest(final Integer questId, final EntityManager em) {
+    public List<QuestMemberDTO> getSavedMembersForQuest(final Integer questId) {
         if (questId == null) {
             return emptyList();
         }

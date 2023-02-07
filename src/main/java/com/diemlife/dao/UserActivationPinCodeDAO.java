@@ -5,15 +5,19 @@ import com.diemlife.models.User;
 import com.diemlife.models.UserActivationPinCode;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.Calendar;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+@Repository
 public class UserActivationPinCodeDAO extends TypedDAO<UserActivationPinCode> {
 
-    public UserActivationPinCodeDAO(final EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	private EntityManager entityManager;
 
     public UserActivationPinCode getUserActivationPinCode(final User user, final String code) {
         if (user == null) {

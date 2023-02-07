@@ -91,8 +91,9 @@ public class AsActivityDAO {
     	for (Object[] row : results) {
     		AsAttributeDTO attribute = new AsAttributeDTO();
     		AsUnitDTO unit = new AsUnitDTO();
-    		attribute.setAttributeName((String) row[0]);
-    		attribute.setId((Integer)row[1]);
+    		//FIXME Vinayak
+//    		attribute.setAttributeName((String) row[0]);
+//    		attribute.setId((Integer)row[1]);
     		attributes.add(attribute);
     	}
     
@@ -129,10 +130,11 @@ public class AsActivityDAO {
 	    			units = new ArrayList();
 	    		}
 	    		
-	    		unit.setId((Integer)row[1]);
-	    		unit.setAbbreviation((String)row[2]);
-	    		unit.setUnitNamePlural((String)row[3]);
-	    		unit.setUnitNameSingular((String)row[4]);
+	    		//FIXME Vinayak
+//	    		unit.setId((Integer)row[1]);
+//	    		unit.setAbbreviation((String)row[2]);
+//	    		unit.setUnitNamePlural((String)row[3]);
+//	    		unit.setUnitNameSingular((String)row[4]);
 	    		units.add(unit);
 	    		attributesUnit.put((Integer)row[0],units);
 	    		

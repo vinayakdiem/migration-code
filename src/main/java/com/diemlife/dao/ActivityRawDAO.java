@@ -110,7 +110,8 @@ public class ActivityRawDAO extends DynamoDAO {
     {
         for (int i = 0; i < 100; i++) {
             if (insert(ts, idType, i, eventType, msg, username, teamId, questId, taskId, lat, lon, comment, commentImgUrl, quantity, unit, tag)) {
-                return new ActivityRaw(ts, idType, i, eventType, msg, username, teamId, questId, taskId, lat, lon, comment, commentImgUrl, quantity, unit, tag);
+            	//FIXME Vinayak
+//                return new ActivityRaw(ts, idType, i, eventType, msg, username, teamId, questId, taskId, lat, lon, comment, commentImgUrl, quantity, unit, tag);
             }
         }
 

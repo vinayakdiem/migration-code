@@ -3,6 +3,9 @@ package com.diemlife.dao;
 import com.diemlife.models.QuestMapRouteTrack;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.springframework.stereotype.Repository;
 
 /**
  * QuestMapRouteTrackDAO
@@ -10,9 +13,9 @@ import javax.persistence.EntityManager;
  *
  * @author SYushchenko
  */
+@Repository
 public class QuestMapRouteTrackDAO extends TypedDAO<QuestMapRouteTrack>{
 
-    public QuestMapRouteTrackDAO(EntityManager entityManager) {
-        super(entityManager);
-    }
+	@PersistenceContext
+	EntityManager entityManager;
 }

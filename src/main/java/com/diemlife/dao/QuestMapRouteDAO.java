@@ -3,7 +3,11 @@ package com.diemlife.dao;
 import com.diemlife.models.QuestMapRoute;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 /**
@@ -12,15 +16,11 @@ import java.util.List;
  *
  * @author SYushchenko
  */
+@Repository
 public class QuestMapRouteDAO extends TypedDAO<QuestMapRoute> {
-    /**
-     * Constructor with parameters
-     *
-     * @param entityManager {@link EntityManager}
-     */
-    public QuestMapRouteDAO(EntityManager entityManager) {
-        super(entityManager);
-    }
+    
+	@PersistenceContext
+	EntityManager entityManager;
 
     /**
      * Find all quest map route by quest
