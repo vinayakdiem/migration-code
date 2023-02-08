@@ -7,7 +7,6 @@ import com.diemlife.jwt.JwtSessionUser;
 import com.diemlife.models.StripeEntity;
 import com.diemlife.models.User;
 import play.Logger;
-import play.db.jpa.JPAApi;
 import play.mvc.Http.Session;
 import com.diemlife.providers.RedisAuthProvider;
 
@@ -15,6 +14,10 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,19 +32,12 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 /**
  * Created by andrewcoleman on 4/11/17.
  */
-@Singleton
+@Service
 public class UserProvider {
 
-    private final RedisAuthProvider redisAuthProvider;
-    private final JPAApi jpaApi;
-
-    @Inject
-    public UserProvider(final RedisAuthProvider redisAuthProvider,
-                        final JPAApi api) {
-        this.redisAuthProvider = redisAuthProvider;
-        this.jpaApi = api;
-    }
-
+	@Autowired
+    private RedisAuthProvider redisAuthProvider;
+    
     @Nullable
     public User getUser(Session session) {
         final String email = JwtSessionUser.userEmailFromSession(session);
@@ -49,7 +45,7 @@ public class UserProvider {
         if (isBlank(email)) {
             return null;
         } else {
-            final User persistedUser = new UserHome().findByUsernamePasswordIdentity(email, provider, jpaApi.em());
+            final User persistedUser = new UserHome().findByUsernamePasswordIdentity(email, provider);
             if (persistedUser == null) {
                 Logger.error(format("User not found in database for email '%s' and authentication provider '%s'", email, provider));
 
@@ -68,7 +64,7 @@ public class UserProvider {
 
     public List<User> getUsersForSearch(final int userId, final String userName) {
         if (userId != 0 && userName != null) {
-            return UserHome.getUsersNotCurrentlyFriendsWithByUserId(userId, userName, jpaApi.em());
+            return UserHome.getUsersNotCurrentlyFriendsWithByUserId(userId, userName);
         } else {
             return new ArrayList<>();
         }
@@ -78,17 +74,16 @@ public class UserProvider {
         if (userId == null) {
             return null;
         }
-        final EntityManager em = jpaApi.em();
-        final User currentUser = UserHome.findById(userId, em);
+        final User currentUser = UserHome.findById(userId);
         if (currentUser == null) {
             return null;
         } else {
-            return new StripeCustomerDAO(em).getByUserId(currentUser.getId(), type);
+            return new StripeCustomerDAO().getByUserId(currentUser.getId(), type);
         }
     }
 
     public AccountStatus getAccountStatusByEmail(final String email) {
-        final User user = UserHome.findByEmail(email, jpaApi.em());
+        final User user = UserHome.findByEmail(email);
         if (user == null) {
             return NON_EXISTENT;
         }

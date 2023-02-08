@@ -5,9 +5,12 @@ import com.diemlife.dao.UserActivationPinCodeDAO;
 import com.diemlife.models.User;
 import com.diemlife.models.UserActivationPinCode;
 import play.Logger;
-import play.db.jpa.JPAApi;
 import com.diemlife.utils.DAOProvider;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.sql.Connection;
 import com.diemlife.models.Quests;
 import java.sql.SQLException;
@@ -27,30 +30,22 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-@Singleton
+@Service
 public class UserActivationService {
 
     private static final List<Integer> DIGITS = IntStream.rangeClosed(0, 9).boxed().collect(toList());
 
-    private final Config configuration;
-    private final JPAApi jpaApi;
-    private final DAOProvider daoProvider;
-    private final QuestService questService;
+    @Autowired
+    private Config configuration;
+    
+    @Autowired
+    private DAOProvider daoProvider;
+    
+    @Autowired
+    private QuestService questService;
 
-    private final Database db;
-
-    @Inject
-    public UserActivationService(final Config configuration,
-                                 final JPAApi jpaApi,
-                                 final DAOProvider daoProvider,
-                                 final QuestService questService,
-                                 final Database db) {
-        this.configuration = configuration;
-        this.jpaApi = jpaApi;
-        this.daoProvider = daoProvider;
-        this.questService = questService;
-        this.db = db;
-    }
+    @Autowired
+    private Database db;
 
     public boolean isValidPinCode(final User user, final String code) {
         return jpaApi.withTransaction(em -> {
@@ -89,8 +84,6 @@ public class UserActivationService {
     }
 
     public void populateStartQuest(User user) {
-        EntityManager em = this.jpaApi.em();
-
         // TODO: this can be moved up to a higher level later
 
         try (Connection c = db.getConnection()) {
@@ -98,9 +91,9 @@ public class UserActivationService {
             //We are finding by ID here - so if anything changes this will break.
             if (configuration.getString("play.env").equalsIgnoreCase("LOCAL") ||
                     configuration.getString("play.env").equalsIgnoreCase("DEV")) {
-                quest = QuestsDAO.findById(115, em);
+                quest = QuestsDAO.findById(115);
             } else {
-                quest = QuestsDAO.findById(222, em);
+                quest = QuestsDAO.findById(222);
             }
 
             questService.startQuest(c, quest, quest.getUser(), user, PACE_YOURSELF, null, null);

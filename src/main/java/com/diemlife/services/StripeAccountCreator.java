@@ -7,22 +7,23 @@ import com.diemlife.models.StripeCustomer;
 import com.diemlife.models.StripeEntity;
 import com.diemlife.models.User;
 import play.Logger;
-import play.db.jpa.Transactional;
 
 import java.util.Set;
 
+import org.springframework.stereotype.Service;
+
 import static java.lang.String.format;
 
+@Service
 public interface StripeAccountCreator extends StripeAccountManager {
 
-    @Transactional
     default StripeCustomer createStripeCustomer(final User user) throws StripeApiCallException {
         final StripeCustomer stripeCustomer = new StripeCustomer(user);
         Logger.info(format("Creating Stripe customer for user [%s]", user.getEmail()));
         stripeCustomer.stripeCustomerId = stripeConnectService().createCustomer(user).getId();
         Logger.info(format("Finished creating Stripe customer for user [%s]", user.getEmail()));
 
-        final StripeCustomerDAO dao = new StripeCustomerDAO(jpaApi().em());
+        final StripeCustomerDAO dao = new StripeCustomerDAO();
         final StripeEntity existingUser = dao.getByUserId(user.getId(), StripeEntity.class);
         if (existingUser instanceof StripeCustomer) {
             Logger.warn(format("Stripe customer with ID [%s] already exists for user [%s]", existingUser.id, user.getEmail()));
@@ -33,11 +34,10 @@ public interface StripeAccountCreator extends StripeAccountManager {
         }
     }
 
-    @Transactional
     default StripeAccount createStripeAccount(final User user, final String country, final String ip) throws StripeApiCallException {
         final Set<String> stripeSupportedCountries = stripeConnectService().retrieveSupportedCountriesCodes();
         if (stripeSupportedCountries.contains(country)) {
-            final StripeCustomerDAO dao = new StripeCustomerDAO(jpaApi().em());
+            final StripeCustomerDAO dao = new StripeCustomerDAO();
             final StripeEntity existingUser = dao.getByUserId(user.getId(), StripeEntity.class);
             if (existingUser instanceof StripeAccount) {
                 Logger.warn(format("Stripe account with ID [%s] already exists for user [%s] and country [%s]", existingUser.id, user.getEmail(), country));

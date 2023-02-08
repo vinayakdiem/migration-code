@@ -84,6 +84,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
 import play.db.jpa.JPAApi;
 import play.cache.CacheApi;
@@ -124,7 +127,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import javax.persistence.EntityManager;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
@@ -139,7 +141,7 @@ import static play.mvc.Http.Status.NOT_FOUND;
 import static com.diemlife.utils.StripeUtils.loadEntireCollection;
 import static com.diemlife.utils.StripeUtils.logStripeError;
 
-@Singleton
+@Service
 public class StripeConnectService {
 
     private static final String CONF_STRIPE_API_KEY = "stripe.api.key";
@@ -160,37 +162,26 @@ public class StripeConnectService {
 
     private static final String FUNDRAISER_CHARGES_CACHE_KEY = "fundraiser-charges-%s-%s-%s";
 
-    private final JPAApi jpaApi;
-    private final Config config;
-    private final String stripeApiKey;
-    private final FeeUtility feeUtility;
-    private final UserPaymentFeeService userPaymentFeeService;
-    private final CacheApi transactionsCache;
-    private final CacheApi creditCardsCache;
-    private final CacheApi bankAccountsCache;
+    @Autowired
+    private Config config;
     
-    @Inject
-    public StripeConnectService(final JPAApi jpaApi,
-                                final Config config,
-                                final FeeUtility feeUtility,
-                                final UserPaymentFeeService userPaymentFeeService,
-                                @NamedCache("transactions-cache") final CacheApi transactionsCache,
-                                @NamedCache("credit-cards-cache") final CacheApi creditCardsCache,
-                                @NamedCache("bank-accounts-cache") final CacheApi bankAccountsCache)
-    {
-        this.jpaApi = jpaApi;
-        this.config = config;
-        stripeApiKey = config.getString(CONF_STRIPE_API_KEY);
-        if (isBlank(stripeApiKey)) {
-            throw new IllegalStateException(format("Stripe API key [%s] is required to run the application", CONF_STRIPE_API_KEY));
-        }
-
-        this.feeUtility = feeUtility;
-        this.userPaymentFeeService = userPaymentFeeService;
-        this.transactionsCache = transactionsCache;
-        this.creditCardsCache = creditCardsCache;
-        this.bankAccountsCache = bankAccountsCache;
-    }
+    @Autowired
+    private String stripeApiKey = config.getString(CONF_STRIPE_API_KEY);
+    
+    @Autowired
+    private FeeUtility feeUtility;
+    
+    @Autowired
+    private UserPaymentFeeService userPaymentFeeService;
+    
+    @Autowired
+    private CacheApi transactionsCache;
+    
+    @Autowired
+    private CacheApi creditCardsCache;
+    
+    @Autowired
+    private CacheApi bankAccountsCache;
 
     public Account deleteAccount(final StripeAccount entity) {
         final RequestOptions options = platformRequestOptions();
@@ -1394,12 +1385,11 @@ public class StripeConnectService {
             charge.metadata.put("couponCode", purchaseOrder.coupon.code);
         }
 
-        final EntityManager em = jpaApi.em();
         charge.statementDescriptor = upperCase("DIEMLIFE ORDER");
         charge.statementDescriptorSuffix = upperCase("DIEMLIFE ORDER");
-        final Quests quest = QuestsDAO.findById((int) questId, em);
+        final Quests quest = QuestsDAO.findById((int) questId);
         if (quest != null) {
-            final User user = UserService.getById(quest.getCreatedBy(), em);
+            final User user = UserService.getById(quest.getCreatedBy());
             if (user != null && user.getUserName() != null) {
                 charge.statementDescriptor = upperCase(user.getUserName());
                 charge.statementDescriptorSuffix = upperCase(user.getUserName());
@@ -1447,10 +1437,9 @@ public class StripeConnectService {
 
         charge.statementDescriptor = upperCase(DESC_DIEM_LIFE_BACKING);
         charge.statementDescriptorSuffix = upperCase(DESC_DIEM_LIFE_BACKING);
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById((int) questId, em);
+        final Quests quest = QuestsDAO.findById((int) questId);
         if (quest != null) {
-            final User user = UserService.getById(quest.getCreatedBy(), em);
+            final User user = UserService.getById(quest.getCreatedBy());
             if (user != null && user.getUserName() != null) {
                 charge.statementDescriptor = upperCase(user.getUserName());
                 charge.statementDescriptorSuffix = upperCase(user.getUserName());
@@ -1497,10 +1486,9 @@ public class StripeConnectService {
         charge.statementDescriptor = upperCase(DESC_DIEM_LIFE_FUNDRAISING);
         charge.statementDescriptorSuffix = upperCase(DESC_DIEM_LIFE_FUNDRAISING);
 
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById((int) questId, em);
+        final Quests quest = QuestsDAO.findById((int) questId);
         if (quest != null) {
-            final User user = UserService.getById(quest.getCreatedBy(), em);
+            final User user = UserService.getById(quest.getCreatedBy());
             if (user != null && user.getUserName() != null) {
                 charge.statementDescriptor = upperCase(user.getUserName());
                 charge.statementDescriptorSuffix = upperCase(user.getUserName());

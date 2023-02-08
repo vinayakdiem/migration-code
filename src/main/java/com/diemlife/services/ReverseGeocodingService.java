@@ -6,43 +6,41 @@ import com.diemlife.dao.ExplorePlacesDAO;
 import com.diemlife.dao.QuestTasksDAO;
 import com.diemlife.dto.ReverseGeocodingDTO;
 import com.diemlife.dto.ReverseGeocodingFeatureDTO;
-import forms.QuestActionPointForm;
+import com.diemlife.forms.QuestActionPointForm;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.diemlife.models.ExplorePlaces;
 import com.diemlife.models.Quests;
 import play.Logger;
-import play.db.jpa.JPAApi;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-
+@Service
 public class ReverseGeocodingService {
 
-    private final Config config;
-    private final WSClient wsClient;
-    private final JPAApi jpaApi;
-    private final String mapboxBaseUrl;
-    private final String mapboxAccessToken;
-    private final String mapboxPlacesEndoint;
-
-
-    @Inject
-    public ReverseGeocodingService(Config config,
-                                   WSClient wsClient,
-                                   JPAApi jpaApi) {
-        this.config = checkNotNull(config, "config");
-        this.wsClient = checkNotNull(wsClient, "wsClient");
-        this.jpaApi = checkNotNull(jpaApi, "jpaApi");
-        this.mapboxBaseUrl = config.getString("mapbox.baseUrl");
-        this.mapboxPlacesEndoint = config.getString("mapbox.placesGeocodingEndpoint");
-        this.mapboxAccessToken = config.getString("mapbox.accessKey");
-    }
+	@Autowired
+    private Config config;
+	
+	@Autowired
+    private WSClient wsClient;
+	
+	@Autowired
+    private String mapboxBaseUrl = config.getString("mapbox.baseUrl");
+	
+	@Autowired
+    private String mapboxAccessToken = config.getString("mapbox.placesGeocodingEndpoint");
+	
+	@Autowired
+    private String mapboxPlacesEndoint = config.getString("mapbox.accessKey");
 
     public ReverseGeocodingDTO getQuestCityByGeopoint(final QuestActionPointForm form, final Quests quest) {
 
@@ -53,8 +51,6 @@ public class ReverseGeocodingService {
         String tokenQueryParamName = "?access_token=";
 
         String url = mapboxBaseUrl + mapboxPlacesEndoint + longitude + comma + latitude + jsonExtension + tokenQueryParamName + mapboxAccessToken;
-
-        final EntityManager em = jpaApi.em();
 
         final CompletionStage<String> verifyResponse = wsClient
                 .url(url)
@@ -74,9 +70,10 @@ public class ReverseGeocodingService {
                     try {
                         quest.setPlace(dto.placeName);
                         quest.setPoint(QuestTasksDAO.buildGeoPoint(form));
-                        em.merge(quest);
+                        //FIXME vinayak
+//                        em.merge(quest);
 
-                        if (!ExplorePlacesDAO.doesPlaceExist(dto.placeName, em)) {
+                        if (!ExplorePlacesDAO.doesPlaceExist(dto.placeName)) {
 
                             ExplorePlaces exploredPlaces = new ExplorePlaces();
                             exploredPlaces.setPlace(dto.placeName);

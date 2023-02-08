@@ -9,6 +9,10 @@ import com.diemlife.utils.TransactionResponse.ExportTransactionResponse;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,24 +25,11 @@ import static java.util.stream.Collectors.toList;
  *
  * @author SYushchenko
  */
-@Singleton
+@Service
 public class TransactionsService {
 
-    private final PaymentTransactionFacade paymentTransactionFacade;
-    private final JPAApi jpaApi;
-
-    /**
-     * Constructor with parameters
-     *
-     * @param paymentTransactionFacade {@link PaymentTransactionFacade}
-     * @param jpaApi                   {@link JPAApi}
-     */
-    @Inject
-    public TransactionsService(final PaymentTransactionFacade paymentTransactionFacade,
-                               final JPAApi jpaApi) {
-        this.paymentTransactionFacade = paymentTransactionFacade;
-        this.jpaApi = jpaApi;
-    }
+	@Autowired
+    private PaymentTransactionFacade paymentTransactionFacade;
 
     /**
      * Find all transactions for a user
@@ -71,7 +62,7 @@ public class TransactionsService {
     }
 
     private List<ExportTransactionResponse> getExportTransactionResponse(final User user, final Optional<Integer> questId) {
-        return paymentTransactionFacade.listTransactions(user, true, true, jpaApi.em(), questId)
+        return paymentTransactionFacade.listTransactions(user, true, true, questId)
                 .stream()
                 .filter(element -> element instanceof ExportTransactionResponse)
                 .map(ExportTransactionResponse.class::cast)
@@ -79,6 +70,6 @@ public class TransactionsService {
     }
 
     private Map<Long, PaymentPersonalInfoDTO> getPaymentPersonalInformations(final List<Long> transaction) {
-        return new PersonalInfoDAO(jpaApi.em()).getPersonalInfoByPaymentTransactions(transaction);
+        return new PersonalInfoDAO().getPersonalInfoByPaymentTransactions(transaction);
     }
 }

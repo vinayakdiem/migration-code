@@ -2,6 +2,9 @@ package com.diemlife.services;
 
 import com.typesafe.config.Config;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
 import play.cache.NamedCache;
 import play.cache.SyncCacheApi;
@@ -13,17 +16,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 
-@Singleton
+@Service
 public class SeoService {
 
-    private final Config config;
-    private final WSClient client;
-
-    @Inject
-    public SeoService(Config config, WSClient client) {
-        this.config = config;
-        this.client = client;
-    }
+	@Autowired
+    private Config config;
+	
+	@Autowired
+    private WSClient client;
 
     public boolean capturePage(String uri) {
         if ((uri == null) || uri.isEmpty()) {

@@ -24,6 +24,10 @@ import play.db.jpa.Transactional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,80 +45,69 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static com.diemlife.utils.QuestSecurityUtils.canManageTasksInQuest;
 
-@Singleton
+@Service
 public class TaskGroupService {
 
     public static final String DEFAULT_TASK_GROUP_NAME = "Tasks";
     public static final int DEFAULT_TASK_ORDER = Short.MAX_VALUE;
 
-    private final JPAApi jpaApi;
-    private final ActivityService activityService;
+    @Autowired
+    private ActivityService activityService;
 
-    @Inject
-    public TaskGroupService(final JPAApi jpaApi,final ActivityService activityService) {
-        this.jpaApi = jpaApi;
-        this.activityService = activityService;
-    }
-
-    @Transactional
     public QuestTasksGroup createDefaultGroup(final User user, final Integer groupOwnerId, final Integer questId, final String groupName) {
         final String defaultGroupName = isBlank(groupName) ? DEFAULT_TASK_GROUP_NAME : groupName;
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(questId, em);
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(questId);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
         if (canManageTasksInQuest(quest, user, activity)) {
             Logger.info(format("TaskGroupService::createDefaultGroup - Creating default task group '%s' for Quest with ID %s", defaultGroupName, questId));
         } else {
             throw new QuestOperationForbiddenException(format("User '%s' is not allowed to create task groups in Quest with ID %s", user.getEmail(), quest.getId()));
         }
 
-        final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user, em);
-        final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, defaultGroupName, em);
+        final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user);
+        final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, defaultGroupName);
 
         moveTasksToDefaultGroup(defaultGroup);
 
-        return defaultGroup == null ? null : em.find(QuestTasksGroup.class, defaultGroup.getId());
+        //FIXME vinayak
+//        return defaultGroup == null ? null : em.find(QuestTasksGroup.class, defaultGroup.getId());
     }
 
-    @Transactional
     public QuestTasksGroup createGroup(final User user, final Integer groupOwnerId, final Integer questId, final String groupName) {
         final String nonNullGroupName = isBlank(groupName) ? DEFAULT_TASK_GROUP_NAME : groupName;
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(questId, em);
-        //final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(questId);
+        //final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
         /*if (canManageTasksInQuest(quest, user, activity)) {
             Logger.info(format("TaskGroupService::createGroup - Creating new task group '%s' for Quest with ID %s", nonNullGroupName, questId));
         } else {
             throw new QuestOperationForbiddenException(format("User '%s' is not allowed to create task groups in Quest with ID %s", user.getEmail(), quest.getId()));
         }*/
 
-        final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user, em);
-        final List<QuestTasks> ungroupedTasks = QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), assignee.getId(), em).stream()
+        final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user);
+        final List<QuestTasks> ungroupedTasks = QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), assignee.getId()).stream()
                 .filter(task -> task.getQuestTasksGroup() == null)
                 .collect(toList());
         if (!ungroupedTasks.isEmpty()) {
-            final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, DEFAULT_TASK_GROUP_NAME, em);
+            final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, DEFAULT_TASK_GROUP_NAME);
 
-            moveUngroupedTasksToDefaultGroup(ungroupedTasks, defaultGroup, em);
+            moveUngroupedTasksToDefaultGroup(ungroupedTasks, defaultGroup);
         }
-        final QuestTasksGroup group = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, nonNullGroupName, em);
+        final QuestTasksGroup group = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, nonNullGroupName);
 
         rearrangeGroupsInQuest(quest, user);
 
         return group;
     }
 
-    @Transactional
     public QuestTasksGroup updateGroup(final User user, final Integer groupId, final String newGroupName, final Integer newPositionInQuest) {
-        final EntityManager em = jpaApi.em();
-        final QuestTasksGroup group = QuestTasksGroupDAO.findById(groupId, em);
+        final QuestTasksGroup group = QuestTasksGroupDAO.findById(groupId);
         if (group == null) {
             Logger.warn("TaskGroupService::updateGroup - Task group not found with ID " + groupId);
 
             return null;
         }
-        final Quests quest = QuestsDAO.findById(group.getQuestId(), em);
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(group.getQuestId());
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
         if (group.getUserId().equals(user.getId()) || canManageTasksInQuest(quest, user, activity)) {
             Logger.info(format("TaskGroupService::updateGroup - Updating task group '%s' with ID %s at position %s", group.getGroupName(), groupId, group.getGroupOrder()));
         } else {
@@ -150,32 +143,32 @@ public class TaskGroupService {
             groupIndex.set(0);
             existingGroups.forEach(existingGroup -> {
                 existingGroup.setGroupOrder(groupIndex.getAndIncrement());
-                em.merge(existingGroup);
+                //FIXME vinayak
+//                em.merge(existingGroup);
             });
         }
         if (hasNameChanged) {
             Logger.info(format("TaskGroupService::updateGroup - Renaming task group with ID %s to '%s'", groupId, name));
 
             group.setGroupName(name);
-            em.merge(group);
+          //FIXME vinayak
+//            em.merge(group);
         }
 
         return group;
     }
 
-    @Transactional
     public QuestTasks createTask(final User currentUser, final Integer questOwnerId, final Integer questId, final TaskCreateForm taskData) {
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(questId, em);
-       /* final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, currentUser, em);
+        final Quests quest = QuestsDAO.findById(questId);
+       /* final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, currentUser);
         if (canManageTasksInQuest(quest, currentUser, activity)) {
             Logger.info(format("TaskGroupService::createTask - Creating new task for Quest with ID %s in group with ID %s at position %s", questId, taskData.getGroupId(), taskData.getOrder()));
         } else {
             throw new QuestOperationForbiddenException(format("User '%s' is not allowed to create tasks in Quest with ID %s", currentUser.getEmail(), quest.getId()));
         }*/
 
-        final User assignee = getOwnerOrAssigneeUser(questOwnerId, quest, currentUser, em);
-        final QuestTasks createdTask = QuestTasksDAO.addNewTask(currentUser, assignee, quest, taskData, em);
+        final User assignee = getOwnerOrAssigneeUser(questOwnerId, quest, currentUser);
+        final QuestTasks createdTask = QuestTasksDAO.addNewTask(currentUser, assignee, quest, taskData);
         if (createdTask == null) {
             return null;
         }
@@ -190,17 +183,16 @@ public class TaskGroupService {
     }
 
     private User getOwnerOrAssigneeUser(final Integer questOwnerId,
-                                        final Quests quest, User currentUser,
-                                        final EntityManager em) {
+                                        final Quests quest, User currentUser) {
         //When receiving a user from a session, he is not always the owner of the quest
         if (questOwnerId != null) {
-            return UserService.getById(questOwnerId, em);
+            return UserService.getById(questOwnerId);
         }
-        return getTasksOwnerUserForQuest(quest, currentUser, em);
+        return getTasksOwnerUserForQuest(quest, currentUser);
     }
 
     private QuestTasksGroup getByIndexOrCreateDefault(final Integer questId, final Integer groupOwnerId, final User user, final Integer groupIndex) {
-        final List<QuestTasksGroup> groups = QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(questId, user.getId(), jpaApi.em());
+        final List<QuestTasksGroup> groups = QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(questId, user.getId());
         if (Util.isEmpty(groups)) {
             return createDefaultGroup(user, groupOwnerId, questId, DEFAULT_TASK_GROUP_NAME);
         }
@@ -211,10 +203,7 @@ public class TaskGroupService {
         }
     }
 
-    @Transactional
     public QuestTasks moveTask(final User user, final Integer taskId, final Integer targetGroupId, final Integer targetPositionInGroup) {
-        final EntityManager em = jpaApi.em();
-
         final QuestTasks task = em.find(QuestTasks.class, taskId);
         if (task == null) {
             Logger.warn("TaskGroupService::moveTask - Task not found with ID " + taskId);
@@ -222,8 +211,8 @@ public class TaskGroupService {
             return null;
         }
 
-        final Quests quest = QuestsDAO.findById(task.getQuestId(), em);
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(task.getQuestId());
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
         if (task.getUserId().equals(user.getId()) || canManageTasksInQuest(quest, user, activity)) {
             Logger.info(format("TaskGroupService::moveTask - Moving task with ID %s to group with ID %s at position %s", taskId, targetGroupId, targetPositionInGroup));
         } else {
@@ -260,27 +249,25 @@ public class TaskGroupService {
         return groupedTask;
     }
 
-    @Transactional
     public void removeTask(final QuestTasks task) {
-        final EntityManager em = jpaApi.em();
         final QuestTasksGroup group = task.getQuestTasksGroup();
         final QuestTasks orphanedTask = removeTaskFromGroup(task, group, true);
 
-        QuestTasksDAO.getLastTaskCompletions(orphanedTask.getId(), em).forEach(em::remove);
-
-        em.remove(orphanedTask);
+//        //FIXME vinayak
+//        QuestTasksDAO.getLastTaskCompletions(orphanedTask.getId()).forEach(em::remove);
+//
+//        em.remove(orphanedTask);
     }
 
-    @Transactional
     public QuestTasksGroup removeGroup(final User user, final Integer groupId) {
-        final EntityManager em = jpaApi.em();
         final QuestTasksGroup group = em.find(QuestTasksGroup.class, groupId);
-        final Quests quest = QuestsDAO.findById(group.getQuestId(), em);
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(group.getQuestId());
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
         if (canManageTasksInQuest(quest, user, activity) && Util.isEmpty(group.getQuestTasks())) {
             Logger.info(format("TaskGroupService::removeGroup - Removing empty task group with ID %s", groupId));
 
-            em.remove(group);
+          //FIXME vinayak
+//            em.remove(group);
 
             return group;
         } else if (!Util.isEmpty(group.getQuestTasks())) {
@@ -297,7 +284,6 @@ public class TaskGroupService {
                 sourceGroup == null ? null : sourceGroup.getId()
         ));
 
-        final EntityManager em = jpaApi.em();
         final List<QuestTasks> sourceGroupTasks = sourceGroup == null ? emptyList() : sourceGroup.getQuestTasks();
         if (sourceGroup != null) {
             sourceGroupTasks.removeIf(sourceTask -> sourceTask.getId().equals(task.getId()));
@@ -305,13 +291,15 @@ public class TaskGroupService {
         task.setQuestTasksGroup(null);
         task.setOrder(DEFAULT_TASK_ORDER);
 
+      //FIXME vinayak
         final QuestTasks orphanedTask = em.merge(task);
 
         if (sourceGroupTasks.isEmpty() && removeEmptyGroup) {
             Optional.ofNullable(sourceGroup).ifPresent(group -> {
                 Logger.info("TaskGroupService::removeTaskFromGroup - Removing empty group with ID " + group.getId());
 
-                em.remove(group);
+              //FIXME vinayak
+//                em.remove(group);
             });
         } else {
             rearrangeTasksInGroup(sourceGroup);
@@ -323,7 +311,6 @@ public class TaskGroupService {
     private QuestTasks addTaskToGroup(final QuestTasks task, final QuestTasksGroup targetGroup, final Integer targetPositionInGroup) {
         Logger.info(format("TaskGroupService::addTaskToGroup - Added task with ID %s to group with ID %s", task.getId(), targetGroup.getId()));
 
-        final EntityManager em = jpaApi.em();
         if (targetGroup.getQuestTasks() == null) {
             targetGroup.setQuestTasks(new ArrayList<>());
         }
@@ -348,7 +335,6 @@ public class TaskGroupService {
     }
 
     private void rearrangeTasksInGroup(final QuestTasksGroup group) {
-        final EntityManager em = jpaApi.em();
         if (group != null && group.getQuestTasks() != null && !group.getQuestTasks().isEmpty()) {
             Logger.info("TaskGroupService::rearrangeTasksInGroup - Cleaning up tasks order in group with ID " + group.getId());
 
@@ -362,27 +348,26 @@ public class TaskGroupService {
     }
 
     private void rearrangeGroupsInQuest(final Quests quest, final User user) {
-        final EntityManager em = jpaApi.em();
-        final List<QuestTasksGroup> groups = QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), user.getId(), em);
+        final List<QuestTasksGroup> groups = QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), user.getId());
         if (groups != null && !groups.isEmpty()) {
             Logger.info("TaskGroupService::rearrangeGroupsInQuest - Cleaning up tasks groups order in Quest with ID " + quest.getId());
 
             IntStream.range(0, groups.size()).boxed().forEach(index -> {
                 final QuestTasksGroup group = groups.get(index);
                 group.setGroupOrder(index);
-                em.merge(group);
+              //FIXME vinayak
+//                em.merge(group);
             });
         }
     }
 
     protected void moveTasksToDefaultGroup(final QuestTasksGroup defaultGroup) {
         if (defaultGroup != null) {
-            final EntityManager em = jpaApi.em();
             final List<QuestTasks> ungroupedTasks = QuestTasksDAO.getQuestTasksByQuestIdAndUserId(defaultGroup.getQuestId(), defaultGroup.getUserId(), em)
                     .stream()
                     .filter(task -> task.getQuestTasksGroup() == null).collect(toList());
 
-            moveUngroupedTasksToDefaultGroup(ungroupedTasks, defaultGroup, em);
+            moveUngroupedTasksToDefaultGroup(ungroupedTasks, defaultGroup);
         }
     }
 
@@ -399,24 +384,17 @@ public class TaskGroupService {
     }
 
 public void updateGroupNameById(List<TasksGroupManageEditForm> taskGroupsWithIds) {
-    	
-    	final EntityManager em = jpaApi.em();
     	taskGroupsWithIds.forEach(tasksGroupManageEditForm->{
-    		QuestTasksGroupDAO.updateGroupNameById(tasksGroupManageEditForm.getGroupName(), tasksGroupManageEditForm.getId(), em);
+    		QuestTasksGroupDAO.updateGroupNameById(tasksGroupManageEditForm.getGroupName(), tasksGroupManageEditForm.getId());
     	});
     }
     
     public void createGroupWithGroupOrder( final User user,Integer groupOwnerId,final Quests quest,final TasksGroupManageEditForm group) {
-    	 final EntityManager em = jpaApi.em();
-    	
-    	 final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user, em);
-         final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, group.getGroupName(),em);
+    	 final User assignee = getOwnerOrAssigneeUser(groupOwnerId, quest, user);
+         final QuestTasksGroup defaultGroup = QuestTasksGroupDAO.addNewTasksGroup(assignee, quest, group.getGroupName());
     }
     
     public Map<String,List<AllPillarsCount>> getActivityCountForPillarsByUserId( final Integer userId) {
-   	 final EntityManager em = jpaApi.em();
-   	
-   	
    	List<AllPillarsCount> allPillarsCounts = new ArrayList<>();
 	List<AllPillarsCount> allQuestCount = new ArrayList<>();
 
@@ -424,7 +402,7 @@ public void updateGroupNameById(List<TasksGroupManageEditForm> taskGroupsWithIds
 	userIds.add(userId);
 	
 	
-   	allPillarsCounts = QuestsDAO.getTotalPillarCountByUserIds(userIds, em);
+   	allPillarsCounts = QuestsDAO.getTotalPillarCountByUserIds(userIds);
    	 
    	 
    	 /*List<Integer> activityRecordListIds = QuestTasksDAO.getActivityRecordListIdsByUser(userId,em);
@@ -449,7 +427,7 @@ public void updateGroupNameById(List<TasksGroupManageEditForm> taskGroupsWithIds
 			allPillarsCounts = activityService.getTotalPillarsByActivityIds(taskActvities,em);
 		}
 */		
-		 List<AsPillar> pillars =  AsPillarDAO.findAllPillars(em); 
+		 List<AsPillar> pillars =  AsPillarDAO.findAllPillars(); 
 		 List<AsPillar> pillarNameNotFound = new ArrayList<>();
 		 
 		 for(AsPillar asPillar :pillars) {

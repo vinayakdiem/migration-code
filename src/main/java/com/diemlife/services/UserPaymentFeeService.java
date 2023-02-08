@@ -9,25 +9,25 @@ import play.db.jpa.JPAApi;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 /**
  * Service user payment fee service
  * Created 23/11/2020
  *
  * @author SYushchenko
  */
-@Singleton
+@Service
 public class UserPaymentFeeService {
 
     private static final String IS_USER_BRAND = "Y";
-    private final UserPaymentFeeDAO userPaymentFeeDAO;
-    private final Config config;
-
-    @Inject
-    public UserPaymentFeeService(final JPAApi jpaApi,
-                                 final Config config) {
-        this.userPaymentFeeDAO = new UserPaymentFeeDAO(jpaApi);
-        this.config = config;
-    }
+    
+    @Autowired
+    private UserPaymentFeeDAO userPaymentFeeDAO;
+    
+    @Autowired
+    private Config config;
 
     public double getFeeByUser(final User user) {
         if (user == null) {
