@@ -24,26 +24,24 @@ import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
-import play.db.jpa.JPAApi;
 
 
 import static java.util.Collections.emptyList;
 import static lombok.Lombok.checkNotNull;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
+@Service
 public class QuestCategoryService {
 
-    private final NaturalLanguageRepository repository;
-    private final JPAApi jpaApi;
-    private final Config config;
-
-    @Inject
-    public QuestCategoryService(NaturalLanguageRepository repository, JPAApi jpaApi, Config config) {
-        this.repository = repository;
-        this.jpaApi = jpaApi;
-        this.config = config;
-    }
+	@Autowired
+    private NaturalLanguageRepository repository;
+	
+	@Autowired
+	private Config config;
 
     /**
      * Given a Quest, we want to be able to classify it via Google's Natural Lang API
@@ -53,47 +51,49 @@ public class QuestCategoryService {
     public void classify(final Integer questId) {
         checkNotNull(questId, "questId is required");
 
-        Quests quest = jpaApi.withTransaction(em -> QuestsDAO.findById(questId, em));
+//        FIXME Vinayak
+//        Quests quest = jpaApi.withTransaction(em -> QuestsDAO.findById(questId, em));
 
-        if (quest != null) {
-            final String questDescription = prepareQuestInfo(quest);
+//        if (quest != null) {
+//            final String questDescription = prepareQuestInfo(quest);
+//
+//            List<NaturalLanguageResults> results;
+//
+//            if (new StringTokenizer(questDescription).countTokens() < 20) {
+//                Logger.info("Won't classify Quest " + questId + " with Google as its API requires the text to have at least 20 words");
+//
+//                results = emptyList();
+//            } else {
+//                results = repository.classify(questDescription);
+//
+//                if (results.isEmpty()) {
+//                    Logger.info("Quest " + questId + " not classified with Google API");
+//                }
+//            }
+//
+//            List<QuestCategory> categories = toQuestCategory(results, quest);
+//            List<QuestCategory> currentCategories = findCategories(questId);
 
-            List<NaturalLanguageResults> results;
+//            saveResults(removeDuplicateCategories(currentCategories, categories));
+//
+//            classifyExplore(quest);
 
-            if (new StringTokenizer(questDescription).countTokens() < 20) {
-                Logger.info("Won't classify Quest " + questId + " with Google as its API requires the text to have at least 20 words");
-
-                results = emptyList();
-            } else {
-                results = repository.classify(questDescription);
-
-                if (results.isEmpty()) {
-                    Logger.info("Quest " + questId + " not classified with Google API");
-                }
-            }
-
-            List<QuestCategory> categories = toQuestCategory(results, quest);
-            List<QuestCategory> currentCategories = findCategories(questId);
-
-            saveResults(removeDuplicateCategories(currentCategories, categories));
-
-            classifyExplore(quest);
-
-        }
+//        }
     }
 
     private void classifyExplore(Quests quest) {
-        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(quest.getId()));
-        List<ExploreCategories> exploreCategories = toExploreCategory(questCategories);
+//      FIXME Vinayak
+//        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(quest.getId()));
+//        List<ExploreCategories> exploreCategories = toExploreCategory(questCategories);
         List<ExploreCategories> currentExploreCategories = findAllExploreCategories();
 
-        if (!questCategories.isEmpty()) {
-            questCategories.sort(Comparator.comparingDouble(o -> -o.getConfidence()));
-            quest.setCategory(prepareExploreCategory(questCategories.get(0).getCategory()));
-            jpaApi.withTransaction(em -> em.merge(quest));
-        }
-
-        saveToExploreCategories(removeDuplicateExploreCategories(currentExploreCategories, exploreCategories));
+//        if (!questCategories.isEmpty()) {
+//            questCategories.sort(Comparator.comparingDouble(o -> -o.getConfidence()));
+//            quest.setCategory(prepareExploreCategory(questCategories.get(0).getCategory()));
+//            jpaApi.withTransaction(em -> em.merge(quest));
+//        }
+//
+//        saveToExploreCategories(removeDuplicateExploreCategories(currentExploreCategories, exploreCategories));
     }
 
     /**
@@ -105,25 +105,30 @@ public class QuestCategoryService {
     public List<QuestCategory> findCategories(final Integer questId) {
         checkNotNull(questId, "questId");
 
-        return jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(questId));
+//      FIXME Vinayak
+        return null;
+//        return jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(questId));
     }
 
     private List<ExploreCategories> findAllExploreCategories() {
-        return jpaApi.withTransaction(ExploreCategoriesDAO::findAllExploreCategories);
+//      FIXME Vinayak
+    	return null;
+//        return jpaApi.withTransaction(ExploreCategoriesDAO::findAllExploreCategories);
     }
 
     @SuppressWarnings("unused")
     public QuestCategory findHighestRankedCategory(final Integer questId) {
         checkNotNull(questId, "questId");
 
-        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(questId));
-        List<QuestCategory> userModifiedCategories = questCategories.stream().filter(QuestCategory::isUserModified).collect(Collectors.toList());
-
-        if (!userModifiedCategories.isEmpty()) {
-            return userModifiedCategories.get(0);
-        } else {
-            return jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findHighestRankedQuestCategory(questId));
-        }
+//      FIXME Vinayak
+//        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findQuestCategory(questId));
+//        List<QuestCategory> userModifiedCategories = questCategories.stream().filter(QuestCategory::isUserModified).collect(Collectors.toList());
+//
+//        if (!userModifiedCategories.isEmpty()) {
+//            return userModifiedCategories.get(0);
+//        } else {
+//            return jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findHighestRankedQuestCategory(questId));
+//        }
     }
 
     /**
@@ -140,18 +145,19 @@ public class QuestCategoryService {
      */
     public void bulkUpdateQuestClassifications() {
 
-        List<Quests> quests = jpaApi.withTransaction(QuestsDAO::all);
+//      FIXME Vinayak
+//        List<Quests> quests = jpaApi.withTransaction(QuestsDAO::all);
 
-        quests.forEach(q -> classify(q.getId()));
+//        quests.forEach(q -> classify(q.getId()));
     }
 
     public List<Quests> findSimilarQuests(final String category, final Integer startPos, final User user) {
         final List<String> preparedCategories = decodeCategory(category);
-        EntityManager em = jpaApi.em();
 
-        List<Integer> questIds = new QuestCategoryDAO(em).findSimilarQuestCategories(preparedCategories, startPos);
+        List<Integer> questIds = new QuestCategoryDAO().findSimilarQuestCategories(preparedCategories, startPos);
 
-        return removeDuplicatesFrom(QuestsDAO.findAllQuestsByIdsWithACL(questIds, em).getList(user));
+//      FIXME Vinayak
+//        return removeDuplicatesFrom(QuestsDAO.findAllQuestsByIdsWithACL(questIds).getList(user));
     }
 
     /**
@@ -160,18 +166,21 @@ public class QuestCategoryService {
      * @return - a list of {@link QuestCategoryDTO}
      */
     public List<QuestCategoryDTO> findAll() {
-        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO(em).findAll());
-        final String url = findUrl();
-
-        return QuestCategoryDTO.listToDTO(questCategories, url);
+//      FIXME Vinayak
+//        List<QuestCategory> questCategories = jpaApi.withTransaction(em -> new QuestCategoryDAO().findAll());
+//        final String url = findUrl();
+//
+//        return QuestCategoryDTO.listToDTO(questCategories, url);
     }
 
     private void saveResults(List<QuestCategory> results) {
-        results.forEach(category -> jpaApi.withTransaction(em -> new QuestCategoryDAO(em).save(category, QuestCategory.class)));
+//      FIXME Vinayak
+//        results.forEach(category -> jpaApi.withTransaction(em -> new QuestCategoryDAO().save(category, QuestCategory.class)));
     }
 
     private void saveToExploreCategories(List<ExploreCategories> results) {
-        results.forEach(category -> jpaApi.withTransaction(em -> ExploreCategoriesDAO.addExploreCategory(category, em)));
+//      FIXME Vinayak
+//        results.forEach(category -> jpaApi.withTransaction(em -> ExploreCategoriesDAO.addExploreCategory(category)));
     }
 
     /**

@@ -17,12 +17,15 @@ import com.diemlife.models.RecurringQuestBackingTransaction;
 import com.diemlife.models.StripeAccount;
 import com.diemlife.models.User;
 import com.diemlife.models.QuestBacking;
-import play.db.jpa.JPAApi;
 import com.diemlife.utils.TransactionResponse;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,31 +43,23 @@ import static com.diemlife.utils.TransactionResponse.fromCharge;
 import static com.diemlife.utils.TransactionResponse.fromFreeTicket;
 import static com.diemlife.utils.TransactionResponse.fromPayout;
 
-@Singleton
+@Service
 public class PaymentTransactionFacade {
 
-    private final JPAApi jpaApi;
-    private final Config configuration;
+	@Autowired
+    private Config configuration;
+	
+	@Autowired
     private final StripeConnectService stripeService;
-
-    @Inject
-    public PaymentTransactionFacade(final JPAApi jpaApi,
-                                    final Config configuration,
-                                    final StripeConnectService stripeService) {
-        this.jpaApi = jpaApi;
-        this.configuration = configuration;
-        this.stripeService = stripeService;
-    }
 
     public List<TransactionResponse> listTransactions(final User user,
                                                       final boolean all,
                                                       final boolean export,
-                                                      final EntityManager em,
                                                       final Optional<Integer> questId) {
         if (user == null) {
             throw new RequiredParameterMissingException("user");
         }
-        final PaymentTransactionDAO dao = new PaymentTransactionDAO(em);
+        final PaymentTransactionDAO dao = new PaymentTransactionDAO();
         final List<PaymentTransaction> transactions = questId.isPresent() ? dao.getTransactionsPerQuest(questId.get()) : dao.getLastTransactions(user.getId(), all);
         final Map<Long, QuestBacking> questBackingMap = getQuestBackingMapByTransactions(transactions);
         final String defaultCurrency = configuration.getString("application.currency");
@@ -101,13 +96,13 @@ public class PaymentTransactionFacade {
 
     private Map<Long, QuestBacking> getQuestBackingMapByTransactions(final List<PaymentTransaction> transactions) {
         final List<Long> transactionsIds = transactions.stream().map(l -> l.id).collect(Collectors.toList());
-        return new QuestBackingDAO(jpaApi.em()).getQuestBackingsByPaymentTransactions(transactionsIds)
+        return new QuestBackingDAO().getQuestBackingsByPaymentTransactions(transactionsIds)
                 .stream()
                 .collect(toMap(l -> l.getPaymentTransaction().id, o -> o));
     }
 
-    public List<SubscriptionListDTO> listSubscriptionsForCustomer(final User buyer, final EntityManager em) {
-        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO(em);
+    public List<SubscriptionListDTO> listSubscriptionsForCustomer(final User buyer) {
+        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO();
         return transactionDAO.getSubscriptionsForCustomer(buyer.getId())
                 .stream()
                 .map(transaction -> {
@@ -126,10 +121,10 @@ public class PaymentTransactionFacade {
                 .collect(toList());
     }
 
-    public List<TransactionResponse> listTransactionsForSubscription(final String subscriptionId, final User buyer, final EntityManager em) {
-        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO(em);
+    public List<TransactionResponse> listTransactionsForSubscription(final String subscriptionId, final User buyer) {
+        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO();
         final PaymentTransaction subscriptionTransaction = getCustomerSubscriptionById(subscriptionId, buyer, transactionDAO);
-        final StripeCustomerDAO stripeCustomerDAO = new StripeCustomerDAO(em);
+        final StripeCustomerDAO stripeCustomerDAO = new StripeCustomerDAO();
         final List<TransactionResponse> result = new ArrayList<>();
         stripeService.getInvoicesForSubscription(subscriptionId, stripeCustomerDAO.getByUserId(subscriptionTransaction.to.user.getId(), StripeAccount.class)).forEach(charge ->
                 {
@@ -143,8 +138,8 @@ public class PaymentTransactionFacade {
         return result.stream().filter(Objects::nonNull).collect(toList());
     }
 
-    public void cancelSubscriptionForCustomer(final String subscriptionId, final User buyer, final EntityManager em) {
-        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO(em);
+    public void cancelSubscriptionForCustomer(final String subscriptionId, final User buyer) {
+        final PaymentTransactionDAO transactionDAO = new PaymentTransactionDAO();
         final PaymentTransaction subscriptionTransaction = getCustomerSubscriptionById(subscriptionId, buyer, transactionDAO);
         if (subscriptionTransaction.valid) {
             final Subscription subscription = stripeService.cancelQuestBackingSubscription(subscriptionId, subscriptionTransaction.to);
@@ -161,7 +156,7 @@ public class PaymentTransactionFacade {
         if (dto == null || dto.quest == null || dto.doer == null) {
             return emptyList();
         } else {
-            return new QuestBackingLiteDAO(jpaApi.em()).getFundraisingTotals(dto.quest.id, dto.doer.id);
+            return new QuestBackingLiteDAO().getFundraisingTotals(dto.quest.id, dto.doer.id);
         }
     }
 

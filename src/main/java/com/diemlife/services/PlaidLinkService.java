@@ -9,25 +9,28 @@ import com.typesafe.config.Config;
 import com.diemlife.constants.PlaidEnvironment;
 import retrofit2.Response;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 
-@Singleton
+@Service
 public class PlaidLinkService {
 
-    private final String plaidSecretKey;
-    private final String plaidPublicKey;
-    private final String plaidClientId;
-    private final PlaidEnvironment plaidEnvironment;
-
-    @Inject
-    public PlaidLinkService(final Config configuration) {
-        this.plaidSecretKey = configuration.getString("plaid.secretKey");
-        this.plaidPublicKey = configuration.getString("plaid.publicKey");
-        this.plaidClientId = configuration.getString("plaid.clientId");
-        this.plaidEnvironment = PlaidEnvironment.valueOf(configuration.getString("plaid.environment"));
-    }
+	@Autowired
+	private Config configuration;
+	
+	@Autowired
+    private String plaidSecretKey = configuration.getString("plaid.secretKey");
+	
+	@Autowired
+    private String plaidPublicKey = configuration.getString("plaid.publicKey");
+	
+	@Autowired
+    private String plaidClientId = configuration.getString("plaid.clientId");
+	
+	@Autowired
+    private PlaidEnvironment plaidEnvironment = PlaidEnvironment.valueOf(configuration.getString("plaid.environment"));
 
     public String getBankAccountToken(final String publicToken, final String accountId) throws PlaidServiceException {
         final PlaidClient plaidClient = buildPlaidClient(plaidEnvironment);

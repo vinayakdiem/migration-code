@@ -27,6 +27,11 @@ import com.diemlife.dto.EmailTicketsDTO;
 import com.diemlife.dto.FundraisingLinkDTO;
 import com.diemlife.dto.StripeShippingDTO;
 import com.diemlife.dto.SystemFailureDTO;
+import com.diemlife.models.QuestTeam;
+import com.diemlife.models.Quests;
+import com.diemlife.models.User;
+import com.diemlife.models.UserEmailPersonal;
+
 import models.*;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +44,10 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.number.CurrencyStyleFormatter;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
 import play.i18n.Messages;
 import play.i18n.MessagesApi;
@@ -94,7 +102,7 @@ import static org.apache.commons.mail.EmailAttachment.ATTACHMENT;
 import static org.springframework.util.StringUtils.hasText;
 import static com.diemlife.utils.URLUtils.seoFriendlyPublicQuestPath;
 
-@Singleton
+@Service
 public class OutgoingEmailService {
 
     private static final String PLATFORM_EMAIL_ADDRESS = "admin@diemlife.com";
@@ -102,17 +110,17 @@ public class OutgoingEmailService {
     private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
 
-    private final Config config;
-    private final MessagesApi messages;
-    private final WSClient wsClient;
-    private final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
+    @Autowired
+    private Config config;
+    
+    @Autowired
+    private MessagesApi messages;
+    
+    @Autowired
+    private WSClient wsClient;
 
-    @Inject
-    public OutgoingEmailService(final Config config, final MessagesApi messages, final WSClient wsClient) {
-        this.config = config;
-        this.messages = messages;
-        this.wsClient = wsClient;
-    }
+    @Autowired
+    private ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
     public void sendAccountCreatedEmail(final User recipient) {
         final Messages message = messages.preferred(emptyList());

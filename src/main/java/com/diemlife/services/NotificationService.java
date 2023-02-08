@@ -17,8 +17,6 @@ import com.diemlife.models.User;
 import play.Configuration;
 import play.cache.CacheApi;
 import play.cache.NamedCache;
-import play.db.jpa.JPA;
-import play.db.jpa.JPAApi;
 import play.i18n.Messages;
 import play.i18n.MessagesApi;
 import play.mvc.Http;
@@ -26,6 +24,10 @@ import play.mvc.Http;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,30 +37,23 @@ import static com.diemlife.constants.NotificationType.COMMENT_MENTION;
 import static com.diemlife.constants.NotificationType.COMMENT_REPLIED;
 import static com.diemlife.constants.NotificationType.PHOTO_VIDEO_ADDED;
 
-@Singleton
+@Service
 public class NotificationService {
 
-    private final JPAApi jpaApi;
-    private final MessagesApi messages;
-    private final CommentsService commentsService;
-    private final CacheApi notificationsCache;
-    private final Configuration config;
-
-    @Inject
-    public NotificationService(final JPAApi jpaApi,
-                               final MessagesApi messages,
-                               final CommentsService commentsService,
-                               final @NamedCache("notifications-cache") CacheApi notificationsCache,
-                               final Configuration config) {
-        this.jpaApi = jpaApi;
-        this.messages = messages;
-        this.commentsService = commentsService;
-        this.notificationsCache = notificationsCache;
-        this.config = config;
-    }
+    @Autowired
+    private MessagesApi messages;
+    
+    @Autowired
+    private CommentsService commentsService;
+    
+    @Autowired
+    private CacheApi notificationsCache;
+    
+    @Autowired
+    private Configuration config;
 
     public List<Integer> getUserIdsSubscribedToQuest(final Quests quest) {
-        return new QuestUserFlagDAO(JPA.em()).getUsersFollowingQuest(quest);
+        return new QuestUserFlagDAO().getUsersFollowingQuest(quest);
     }
 
     public void addUserNotification(final Integer userId, final NotificationType notificationType, final Integer fromUserId) {
@@ -69,12 +64,13 @@ public class NotificationService {
                                      final NotificationType notificationType,
                                      final Integer fromUserId,
                                      final Integer fromQuestId) {
-        jpaApi.withTransaction(entityManager -> {
-            if (new QuestUserFlagDAO(entityManager).isFollowedQuestForUser(fromQuestId, userId)) {
-                new NotificationsDAO(notificationsCache).addNotification(userId, notificationType, fromUserId, fromQuestId, null, entityManager);
-            }
-            return entityManager;
-        });
+//    	FIXME Vinayak
+//        jpaApi.withTransaction(entityManager -> {
+//            if (new QuestUserFlagDAO(entityManager).isFollowedQuestForUser(fromQuestId, userId)) {
+//                new NotificationsDAO(notificationsCache).addNotification(userId, notificationType, fromUserId, fromQuestId, null, entityManager);
+//            }
+//            return entityManager;
+//        });
     }
 
     public void addCommentNotification(final Integer userId,
@@ -82,9 +78,9 @@ public class NotificationService {
                                        final Integer fromUserId,
                                        final Integer fromQuestId,
                                        final Integer fromCommentId) {
-        final EntityManager entityManager = JPA.em();
-        if (new QuestUserFlagDAO(entityManager).isFollowedQuestForUser(fromQuestId, userId)) {
-            new NotificationsDAO(notificationsCache).addNotification(userId, notificationType, fromUserId, fromQuestId, fromCommentId, entityManager);
+        if (new QuestUserFlagDAO().isFollowedQuestForUser(fromQuestId, userId)) {
+        	//FIXME VInayak
+//            new NotificationsDAO(notificationsCache).addNotification(userId, notificationType, fromUserId, fromQuestId, fromCommentId, entityManager);
         }
     }
 
@@ -92,43 +88,49 @@ public class NotificationService {
                                        final Integer fromUserId,
                                        final Integer fromQuestId,
                                        final Integer fromCommentId) {
-        new NotificationsDAO(notificationsCache).addNotification(userId, COMMENT_MENTION, fromUserId, fromQuestId, fromCommentId, jpaApi.em());
+    	//FIXME Vinayak
+//        new NotificationsDAO(notificationsCache).addNotification(userId, COMMENT_MENTION, fromUserId, fromQuestId, fromCommentId, jpaApi.em());
     }
 
     public void addCommentReplyNotification(final Integer userId,
                                             final Integer fromUserId,
                                             final Integer fromQuestId,
                                             final Integer fromCommentId) {
-        new NotificationsDAO(notificationsCache).addNotification(userId, COMMENT_REPLIED, fromUserId, fromQuestId, fromCommentId, jpaApi.em());
+    	//FIXME Vinayak
+//        new NotificationsDAO(notificationsCache).addNotification(userId, COMMENT_REPLIED, fromUserId, fromQuestId, fromCommentId, jpaApi.em());
     }
 
     public void clearCache(final Integer userId) {
-        new NotificationsDAO(notificationsCache).clearNotificationCache(userId, notificationsCache);
+    	//FIXME Vinayak
+//        new NotificationsDAO(notificationsCache).clearNotificationCache(userId, notificationsCache);
     }
 
     public List<NotificationDTO> getNotifications(final User user, final Integer startPos, final Integer endPos, final Http.RequestHeader request) {
         final Messages message = messages.preferred(request);
 
-        List<GroupedNotificationDTO> notifications = jpaApi.withTransaction(em -> new NotificationsDAO(notificationsCache).getGroupedNotifications(user.getId(), startPos, endPos, em));
+      //FIXME Vinayak
+        return null;
+//        List<GroupedNotificationDTO> notifications = jpaApi.withTransaction(em -> new NotificationsDAO(notificationsCache).getGroupedNotifications(user.getId(), startPos, endPos, em));
 
-        return getNotificationDTOs(notifications, user, message);
+//        return getNotificationDTOs(notifications, user, message);
     }
 
     private List<NotificationDTO> getNotificationDTOs(final List<GroupedNotificationDTO> notifications, final User user, final Messages message) {
         final List<NotificationDTO> result = new ArrayList<>();
         notifications.forEach(groupedNotification -> {
-            final User fromUser = jpaApi.withTransaction(em -> UserHome.findById(groupedNotification.lastUserId, em));
-            final Quests fromQuest = jpaApi.withTransaction(em -> QuestsDAO.findById(groupedNotification.fromQuestId, em));
-            final QuestComments comment = jpaApi.withTransaction(em -> QuestCommentsDAO.findById(groupedNotification.fromComment, em));
-            final String text = getNotificationText(groupedNotification, message, fromUser, fromQuest);
+        	//FIXME Vinayak
+//            final User fromUser = jpaApi.withTransaction(em -> UserHome.findById(groupedNotification.lastUserId, em));
+//            final Quests fromQuest = jpaApi.withTransaction(em -> QuestsDAO.findById(groupedNotification.fromQuestId, em));
+//            final QuestComments comment = jpaApi.withTransaction(em -> QuestCommentsDAO.findById(groupedNotification.fromComment, em));
+//            final String text = getNotificationText(groupedNotification, message, fromUser, fromQuest);
+//
+//            Notification notification = GroupedNotificationDTO.toNotification(groupedNotification);
+//            notification.setMessage(text);
 
-            Notification notification = GroupedNotificationDTO.toNotification(groupedNotification);
-            notification.setMessage(text);
-
-            final String envUrl = config.getString(DeploymentEnvironments.valueOf(config.getString("application.mode")).getBaseUrlKey());
-            Optional.ofNullable(NotificationDTO.toDTO(notification, fromUser, fromQuest, envUrl))
-                    .map(dto -> comment == null ? dto : dto.withComment(CommentsDTO.toDTO(comment).withMentions(commentsService.getCommentMentions(comment, user))))
-                    .ifPresent(result::add);
+//            final String envUrl = config.getString(DeploymentEnvironments.valueOf(config.getString("application.mode")).getBaseUrlKey());
+//            Optional.ofNullable(NotificationDTO.toDTO(notification, fromUser, fromQuest, envUrl))
+//                    .map(dto -> comment == null ? dto : dto.withComment(CommentsDTO.toDTO(comment).withMentions(commentsService.getCommentMentions(comment, user))))
+//                    .ifPresent(result::add);
         });
         return result;
     }

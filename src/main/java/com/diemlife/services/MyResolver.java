@@ -5,12 +5,16 @@ package com.diemlife.services;
  */
 
 import com.feth.play.module.pa.Resolver;
-import controllers.routes;
+
+import org.springframework.stereotype.Service;
+
+import com.diemlife.controller.*;
 import play.mvc.Call;
 
 /**
  * Concrete resolver implementation.
  */
+@Service
 public class MyResolver extends Resolver {
     @Override
     public Call login() {

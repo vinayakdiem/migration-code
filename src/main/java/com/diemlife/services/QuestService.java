@@ -29,12 +29,12 @@ import com.diemlife.dto.QuestPermissionsDTO;
 import com.diemlife.dto.TransactionExportDTO;
 import com.diemlife.exceptions.QuestOperationForbiddenException;
 import com.diemlife.exceptions.RequiredParameterMissingException;
-import forms.CommentsForm;
-import forms.LogActivityForm;
-import forms.QuestActionPointForm;
-import forms.QuestTeamInfoForm;
-import forms.TaskCreateForm;
-import forms.TasksGroupForm;
+import com.diemlife.forms.CommentsForm;
+import com.diemlife.forms.LogActivityForm;
+import com.diemlife.forms.QuestActionPointForm;
+import com.diemlife.forms.QuestTeamInfoForm;
+import com.diemlife.forms.TaskCreateForm;
+import com.diemlife.forms.TasksGroupForm;
 import com.diemlife.models.ActivityRecord;
 import com.diemlife.models.AsActivity;
 import com.diemlife.models.AsActivityRecordValue;
@@ -53,10 +53,10 @@ import com.diemlife.models.QuestUserFlag;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import play.Logger;
-import play.db.jpa.JPAApi;
-import play.db.jpa.Transactional;
 import com.diemlife.utils.URLUtils;
 
 import javax.annotation.Nonnull;
@@ -81,13 +81,13 @@ import static com.diemlife.constants.QuestActivityStatus.IN_PROGRESS;
 import static com.diemlife.constants.QuestMode.PACE_YOURSELF;
 import static com.diemlife.constants.QuestMode.SUPPORT_ONLY;
 import static com.diemlife.constants.QuestMode.TEAM;
-import static com.diemlife.dao.QuestActivityHome.getQuestActivityForQuestIdAndUser;
-import static com.diemlife.dao.QuestEventHistoryDAO.addEventHistory;
-import static com.diemlife.dao.QuestSavedDAO.doesQuestSavedExistForUser;
-import static com.diemlife.dao.QuestSavedDAO.saveQuestForUser;
-import static com.diemlife.dao.QuestsDAO.findById;
-import static forms.QuestTeamInfoForm.TeamAction.Create;
-import static forms.QuestTeamInfoForm.TeamAction.Join;
+import static com.diemlife.dao.QuestActivityHome.*;
+import static com.diemlife.dao.QuestEventHistoryDAO.*;
+import static com.diemlife.dao.QuestSavedDAO.*;
+import static com.diemlife.dao.QuestSavedDAO.*;
+import static com.diemlife.dao.QuestsDAO.*;
+import static com.diemlife.forms.QuestTeamInfoForm.TeamAction.Create;
+import static com.diemlife.forms.QuestTeamInfoForm.TeamAction.Join;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -107,7 +107,7 @@ import static com.diemlife.utils.QuestSecurityUtils.canManageTasksInQuest;
 import static com.diemlife.utils.URLUtils.getImageUrl;
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 
-@Singleton
+@Service
 public class QuestService {
 
     private static final String PARAM_QUEST = "quest";
@@ -115,27 +115,25 @@ public class QuestService {
 
     private static final PromptDAO PROMPT_DAO = PromptDAO.getInstance();
 
-    private final JPAApi jpaApi;
-    private final Config config;
-    private final SeoService seoService;
-    private final FundraisingLinkDAO fundraisingLinkDao;
-    private final MilestoneService milestoneService;
-    private final LeaderboardService leaderboardService;
-    private final ActivityService activityService;
 
-    @Inject
-    public QuestService(final JPAApi jpaApi, final Config config, final SeoService seoService, final FundraisingLinkDAO fundraisingLinkDao, MilestoneService milestoneService,
-                        LeaderboardService leaderboardService, ActivityService activityService) {
-        this.jpaApi = jpaApi;
-        this.config = config;
-        this.seoService = seoService;
-        this.fundraisingLinkDao = fundraisingLinkDao;
-        this.milestoneService = milestoneService;
-        this.leaderboardService = leaderboardService;
-        this.activityService = activityService;
-    }
+    @Autowired
+    private Config config;
+    
+    @Autowired
+    private SeoService seoService;
+    
+    @Autowired
+    private FundraisingLinkDAO fundraisingLinkDao;
+    
+    @Autowired
+    private MilestoneService milestoneService;
+    
+    @Autowired
+    private LeaderboardService leaderboardService;
+    
+    @Autowired
+    private ActivityService activityService;
 
-    @Transactional
     public boolean startQuest(final Connection c,
                               final Quests quest,
                               final User referrer,
@@ -153,10 +151,9 @@ public class QuestService {
         int questId = quest.getId();
         String username = doer.getUserName();
 
-        final EntityManager em = jpaApi.em();
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer, em);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer);
         final QuestMode requestedMode = questMode == null ? quest.getMode() : questMode;
-        final QuestTeamDAO questTeamDao = new QuestTeamDAO(em);
+        final QuestTeamDAO questTeamDao = new QuestTeamDAO();
         final QuestTeamMember currentTeamMember = questTeamDao.getTeamMember(quest, doer, false);
         final boolean isLeavingDefaultTeam = isLeavingDefaultTeam(currentTeamMember, requestedMode);
       
@@ -169,9 +166,9 @@ public class QuestService {
             return false;
         }
 
-        QuestSavedDAO.removeQuestForUser(questId, doer.getId(), em);
+        QuestSavedDAO.removeQuestForUser(questId, doer.getId());
 
-        final QuestUserFlagDAO questUserFlagDAO = new QuestUserFlagDAO(em);
+        final QuestUserFlagDAO questUserFlagDAO = new QuestUserFlagDAO();
         if (questUserFlagDAO.isFollowedQuestForUser(questId, doer.getId())) {
             Logger.debug(format("Quest with ID [%s] already is already followed by user '%s'", questId, doer.getEmail()));
         } else {
@@ -226,7 +223,7 @@ public class QuestService {
                 }
 
                 Logger.info(format("Start Quest :: Checking milestones from mega Quest [%s] for doer [%s]", questId, doer.getId()));
-                QuestTasksDAO.getLinkedQuestTasks(questId, em).forEach(milestone -> {
+                QuestTasksDAO.getLinkedQuestTasks(questId).forEach(milestone -> {
                     final QuestTaskCompletionHistory completion = milestoneService.checkMilestone(milestone, doer, false, point);
                     if (completion.isGeoPointInArea()) {
                         if (PROMPT_DAO.pushPromptToUser(c, doer, quest, AT_QUEST_START_IMMEDIATE, "Ready for new adventures?", PromptType.YES_NO_ID)) {
@@ -304,7 +301,7 @@ public class QuestService {
                             Logger.info(format("Team Quest [%s] started by the team '%s' creator '%s' - skipping milestones", questId, questTeam.getName(), questTeam.getCreator().getEmail()));
                         }
                     } else {
-                        QuestActivityHome.changeQuestActivityMode(activity, TEAM, em);
+                        QuestActivityHome.changeQuestActivityMode(activity, TEAM);
                         Logger.info(format("Switching activity on Quest with ID [%s] to '%s' mode for doer '%s'", questId, validMode.getKey(), doer.getEmail()));
                     }
 
@@ -324,7 +321,7 @@ public class QuestService {
     }
 
     private QuestTeam patchNonExistingDefaultTeam(final Quests quest, final QuestMode requestedMode, final boolean individual) {
-        final QuestTeamDAO dao = new QuestTeamDAO(jpaApi.em());
+        final QuestTeamDAO dao = new QuestTeamDAO();
         if (dao.listTeamsForQuest(quest, false, false).isEmpty() && TEAM.equals(quest.getMode()) && TEAM.equals(requestedMode) && !quest.isFundraising()) {
             return dao.createTeam(quest, quest.getUser(), getDefaultTeamName(quest), null, true, individual);
         } else {
@@ -338,7 +335,7 @@ public class QuestService {
 
     private QuestTeam joinOrCreateTeam(final Quests quest, final User doer, final QuestTeamInfoForm team, final boolean individual) {
         final QuestTeam questTeam;
-        final QuestTeamDAO questTeamDao = new QuestTeamDAO(jpaApi.em());
+        final QuestTeamDAO questTeamDao = new QuestTeamDAO();
         int questId = quest.getId();
         Integer _questId = questId;
         String username = doer.getUserName();
@@ -432,17 +429,15 @@ public class QuestService {
                                         final QuestMode mode,
                                         final QuestEvents event,
                                         final QuestActionPointForm point) {
-        final EntityManager em = jpaApi.em();
-        QuestActivityHome.startQuestForUser(quest.getId(), doer.getId(), mode, em);
-        addEventHistory(quest.getId(), doer.getId(), event, quest.getId(), point, em);
+        QuestActivityHome.startQuestForUser(quest.getId(), doer.getId(), mode);
+        addEventHistory(quest.getId(), doer.getId(), event, quest.getId(), point);
     }
 
     private QuestTasks createNewLinkMilestone(final Quests megaQuest,
                                               final Quests linkedQuest,
                                               final QuestTasks linkMilestone,
                                               final User user) {
-        final EntityManager em = jpaApi.em();
-        final QuestTasks newTask = QuestTasksDAO.addNewTask(user, user, megaQuest, new TaskCreateForm(linkMilestone.getTask()), em);
+        final QuestTasks newTask = QuestTasksDAO.addNewTask(user, user, megaQuest, new TaskCreateForm(linkMilestone.getTask()));
         if (newTask != null) {
             newTask.setLinkedQuestId(linkedQuest.getId());
             newTask.setPoint(linkMilestone.getPoint());
@@ -451,13 +446,12 @@ public class QuestService {
             newTask.setPinCompletedUrl(linkMilestone.getPinCompletedUrl());
             newTask.setCreatedBy(linkMilestone.getCreatedBy());
         }
-        return em.merge(newTask);
+//        return em.merge(newTask);
     }
 
     private void saveQuest(final Quests quest, final User user) {
-        final EntityManager em = jpaApi.em();
-        saveQuestForUser(quest, user, em);
-        addEventHistory(quest.getId(), user.getId(), QUEST_SAVE, quest.getId(), em);
+        saveQuestForUser(quest, user);
+        addEventHistory(quest.getId(), user.getId(), QUEST_SAVE, quest.getId());
     }
 
     public boolean completeQuest(final Connection c,
@@ -469,7 +463,6 @@ public class QuestService {
         return completeQuest(c, cRo, quest, doer, completeMilestones, point, true);
     }
 
-    @Transactional
     public boolean completeQuest(final Connection c,
                                  final Connection cRo,
                                  final Quests quest,
@@ -487,15 +480,14 @@ public class QuestService {
         int userId = doer.getId();
         String email = doer.getEmail();
 
-        final EntityManager em = jpaApi.em();
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer, em);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer);
         if (activity == null || !IN_PROGRESS.equals(activity.getStatus())) {
             Logger.warn(format("Won't complete - Quest with ID [%s] not started by user '%s'", questId, email));
 
             return false;
         }
 
-        QuestActivityHome.completeQuestForUser(quest, doer, em);
+        QuestActivityHome.completeQuestForUser(quest, doer);
 
         if (completeMilestones) {
             if (SUPPORT_ONLY.equals(quest.getMode()) && !canEditQuest(quest, doer)) {
@@ -508,7 +500,7 @@ public class QuestService {
                 listMilestonesForQuest(quest, doer).forEach(milestone -> {
                     milestoneService.checkMilestone(milestone, doer, true, point, logActivityFeed);
                     Optional.ofNullable(milestone.getLinkedQuestId())
-                            .map(linkedQuestId -> QuestsDAO.findById(linkedQuestId, em))
+                            .map(linkedQuestId -> QuestsDAO.findById(linkedQuestId))
                             .ifPresent(linkedQuest -> completeQuest(c, cRo, linkedQuest, doer, true, point, logActivityFeed));
                 });
             }
@@ -516,10 +508,10 @@ public class QuestService {
             Logger.info(format("Completing Quest with ID [%s] started by user '%s'", questId, email));
         }
 
-        addEventHistory(questId, doer.getId(), QUEST_COMPLETE, questId, point, em);
+        addEventHistory(questId, doer.getId(), QUEST_COMPLETE, questId, point);
 
         Logger.info(format("Complete Quest :: Checking milestones from mega Quest [%s] for doer [%s]", questId, userId));
-        QuestTasksDAO.getLinkedQuestTasks(questId, em).forEach(milestone -> {
+        QuestTasksDAO.getLinkedQuestTasks(questId).forEach(milestone -> {
             final QuestTaskCompletionHistory completion = milestoneService.checkMilestone(milestone, doer, true, point, logActivityFeed);
             if (completion.isGeoPointInArea()) {
                 if (PROMPT_DAO.pushPromptToUser(c, doer, quest, AT_QUEST_COMPLETE, "Was it an exciting adventure?", PromptType.SCALE_OF_ONE_TO_FIVE_ID)) {
@@ -553,7 +545,6 @@ public class QuestService {
         return true;
     }
 
-    @Transactional
     public boolean cancelQuest(Connection cRo, final Quests quest, final User doer) {
         if (quest == null) {
             throw new RequiredParameterMissingException(PARAM_QUEST);
@@ -565,14 +556,13 @@ public class QuestService {
         String username = doer.getUserName();
         long userId = doer.getId();
 
-        final EntityManager em = jpaApi.em();
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer, em);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer);
         if (activity == null || !IN_PROGRESS.equals(activity.getStatus())) {
             Logger.warn(format("CancelQuest :: Quest [%s] not in progress for user [%s]", questId, userId));
             return false;
         }
         if (TEAM.equals(activity.getMode())) {
-            final QuestTeamDAO dao = new QuestTeamDAO(em);
+            final QuestTeamDAO dao = new QuestTeamDAO();
             final QuestTeamMember member = dao.getTeamMember(quest, doer);
             if (member == null) {
                 Logger.warn(format("CancelQuest :: Doer '%s' is not member of a Quest [%s] team", userId, questId));
@@ -581,15 +571,15 @@ public class QuestService {
             }
         }
 
-        QuestActivityHome.removeAllQuestActivity(questId, doer.getId(), em);
-        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(questId, doer.getId(), em).forEach(milestone -> {
+        QuestActivityHome.removeAllQuestActivity(questId, doer.getId());
+        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(questId, doer.getId()).forEach(milestone -> {
             if (quest.getCreatedBy().equals(milestone.getUserId())) {
                 Logger.info(format("CancelQuest :: Uncheck milestone for Quest [%s] creator [%s]", milestone.getQuestId(), milestone.getUserId()));
 
-                QuestTasksDAO.setTaskCompleted(milestone, doer, false, em);
+                QuestTasksDAO.setTaskCompleted(milestone, doer, false);
             } else {
                 if (PACE_YOURSELF.equals(activity.getMode())) {
-                    QuestTasksDAO.remove(milestone, em);
+                    QuestTasksDAO.remove(milestone);
 
                     Logger.info(format("CancelQuest :: Removing milestone copy for Quest [%s] and doer [%s]", questId, milestone.getUserId()));
                 } else {
@@ -597,12 +587,12 @@ public class QuestService {
                 }
             }
         });
-        saveQuestForUser(quest, doer, em);
+        saveQuestForUser(quest, doer);
 
-        QuestTasksDAO.getLinkedQuestTasks(questId, em).forEach(milestone -> {
+        QuestTasksDAO.getLinkedQuestTasks(questId).forEach(milestone -> {
             Logger.info(format("CancelQuest :: Removing milestone from mega Quest [%s] and doer [%s]", milestone.getQuestId(), milestone.getUserId()));
 
-            QuestTasksDAO.remove(milestone, em);
+            QuestTasksDAO.remove(milestone);
         });
 
         if (quest.isFundraising()) {
@@ -612,7 +602,7 @@ public class QuestService {
             }
         }
 
-        addEventHistory(questId, doer.getId(), QUEST_CANCEL, questId, em);
+        addEventHistory(questId, doer.getId(), QUEST_CANCEL, questId);
 
         // Record event for activity feed
         QuestTeam2 questTeam = QuestTeamDAO.getActiveTeamByQuestAndUser(cRo, questId, userId);
@@ -625,32 +615,29 @@ public class QuestService {
         final StopWatch timer = new StopWatch("Get recommended Quests");
         timer.start();
 
-        final EntityManager em = jpaApi.em();
         final String envUrl = config.getString(DeploymentEnvironments.valueOf(config.getString("application.mode")).getBaseUrlKey());
-        final List<QuestLiteDTO> result = em.createQuery("SELECT r FROM QuestRecommendations r WHERE r.active = TRUE", QuestRecommendation.class)
-                .getResultList()
-                .stream()
-                .filter(recommendation -> recommendation.active)
-                .map(recommendation -> recommendation.quest)
-                .map(quest -> QuestLiteDTO.toDTO(quest).withSeoSlugs(publicQuestSEOSlugs(quest, quest.getUser(), envUrl)))
-                .collect(toList());
-        Collections.shuffle(result);
+        //FIXME Vinayak
+//        final List<QuestLiteDTO> result = em.createQuery("SELECT r FROM QuestRecommendations r WHERE r.active = TRUE", QuestRecommendation.class)
+//                .getResultList()
+//                .stream()
+//                .filter(recommendation -> recommendation.active)
+//                .map(recommendation -> recommendation.quest)
+//                .map(quest -> QuestLiteDTO.toDTO(quest).withSeoSlugs(publicQuestSEOSlugs(quest, quest.getUser(), envUrl)))
+//                .collect(toList());
+//        Collections.shuffle(result);
 
         timer.stop();
         Logger.debug(timer.toString());
 
-        return result.size() > limit
-                ? result.subList(0, limit)
-                : result;
+//        return result.size() > limit
+//                ? result.subList(0, limit)
+//                : result;
     }
 
-    @Transactional
     public QuestTasks addMilestoneToMegaQuest(final Connection cRo, final Quests megaQuest, final Quests linkedQuest, final User user) {
         Logger.debug(format("Adding milestone to mega Quest :: Mega Quest [%s], linked Quest [%s], doer [%s]", megaQuest.getId(), linkedQuest.getId(), user.getId()));
 
-        final EntityManager em = jpaApi.em();
-
-        final QuestActivity megaQuestActivity = getQuestActivityForQuestIdAndUser(megaQuest, user, em);
+            final QuestActivity megaQuestActivity = getQuestActivityForQuestIdAndUser(megaQuest, user);
         if (megaQuestActivity == null) {
             Logger.info(format("Adding milestone to mega Quest :: User [%s] doesn't have any activity on Mega Quest [%s] - Staring mega Quest", user.getId(), megaQuest.getId()));
 
@@ -661,15 +648,16 @@ public class QuestService {
             throw new IllegalStateException("Mega Quest is not in progress");
         }
 
-        em.flush();
+//FIXME Vinayak
+//        em.flush();
 
-        final QuestActivity linkedQuestActivity = getQuestActivityForQuestIdAndUser(linkedQuest, user, em);
-        final boolean isLinkedQuestSaved = doesQuestSavedExistForUser(linkedQuest.getId(), user.getId(), em);
-        final QuestTasks creatorsLinkMilestone = QuestTasksDAO.getLinkedQuestTaskForMegaQuest(megaQuest.getId(), linkedQuest.getId(), megaQuest.getCreatedBy(), em);
+        final QuestActivity linkedQuestActivity = getQuestActivityForQuestIdAndUser(linkedQuest, user);
+        final boolean isLinkedQuestSaved = doesQuestSavedExistForUser(linkedQuest.getId(), user.getId());
+        final QuestTasks creatorsLinkMilestone = QuestTasksDAO.getLinkedQuestTaskForMegaQuest(megaQuest.getId(), linkedQuest.getId(), megaQuest.getCreatedBy());
         if (creatorsLinkMilestone == null) {
             throw new IllegalStateException(format("Trying to link Quest with ID %s that is not defined in mega-Quest with ID %s", linkedQuest.getId(), megaQuest.getId()));
         }
-        final QuestTasks doersLinkMilestone = QuestTasksDAO.getLinkedQuestTaskForMegaQuest(megaQuest.getId(), linkedQuest.getId(), user.getId(), em);
+        final QuestTasks doersLinkMilestone = QuestTasksDAO.getLinkedQuestTaskForMegaQuest(megaQuest.getId(), linkedQuest.getId(), user.getId());
         if (linkedQuestActivity == null && !isLinkedQuestSaved && doersLinkMilestone == null) {
             Logger.info(format("Adding milestone to mega Quest :: Saving linked Quest [%s] and creating new link milestone for user [%s]", linkedQuest.getId(), user.getId()));
 
@@ -711,7 +699,6 @@ public class QuestService {
      * @return Copy of the original Quest
      */
     public Quests copyQuestForUser(final Quests quest, final User newDoer, final boolean copyImages) {
-        final EntityManager em = jpaApi.em();
         final Quests newQuest = QuestsDAO.createQuest(
                 "Copy of " + quest.getTitle(),
                 quest.getQuestFeed(),
@@ -734,24 +721,23 @@ public class QuestService {
                 em
         );
 
-        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), quest.getCreatedBy(), em)
+        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), quest.getCreatedBy())
                 .forEach(milestone -> milestoneService.copyMilestone(milestone, newQuest, newDoer));
 
         if (copyImages) {
-            QuestImageDAO.getQuestImagesForQuest(quest.getId(), em)
-                    .forEach(image -> QuestImageDAO.addNewQuestImage(newDoer.getId(), newQuest.getId(), image.getQuestImageUrl(), image.getCaption(), em));
+            QuestImageDAO.getQuestImagesForQuest(quest.getId())
+                    .forEach(image -> QuestImageDAO.addNewQuestImage(newDoer.getId(), newQuest.getId(), image.getQuestImageUrl(), image.getCaption()));
         }
 
         return newQuest;
     }
 
-    @Transactional
+
     public boolean repeatQuest(final Quests quest,
                                final User user,
                                final QuestActionPointForm point,
                                final boolean resetTasks) {
-        final EntityManager em = jpaApi.em();
-        final boolean repeated = QuestActivityHome.repeatQuestForUser(quest, user, em);
+        final boolean repeated = QuestActivityHome.repeatQuestForUser(quest, user);
         if (repeated) {
 
             // Ensure user is on leaderboard
@@ -760,16 +746,16 @@ public class QuestService {
                 Logger.debug("startQuest - added leaderboard member: " + lm.id);
             }
 
-            QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), user.getId(), em).forEach(milestone -> {
+            QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), user.getId()).forEach(milestone -> {
                 if (resetTasks) {
                     milestoneService.checkMilestone(milestone, user, false, point);
                     Logger.info("resetting tasks for quest "+ quest.getId()); 
                 }
                 Optional.ofNullable(milestone.getLinkedQuestId())
-                        .map(linkedQuestId -> QuestsDAO.findById(linkedQuestId, em))
+                        .map(linkedQuestId -> QuestsDAO.findById(linkedQuestId))
                         .ifPresent(linkedQuest -> repeatQuest(linkedQuest, user, point, resetTasks));
             });
-            addEventHistory(quest.getId(), user.getId(), QUEST_RESTART, quest.getId(), point, em);
+            addEventHistory(quest.getId(), user.getId(), QUEST_RESTART, quest.getId(), point);
 
             Logger.info(format("Repeat Quest :: Un-checking milestones from mega Quest [%s] for doer [%s]", quest.getId(), user.getId()));
             QuestTasksDAO.getLinkedQuestTasks(quest.getId(), em).forEach(milestone -> milestoneService.checkMilestone(milestone, user, false, point));
@@ -788,16 +774,13 @@ public class QuestService {
      * @param doer      User that switches the milestone status
      * @return Toggling result: true if toggle successful, false otherwise
      */
-    @Transactional
     public boolean toggleMilestoneCompletion(final Connection c, final Connection cRo, final @Nonnull QuestTasks milestone, final @Nonnull User doer, final QuestActionPointForm point) {
-        final EntityManager em = jpaApi.em();
-
-        final Quests quest = QuestsDAO.findById(milestone.getQuestId(), em);
+        final Quests quest = QuestsDAO.findById(milestone.getQuestId());
         if (quest == null || quest.isMilestoneControlsDisabled()) {
             Logger.info(format("Won't toggle milestone - Quest with ID [%s] has disabled milestones controls", milestone.getQuestId()));
             return false;
         }
-        final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, doer, em);
+        final QuestActivity questActivity = getQuestActivityForQuestIdAndUser(quest, doer);
         if (questActivity == null) {
             Logger.info(format("Won't toggle milestone - no activity found for Quest with ID [%s] and user [%s]", quest.getId(), doer.getId()));
             return false;
@@ -852,13 +835,10 @@ public class QuestService {
         }
     }
 
-    @Transactional
     public boolean renameTaskGroup(final @Nonnull QuestTasksGroup tasksGroup,
                                    final @Nonnull User doer,
                                    final String newName) {
-
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(tasksGroup.getQuestId(), em);
+        final Quests quest = QuestsDAO.findById(tasksGroup.getQuestId());
         if (quest == null) {
             Logger.info(format("Won't rename task group - no Quest found with ID [%s] and user [%s]", tasksGroup.getQuestId(), doer.getId()));
             return false;
@@ -869,7 +849,7 @@ public class QuestService {
         }
 
         if (canEditGroup(tasksGroup, doer)) {
-            return QuestTasksGroupDAO.updateQuestTasksGroup(tasksGroup, newName, em);
+            return QuestTasksGroupDAO.updateQuestTasksGroup(tasksGroup, newName);
         } else {
             return false;
         }
@@ -878,33 +858,30 @@ public class QuestService {
     public QuestTasksGroup addTasksGroupToQuest(final Quests quest,
                                                 final User doer,
                                                 final TasksGroupForm tasksGroupForm) throws QuestOperationForbiddenException {
-        final EntityManager em = jpaApi.em();
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer, em);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, doer);
         if (canManageTasksInQuest(quest, doer, activity)) {
-            final User assignee = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer, em);
-            return QuestTasksGroupDAO.addNewTasksGroup(doer, assignee, quest, tasksGroupForm, em);
+            final User assignee = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer);
+            return QuestTasksGroupDAO.addNewTasksGroup(doer, assignee, quest, tasksGroupForm);
         } else {
             throw new QuestOperationForbiddenException(format("User '%s' is not allowed to add milestones to Quest with ID %s", doer.getEmail(), quest.getId()));
         }
     }
 
     public List<QuestTasks> listMilestonesForQuest(final Quests quest, final User doer) {
-        final EntityManager em = jpaApi.em();
-        final User tasksOwnerUser = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer, em);
+        final User tasksOwnerUser = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer);
         if (tasksOwnerUser == null) {
             return emptyList();
         } else {
-            return QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), tasksOwnerUser.getId(), em);
+            return QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), tasksOwnerUser.getId());
         }
     }
 
     public List<QuestTasksGroup> listMilestonesGroupsForQuest(final Quests quest, final User doer) {
-        final EntityManager em = jpaApi.em();
-        final User tasksOwnerUser = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer, em);
+        final User tasksOwnerUser = QuestTasksDAO.getTasksOwnerUserForQuest(quest, doer);
         if (tasksOwnerUser == null) {
             return emptyList();
         } else {
-            return QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), tasksOwnerUser.getId(), em);
+            return QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), tasksOwnerUser.getId());
         }
     }
 
@@ -927,16 +904,14 @@ public class QuestService {
         if (user.getId().equals(entityUserId)) {
             return true;
         }
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(entityQuestId, em);
-        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user, em);
+        final Quests quest = QuestsDAO.findById(entityQuestId);
+        final QuestActivity activity = getQuestActivityForQuestIdAndUser(quest, user);
 
         return canManageTasksInQuest(quest, user, activity);
     }
 
     private boolean isUserInMilestoneTeam(final QuestTasks milestone, final User user) {
-        final EntityManager em = jpaApi.em();
-        final Quests quest = QuestsDAO.findById(milestone.getQuestId(), em);
+        final Quests quest = QuestsDAO.findById(milestone.getQuestId());
         final QuestTeamMember teamMember = new QuestTeamDAO(em).getTeamMember(quest, user);
         return TEAM.equals(quest.getMode())
                 && teamMember != null
@@ -946,22 +921,20 @@ public class QuestService {
     }
 
     private void cloneMilestonesForDoer(final Quests quest, final User doer) {
-        final EntityManager em = jpaApi.em();
-        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), doer.getId(), em)
-                .forEach(milestone -> QuestTasksDAO.remove(milestone, em));
+        QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), doer.getId())
+                .forEach(milestone -> QuestTasksDAO.remove(milestone);
 
-        if (QuestTasksGroupDAO.exist(quest.getId(), quest.getCreatedBy(), em)) {
-            QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), quest.getCreatedBy(), em)
-                    .forEach(taskGroup -> QuestTasksGroupDAO.copyGroupToUser(taskGroup, doer, quest, em));
+        if (QuestTasksGroupDAO.exist(quest.getId(), quest.getCreatedBy())) {
+            QuestTasksGroupDAO.getQuestTasksGroupsByQuestIdAndUserId(quest.getId(), quest.getCreatedBy())
+                    .forEach(taskGroup -> QuestTasksGroupDAO.copyGroupToUser(taskGroup, doer, quest));
         } else {
-            QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), quest.getCreatedBy(), em)
-                    .forEach(questTask -> QuestTasksDAO.copyTaskWithoutGroupToUser(questTask, doer, quest, em));
+            QuestTasksDAO.getQuestTasksByQuestIdAndUserId(quest.getId(), quest.getCreatedBy())
+                    .forEach(questTask -> QuestTasksDAO.copyTaskWithoutGroupToUser(questTask, doer, quest));
         }
     }
 
     public boolean renameQuest(Integer questId, String questName, User user) throws QuestOperationForbiddenException  {
-        final EntityManager em = jpaApi.em();
-        final Quests quest = findById(questId, em);
+        final Quests quest = findById(questId);
 
         if (quest == null) {
             throw new NoSuchElementException();
@@ -971,7 +944,7 @@ public class QuestService {
 
         if (permissions.editable) {
             quest.setTitle(questName);
-            QuestsDAO.update(quest, em);
+            QuestsDAO.update(quest);
             return true;
         }
         else {
@@ -979,14 +952,14 @@ public class QuestService {
         }
     }
     
-    public List<ActivityRecord> getActivityIdsByActivityRecordList(Integer activityRecordListId, EntityManager em){
+    public List<ActivityRecord> getActivityIdsByActivityRecordList(Integer activityRecordListId){
    	 
     	List<Integer> activityRecordListIds = new ArrayList<>();
     	activityRecordListIds.add(activityRecordListId);
-    	return activityService.getActivityIdsByActivityRecordList(activityRecordListIds, em);
+    	return activityService.getActivityIdsByActivityRecordList(activityRecordListIds);
     }
     
-    public List<AsActivityDTO> getActivitiesByRecordList(Integer activityRecordListId, EntityManager em){
+    public List<AsActivityDTO> getActivitiesByRecordList(Integer activityRecordListId){
       	 
     	List<Integer> activityRecordListIds = new ArrayList<>();
     	List<AsActivityDTO> activities = new ArrayList<>();
@@ -994,7 +967,7 @@ public class QuestService {
     		return activities;
     	}
     	activityRecordListIds.add(activityRecordListId);
-    	List<ActivityRecord> activityrecords = activityService.getActivityIdsByActivityRecordList(activityRecordListIds, em);
+    	List<ActivityRecord> activityrecords = activityService.getActivityIdsByActivityRecordList(activityRecordListIds);
     	
     	Set<Integer> ids = new HashSet<>();
     	for (ActivityRecord activityRecord : activityrecords) {
@@ -1003,7 +976,7 @@ public class QuestService {
     
     	
     	if(ids!=null && !ids.isEmpty()) {
-    	List<AsActivity> asActivities = AsActivityDAO.getActvitiesByIds(ids, em);
+    	List<AsActivity> asActivities = AsActivityDAO.getActvitiesByIds(ids);
 	    	for(AsActivity asActivity :asActivities) {
 	    		AsActivityDTO asActivityDTO = new AsActivityDTO();
 	    		asActivityDTO.setActivityName(asActivity.getName());
@@ -1015,42 +988,37 @@ public class QuestService {
     }
     
     public void addLogActivity(Integer questId, Integer userId, LogActivityForm form, String imageURL){
-    	 final EntityManager em = jpaApi.em();
     	 
-    	Integer actvityRecordValueId = QuestsDAO.addlogActivity(questId, userId, form, imageURL, em);
+    	Integer actvityRecordValueId = QuestsDAO.addlogActivity(questId, userId, form, imageURL);
     	
     	if(form.getTags()!=null && form.getTags().size()>0)
-    	QuestsDAO.addtags(actvityRecordValueId, form.getTags(), em);
+    	QuestsDAO.addtags(actvityRecordValueId, form.getTags());
     }
     
     public List<LogActivityDTO> getLogActivity(Integer questId,Integer pageNumber,Integer pageSize){
-   	 final EntityManager em = jpaApi.em();
    	 
-   	List<LogActivityDTO> logActivityDTOList = QuestsDAO.getlogActivity(questId,pageNumber,pageSize,em);
+   	List<LogActivityDTO> logActivityDTOList = QuestsDAO.getlogActivity(questId,pageNumber,pageSize);
    	
    	 return logActivityDTOList;
    	
    }
     
     public List<AsCommentsDTO> addComments(Integer questId, Integer userId, CommentsForm form) {
-    	final EntityManager em = jpaApi.em();
     	
-    	return QuestsDAO.addComments(questId, userId, form, em);
+    	return QuestsDAO.addComments(questId, userId, form);
     	
     }
     
     public AsLikesDTO addLikes(Integer questId, Integer userId, Integer activityRecordListValueId) {
-    	final EntityManager em = jpaApi.em();
     	
-    	return QuestsDAO.addLikes(questId, userId, activityRecordListValueId, em);
+    	return QuestsDAO.addLikes(questId, userId, activityRecordListValueId);
     	
     }
     
     
     public List<ActivityExportDTO> getActivityExportData(Integer questId) {
-    	final EntityManager em = jpaApi.em();
     	
-    	List<LogActivityDTO> logActivityDTOList = QuestsDAO.getlogActivity(questId,0,0,em);
+    	List<LogActivityDTO> logActivityDTOList = QuestsDAO.getlogActivity(questId,0,0);
     	
     	 return logActivityDTOList.stream()
                  .map(ActivityExportDTO::from)
@@ -1060,26 +1028,23 @@ public class QuestService {
     }
     
     public Quests getQuestById(Integer questId) {
-    	final EntityManager em = jpaApi.em();
     	
-    	return QuestsDAO.getQuestById(questId, em);
+    	return QuestsDAO.getQuestById(questId);
     
     }
     
     
     public boolean editLogAcivity(Integer activityRecordValueId,String imageURL,LogActivityForm form,User user) {
-    	final EntityManager em = jpaApi.em();
     	
-    	Boolean isUpdated = QuestsDAO.editLogActivity(activityRecordValueId,imageURL,form.getComment(),form.getTitle(),user.getId(),em);
+    	Boolean isUpdated = QuestsDAO.editLogActivity(activityRecordValueId,imageURL,form.getComment(),form.getTitle(),user.getId());
     	
     	return isUpdated;
     	
     }
     
     public boolean deleteLogAcivity(Integer activityRecordValueId,User user) {
-    	final EntityManager em = jpaApi.em();
     	
-    	Boolean isUpdated = QuestsDAO.deleteLogActivity(activityRecordValueId,user.getId(),em);
+    	Boolean isUpdated = QuestsDAO.deleteLogActivity(activityRecordValueId,user.getId());
     	
     	return isUpdated;
     	
@@ -1087,9 +1052,7 @@ public class QuestService {
     
     public List<LeaderboardMaxActivityDTO>  leaderboardMaxActivity(Integer questId) {
 
-    	final EntityManager em = jpaApi.em();
-    	
-    	return QuestsDAO.leaderboardMaxActivity(questId,em);
+    	return QuestsDAO.leaderboardMaxActivity(questId);
     	
     	
     }

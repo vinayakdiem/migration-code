@@ -19,12 +19,13 @@ import com.diemlife.models.QuestTeam;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import com.diemlife.models.UserSEO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import play.Logger;
 import play.db.Database;
 import play.db.NamedDatabase;
-import play.db.jpa.JPAApi;
-import play.db.jpa.Transactional;
 import com.diemlife.utils.URLUtils.QuestSEOSlugs;
 
 import javax.inject.Inject;
@@ -48,29 +49,23 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static com.diemlife.utils.URLUtils.publicQuestSEOSlugs;
 import static com.diemlife.utils.URLUtils.publicTeamQuestSEOSlugs;
 
-@Singleton
+@Service
 public class QuestListService {
 
-    private final JPAApi jpaApi;
-    private final Config config;
-    private final FundraisingLinkDAO fundraisingLinkDao;
-    private final Database dbRo;
+	@Autowired
+	private Config config;
+	
+	@Autowired
+    private FundraisingLinkDAO fundraisingLinkDao;
+	
+	@Autowired
+    private Database dbRo;
 
-    @Inject
-    public QuestListService(final JPAApi jpaApi, final Config config, final FundraisingLinkDAO fundraisingLinkDao, @NamedDatabase("ro") Database dbRo) {
-        this.jpaApi = jpaApi;
-        this.config = config;
-        this.fundraisingLinkDao = fundraisingLinkDao;
-        this.dbRo = dbRo;
-    }
-
-    @Transactional(readOnly = true)
     public List<QuestDTO> loadMyQuestsForUser(final User loggedInUser, final User requestedUser) {
         final StopWatch timer = new StopWatch(format("Loading my Quests list for user '%s'", requestedUser.getEmail()));
 
         timer.start("Loading my Quests statistics");
 
-        final EntityManager em = jpaApi.em();
         final MyQuestsListDAO myQuestsDao = new MyQuestsListDAO();
         
         List<MyQuestDTO> myQuests;
@@ -85,14 +80,14 @@ public class QuestListService {
         timer.start("Loading all Quests data");
 
         final Map<Integer, MyQuestDTO> myQuestsMap = myQuests.stream().collect(toMap(myQuest -> myQuest.questId.intValue(), myQuest -> myQuest));
-        final Map<Integer, Quests> allQuestsMap = QuestsDAO.findQuestsWithAclByIds(myQuestsMap.keySet(), em).getList(loggedInUser)
+        final Map<Integer, Quests> allQuestsMap = QuestsDAO.findQuestsWithAclByIds(myQuestsMap.keySet()).getList(loggedInUser)
                 .stream()
                 .collect(toMap(Quests::getId, quest -> quest));
 
         timer.stop();
         timer.start("Loading user teams");
 
-        final List<QuestTeam> requestedUserTeams = new QuestTeamDAO(em).listActiveTeamsForUser(requestedUser);
+        final List<QuestTeam> requestedUserTeams = new QuestTeamDAO().listActiveTeamsForUser(requestedUser);
 
         timer.stop();
         timer.start("Loading user fundraisers");
@@ -103,7 +98,7 @@ public class QuestListService {
         timer.stop();
         timer.start("Mapping results");
 
-        final FundraisingLinkDAO fundraisingDao = new FundraisingLinkDAO(jpaApi);
+        final FundraisingLinkDAO fundraisingDao = new FundraisingLinkDAO();
         final List<QuestDTO> result = new ArrayList<>();
         for (final MyQuestDTO myQuest : myQuests) {
             final Quests quest = allQuestsMap.get(myQuest.questId.intValue());

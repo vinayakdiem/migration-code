@@ -11,33 +11,28 @@ import com.diemlife.dto.QuestMemberDTO;
 import lombok.NonNull;
 import models.*;
 import play.Logger;
-import play.db.jpa.JPAApi;
-
-import javax.inject.Inject;
+import com.diemlife.models.*;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static org.springframework.util.StringUtils.hasText;
 
+@Service
 public class PushNotificationService {
 
+	@Autowired
     @NonNull
-    private final PushNotificationDeviceDAO pushNotificationDeviceDAO;
+    private PushNotificationDeviceDAO pushNotificationDeviceDAO;
+	
+	@Autowired
     @NonNull
-    private final PushNotificationMessageInfoDAO messageInfoDAO;
-    @NonNull
-    private final JPAApi jpaApi;
-
-    @Inject
-    public PushNotificationService(PushNotificationDeviceDAO pushNotificationDeviceDAO,
-                                   PushNotificationMessageInfoDAO messageInfoDAO, JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-        this.pushNotificationDeviceDAO = pushNotificationDeviceDAO;
-        this.messageInfoDAO = messageInfoDAO;
-    }
-
+    private PushNotificationMessageInfoDAO messageInfoDAO;
+    
     public Optional<String> registerNewDevice(final String token, final User user) {
         final Date addedDate = new Date();
 
@@ -61,23 +56,23 @@ public class PushNotificationService {
         List<QuestActivity> questCompletedMembers;
         List<QuestMemberDTO> questSavedMembers = new ArrayList<>();
         List<QuestActivity> membersInQuestActivityGroup = new ArrayList<>();
-        final Quests quest = QuestsDAO.findById(questId, jpaApi.em());
+        final Quests quest = QuestsDAO.findById(questId);
 
         if (hasText(questActivityGroup)) {
-            membersInQuestActivityGroup = QuestActivityHome.getUsersInGroup(questId, questActivityGroup, jpaApi.em());
+            membersInQuestActivityGroup = QuestActivityHome.getUsersInGroup(questId, questActivityGroup);
         }
         if (hasText(questActivityStatus)) {
             if (questActivityStatus.equals(QuestActivityStatus.SAVED.name())) {
-                questSavedMembers = QuestSavedDAO.getSavedMembersForQuest(quest, jpaApi.em());
+                questSavedMembers = QuestSavedDAO.getSavedMembersForQuest(quest);
                 Logger.info("found [{}] members with quest Id [{}] saved while sending push notification", questSavedMembers.size(), questId);
             }
-            questActiveMembers = QuestActivityHome.getUsersDoingQuest(questId, null, jpaApi.em());
-            questCompletedMembers = QuestActivityHome.getUsersCompletedWithQuest(questId, jpaApi.em());
+            questActiveMembers = QuestActivityHome.getUsersDoingQuest(questId, null);
+            questCompletedMembers = QuestActivityHome.getUsersCompletedWithQuest(questId);
             Logger.info("found [{}] members with quest Id [{}] active or completed while sending push notification", questSavedMembers.size(), questId);
         } else {
-            questActiveMembers = QuestActivityHome.getUsersDoingQuest(questId, null, jpaApi.em());
-            questSavedMembers = QuestSavedDAO.getSavedMembersForQuest(quest, jpaApi.em());
-            questCompletedMembers = QuestActivityHome.getUsersCompletedWithQuest(questId, jpaApi.em());
+            questActiveMembers = QuestActivityHome.getUsersDoingQuest(questId, null);
+            questSavedMembers = QuestSavedDAO.getSavedMembersForQuest(quest);
+            questCompletedMembers = QuestActivityHome.getUsersCompletedWithQuest(questId);
             Logger.info("found [{}] members with quest Id [{}] active or completed while sending push notification", questSavedMembers.size(), questId);
         }
 
@@ -127,7 +122,7 @@ public class PushNotificationService {
                 .filter(device -> userIdsForFiltering.contains(device.getUserId()))
                 .forEachOrdered(device ->
                         sendNotificationWithQuestLink(device.getToken(),
-                                format(messageText, UserHome.findById(device.getUserId(), jpaApi.em()).getFirstName()),
+                                format(messageText, UserHome.findById(device.getUserId()).getFirstName()),
                                 messageTitle,
                                 valueOf(questId),
                                 activityStatus,

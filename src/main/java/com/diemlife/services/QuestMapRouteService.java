@@ -25,7 +25,6 @@ import com.diemlife.models.QuestMapRouteWaypoint;
 import com.diemlife.models.Quests;
 import com.diemlife.models.User;
 import play.Logger;
-import play.db.jpa.JPAApi;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -34,6 +33,10 @@ import com.diemlife.services.maproute.WaypointQuestMapRouteService;
 import com.diemlife.utils.QuestSecurityUtils;
 
 import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -49,25 +52,15 @@ import static java.util.stream.Collectors.toMap;
  *
  * @author SYushchenko
  */
+@Service
 public class QuestMapRouteService {
 
     private static final String FORM_NAME = "name";
 
     private static final String FORM_DESCRIPTION = "description";
 
-    private final JPAApi jpaApi;
-
-    private final WaypointQuestMapRouteService waypointQuestMapRouteService;
-
-    /**
-     * Constructor with parameters
-     *
-     * @param jpaApi {@link JPAApi}
-     */
-    public QuestMapRouteService(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-        this.waypointQuestMapRouteService = new WaypointQuestMapRouteService();
-    }
+    @Autowired
+    private WaypointQuestMapRouteService waypointQuestMapRouteService;
 
     /**
      * Upload file gpx to data base
@@ -94,14 +87,14 @@ public class QuestMapRouteService {
      * @return collection {@link GPXQuestMapDTO}
      */
     public Result getQuestMapRoutesByQuest(Integer questId) {
-        Quests quests = QuestsDAO.findById(questId, jpaApi.em());
+        Quests quests = QuestsDAO.findById(questId);
         if (quests == null) {
             return Results.notFound();
         }
-        final QuestMapRouteWaypointDAO waypointDao = new QuestMapRouteWaypointDAO(jpaApi.em());
+        final QuestMapRouteWaypointDAO waypointDao = new QuestMapRouteWaypointDAO();
 
         Map<Long, QuestMapRoute> questMapRoutes =
-                new QuestMapRouteDAO(jpaApi.em()).findAllQuestMapRoutesByQuest(quests.getId())
+                new QuestMapRouteDAO().findAllQuestMapRoutesByQuest(quests.getId())
                         .stream()
                         .peek(map -> map.setDistance(waypointDao.findAllQuestMapRouteWaypoint(map.id).stream()
                                 .map(QuestMapRouteWaypoint::getDistance)
@@ -110,7 +103,7 @@ public class QuestMapRouteService {
                                 .orElse(0)))
                         .collect(toMap(l -> l.id, k -> k));
         Map<Long, List<GPXQuestMapRoutePointsDTO>> points =
-                new QuestMapRoutePointDAO(jpaApi.em())
+                new QuestMapRoutePointDAO()
                         .findAllQuestMapRoutesPointByQuestMapRouteId(questMapRoutes.keySet());
         return mappingQuestMapRouteToResult(questMapRoutes, points);
     }
@@ -123,23 +116,23 @@ public class QuestMapRouteService {
      * @return {@link Result}
      */
     public Result toggleAllQuestMapRoute(Integer questId, User user, Boolean flag) {
-        Quests quests = QuestsDAO.findById(questId, jpaApi.em());
+        Quests quests = QuestsDAO.findById(questId);
         if (quests == null) {
             return Results.notFound();
         }
         if (!QuestSecurityUtils.canEditQuest(quests, user)) {
             return Results.forbidden();
         }
-        new QuestMapRouteDAO(jpaApi.em()).toggleAllQuestMapRoute(questId, flag);
+        new QuestMapRouteDAO().toggleAllQuestMapRoute(questId, flag);
         return Results.ok();
     }
 
     public Result toggleStatusQuestMapRoute(Integer questId) {
-        Quests quests = QuestsDAO.findById(questId, jpaApi.em());
+        Quests quests = QuestsDAO.findById(questId);
         if (quests == null) {
             return Results.notFound();
         }
-        Boolean aBoolean = new QuestMapRouteDAO(jpaApi.em()).toggleStatusQuestMapRoute(questId);
+        Boolean aBoolean = new QuestMapRouteDAO().toggleStatusQuestMapRoute(questId);
         return Results.ok(Json.toJson(aBoolean));
     }
 
@@ -203,10 +196,9 @@ public class QuestMapRouteService {
     private void processingTrack(final Track track,
                                  final QuestMapRoute questMapRoute,
                                  final AtomicInteger countTrack,
-                                 final EntityManager entityManager,
                                  final GpxLogger gpxLogger) {
         QuestMapRouteTrack questMapRouteTrack =
-                new QuestMapRouteTrackDAO(entityManager)
+                new QuestMapRouteTrackDAO()
                         .save(createQuestMapRouteTrack(track, questMapRoute, countTrack), QuestMapRouteTrack.class);
 
         Logger.info("Track saved with ID " + questMapRouteTrack.getId());
@@ -219,11 +211,10 @@ public class QuestMapRouteService {
     private void processingSegment(final TrackSegment trackSegment,
                                    final Long questMapRouteTrackId,
                                    final AtomicInteger countSegment,
-                                   final EntityManager entityManager,
                                    final GpxLogger gpxLogger) {
 
         QuestMapRouteSegment questMapRouteSegmentSaved =
-                new QuestMapRouteSegmentDAO(entityManager)
+                new QuestMapRouteSegmentDAO()
                         .save(createQuestMapRouteSegment(questMapRouteTrackId, countSegment), QuestMapRouteSegment.class);
 
         Logger.info("Track segment saved with ID " + questMapRouteSegmentSaved.getId());

@@ -5,13 +5,14 @@ import com.diemlife.constants.QuestMemberStatus;
 import com.diemlife.dao.*;
 import com.diemlife.dto.QuestMemberDTO;
 import com.diemlife.dto.QuestTeamDTO;
-import models.*;
+import com.diemlife.models.*;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.db.Database;
 import play.Logger;
 import play.db.NamedDatabase;
-import play.db.jpa.JPAApi;
-import play.db.jpa.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,44 +24,42 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.diemlife.constants.QuestMemberStatus.Backer;
-import static com.diemlife.dao.UserHome.getQuestBackings;
-import static com.diemlife.dao.UserHome.getQuestRaisedFunds;
+import static com.diemlife.dao.UserHome.*;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
-@Singleton
+@Service
 public class QuestMemberService {
 
-    private final JPAApi jpaApi;
-    private final SecureRandom random = new SecureRandom();
-    private final Consumer<QuestMemberDTO> randomId = member -> member.userId = (member.userId > 0
+	@Autowired
+    private SecureRandom random = new SecureRandom();
+	
+	@Autowired
+    private Consumer<QuestMemberDTO> randomId = member -> member.userId = (member.userId > 0
             ? member.userId
             : nextNegativeInt(random));
+    
+    @Autowired
     private Database dbRo;
 
-    @Inject
-    public QuestMemberService(final JPAApi jpaApi, @NamedDatabase("ro") Database dbRo) {
-        this.jpaApi = jpaApi;
-        this.dbRo = dbRo;
-    }
 
-    private Collection<QuestMemberDTO> buildMembers(EntityManager em, QuestTeamDAO teamDao, Quests quest, User doer) {
+    private Collection<QuestMemberDTO> buildMembers(QuestTeamDAO teamDao, Quests quest, User doer) {
         final QuestTeamMember teamCreator = teamDao.getTeamMember(quest, doer);
         final QuestTeam team = teamCreator == null ? null : teamCreator.getTeam();
         final boolean isDoerTeamCreator = teamCreator != null && !team.isDefaultTeam() && teamCreator.getMember().getId().equals(team.getCreator().getId());
         final List<QuestMemberDTO> backers = getQuestBackings(quest.getId(), quest.getUser().getId(), (team == null || team.isDefaultTeam() || !quest.isFundraising())
                 ? null
-                : team.getCreator().getId(), em).stream().peek(randomId).collect(toList());
-        final List<QuestMemberDTO> ticketBuyers = UserHome.getQuestParticipants(quest.getId(), quest.getUser().getId(), em).stream().peek(randomId).collect(toList());
-        final List<QuestMemberDTO> usersDoing = UserHome.getUserQuestActivityByQuestId(quest.getId(), em).stream().peek(randomId).collect(toList());
-        final List<QuestMemberDTO> usersSaved = QuestSavedDAO.getSavedMembersForQuest(quest, em).stream().peek(randomId).collect(toList());
+                : team.getCreator().getId()).stream().peek(randomId).collect(toList());
+        final List<QuestMemberDTO> ticketBuyers = UserHome.getQuestParticipants(quest.getId(), quest.getUser().getId()).stream().peek(randomId).collect(toList());
+        final List<QuestMemberDTO> usersDoing = UserHome.getUserQuestActivityByQuestId(quest.getId()).stream().peek(randomId).collect(toList());
+        final List<QuestMemberDTO> usersSaved = QuestSavedDAO.getSavedMembersForQuest(quest).stream().peek(randomId).collect(toList());
         final Map<Integer, QuestMemberDTO> members = new LinkedHashMap<>();
         mergeMembers(members, backers);
         mergeMembers(members, ticketBuyers);
         mergeMembers(members, usersDoing);
         mergeMembers(members, usersSaved);
 
-        CompanyRoleDAO companyRoleDAO= new CompanyRoleDAO(jpaApi);
+        CompanyRoleDAO companyRoleDAO= new CompanyRoleDAO();
         CompanyRole companyRole = companyRoleDAO.getCompanyRoleForUser(doer);
         final User companyUser = companyRole!=null?companyRole.getUser():new User();
 
@@ -92,11 +91,9 @@ public class QuestMemberService {
                 .collect(toList());
     }
 
-    @Transactional
     public Collection<QuestMemberDTO> getQuestMembers(final Quests quest, final User doer) {
-        final EntityManager em = jpaApi.em();
         final Map<Integer, QuestMemberDTO> members = new LinkedHashMap<>();
-        final QuestTeamDAO teamDao = new QuestTeamDAO(em);
+        final QuestTeamDAO teamDao = new QuestTeamDAO();
 
         Integer questId = quest.getId();
         Integer doerId = quest.getUser().getId();
@@ -116,13 +113,13 @@ public class QuestMemberService {
             for (QuestEdge edge : children) {
                 // Lookup the quest for now.  Eliminate this later if we can.
                 long childQuestId = edge.getQuestDst();
-                Quests childQuest = QuestsDAO.findById((int) childQuestId, em);
-                final User childCreator = UserService.getById(childQuest.getCreatedBy(), em);
-                mergeMembers(members, buildMembers(em, teamDao, childQuest, childCreator));
+                Quests childQuest = QuestsDAO.findById((int) childQuestId);
+                final User childCreator = UserService.getById(childQuest.getCreatedBy());
+                mergeMembers(members, buildMembers(teamDao, childQuest, childCreator));
             }
         } else {
             // This should perform almost the same for single quest as before
-            mergeMembers(members, buildMembers(em, teamDao, quest, doer));
+            mergeMembers(members, buildMembers(teamDao, quest, doer));
         }
 
         return members.values();
@@ -142,17 +139,15 @@ public class QuestMemberService {
 		return ((targetTeamId != null) && targetTeamId.equals(questMemberTeamId));
 	}
 
-    private Collection<QuestTeamDTO> buildTeams(EntityManager em, QuestTeamDAO dao, Quests quest) {
+    private Collection<QuestTeamDTO> buildTeams(QuestTeamDAO dao, Quests quest) {
        return dao.listTeamsForQuest(quest, false, true).stream()
-                .map(team -> QuestTeamDTO.from(team, getQuestRaisedFunds(team.getQuest().getId(), team.getCreator().getId(), em)))
+                .map(team -> QuestTeamDTO.from(team, getQuestRaisedFunds(team.getQuest().getId(), team.getCreator().getId())))
                 .sorted((left, right) -> ObjectUtils.compare(right.amountBacked, left.amountBacked, false))
                 .collect(toList()); 
     }
 
-    @Transactional
     public Collection<QuestTeamDTO> getQuestTeams(final @NotNull Quests quest) {
-        final EntityManager em = jpaApi.em();
-        final QuestTeamDAO dao = new QuestTeamDAO(em);
+        final QuestTeamDAO dao = new QuestTeamDAO();
        
         // TODO: factor this out into some shared thing
         Integer questId = quest.getId();
@@ -175,22 +170,20 @@ public class QuestMemberService {
             for (QuestEdge edge : children) {
                 // Lookup the quest for now.  Eliminate this later if we can.
                 long childQuestId = edge.getQuestDst();
-                Quests childQuest = QuestsDAO.findById((int) childQuestId, em);
+                Quests childQuest = QuestsDAO.findById((int) childQuestId);
 
-                teams.addAll(buildTeams(em, dao, childQuest));
+                teams.addAll(buildTeams(dao, childQuest));
             }
         } else {
             // This should perform almost the same for single quest as before 
-            teams.addAll(buildTeams(em, dao, quest));
+            teams.addAll(buildTeams(dao, quest));
         }
         
         return teams;
     }
 
-    @Transactional
     public QuestTeamDTO getQuestTeam(final @NotNull Quests quest, final @NotNull User doer, final boolean checkDefault) {
-        final EntityManager em = jpaApi.em();
-        final QuestTeamDAO dao = new QuestTeamDAO(em);
+        final QuestTeamDAO dao = new QuestTeamDAO();
 
         // TODO: factor this out into some shared thing
         Integer questId = quest.getId();
@@ -207,12 +200,10 @@ public class QuestMemberService {
         return teamDto;
     }
 
-    @Transactional
     public QuestTeamDTO getTeam(final @NotNull Long teamId) {
-        final EntityManager em = jpaApi.em();
-        final QuestTeamDAO dao = new QuestTeamDAO(em);
+        final QuestTeamDAO dao = new QuestTeamDAO();
         return Optional.ofNullable(dao.load(teamId, QuestTeam.class))
-                .map(team -> QuestTeamDTO.from(team, getQuestRaisedFunds(team.getQuest().getId(), team.getCreator().getId(), em)))
+                .map(team -> QuestTeamDTO.from(team, getQuestRaisedFunds(team.getQuest().getId(), team.getCreator().getId())))
                 .orElse(null);
     }
 

@@ -8,21 +8,29 @@ import play.libs.ws.WSResponse;
 import play.mvc.Result;
 
 import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.concurrent.CompletionStage;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static play.mvc.Results.ok;
 
+@Service
 public class RecaptchaService {
 
-    private final Config config;
-    private final WSClient wsClient;
-
-    @Inject
-    public RecaptchaService(Config config, WSClient wsClient) {
-        this.config = checkNotNull(config, "config");
-        this.wsClient = checkNotNull(wsClient, "wsClient");
-    }
+	@Autowired
+    private Config config;
+	
+	@Autowired
+    private WSClient wsClient;
+//
+//    @Inject
+//    public RecaptchaService(Config config, WSClient wsClient) {
+//        this.config = checkNotNull(config, "config");
+//        this.wsClient = checkNotNull(wsClient, "wsClient");
+//    }
 
     public CompletionStage<Result> verifyRecaptcha(final String response) {
         final String secret = config.getString("recaptcha.secret");

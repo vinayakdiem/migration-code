@@ -20,6 +20,9 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import play.Logger;
 import play.db.jpa.JPAApi;
 
@@ -51,19 +54,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
-@Singleton
+@Service
 public class ReportingService {
 
-    private final JPAApi jpaApi;
-
-    @Inject
-    public ReportingService(final JPAApi jpaApi) {
-        this.jpaApi = jpaApi;
-    }
-
     public byte[] createQuestActivityReport(final Quests quest, final LocalDate startDate, final LocalDate endDate) {
-        final EntityManager em = jpaApi.em();
         final Integer questId = quest.getId();
+        //FIXME Vinayak
         final List usersReport = em.createNativeQuery("" +
                 "SELECT " +
                 "  u.id                                               AS userId, " +
@@ -217,7 +213,7 @@ public class ReportingService {
     }
 
     private Map<Integer, QuestActivityNotificationDTO> getPushesMap(final Collection<Integer> userIds, final LocalDate date) {
-        final EntityManager em = jpaApi.em();
+    	//FIXME Vinayak
         return Stream.of(setQueryParameters(em.createNativeQuery("" +
                 "SELECT u.Id AS userId, IF(MAX(pnmi.opened_date) BETWEEN :startDate AND :endDate, TRUE, FALSE) AS notificationOpened " +
                 "FROM user u " +
@@ -235,7 +231,7 @@ public class ReportingService {
     }
 
     private Map<Integer, List<QuestActivityCommentDTO>> getCommentsMap(final Integer questId, final Collection<Integer> userIds, final LocalDate date) {
-        final EntityManager em = jpaApi.em();
+    	//FIXME Vinayak
         return Stream.of(setQueryParameters(em.createNativeQuery("" +
                 "SELECT qc.user_id, qc.comments " +
                 "FROM quest_comments qc " +
@@ -253,7 +249,7 @@ public class ReportingService {
     }
 
     private Map<Integer, List<QuestActivityImageDTO>> getImagesMap(final Integer questId, final Collection<Integer> userIds, final LocalDate date) {
-        final EntityManager em = jpaApi.em();
+    	//FIXME Vinayak
         return Stream.of(setQueryParameters(em.createNativeQuery("" +
                 "SELECT qi.user_id, qi.caption " +
                 "FROM quest_image qi " +
@@ -270,7 +266,7 @@ public class ReportingService {
     }
 
     private Map<Integer, QuestActivityCompletionDTO> getCompletionMap(final Integer questId, final Collection<Integer> userIds, final LocalDate date) {
-        final EntityManager em = jpaApi.em();
+    	//FIXME Vinayak
         return Stream.of(setQueryParameters(em.createNativeQuery("" +
                 "SELECT" +
                 "  qeh.user_id," +
@@ -289,7 +285,7 @@ public class ReportingService {
     }
 
     private Map<Integer, List<QuestActivityPromptDTO>> getPromptsMap(final Integer questId, final Collection<String> userNames, final LocalDate date) {
-        final EntityManager em = jpaApi.em();
+    	//FIXME Vinayak
         return Stream.of(em.createNativeQuery("" +
                 "SELECT u.id                                         AS user_id, " +
                 "       IF(pr.prompt_event = 1, 'Start', 'Complete') AS prompt_event_name, " +
