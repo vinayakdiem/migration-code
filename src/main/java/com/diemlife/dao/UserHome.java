@@ -97,19 +97,17 @@ public class UserHome {
         return entityManager.find(User.class, id);
     }
 
-    public User2 getUserByUsername(Connection c, String username) {
-        try (PreparedStatement ps = c.prepareStatement("select first_name, last_name from user where user_name = ?")) {
-			ps.setString(1, username);
+    public User2 getUserByUsername(String username) {
+    	
+    	List<Object[]> results = entityManager.createNativeQuery("select first_name, last_name from user where user_name = ?")
+        		.setParameter(1, username)
+        		.getResultList();
 			
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-                    String firstname = rs.getString(1);
-                    String lastname = rs.getString(2);
-
-                    // only expect 1 result (or none)
-                  //FIXME Vinayak
-//					return new User2(username, firstname, lastname);
-				}
+		try{
+				for(Object[] row : results) {
+                    String firstname = (String) row[0];
+                    String lastname = (String) row[1];
+					return new User2(username, firstname, lastname);
 			}
 		} catch (Exception e) {
 			Logger.error("getUserByUsername - error", e);

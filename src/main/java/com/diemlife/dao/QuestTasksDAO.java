@@ -468,7 +468,7 @@ public class QuestTasksDAO {
             
         ActivityRecordListDAO arlDao = new ActivityRecordListDAO();
         
-        ActivityRecordList activityRecordList = arlDao.persist(transientInstance, em);
+        ActivityRecordList activityRecordList = arlDao.persist(transientInstance);
         
         ActivityRecord activityRecord = null;
         		

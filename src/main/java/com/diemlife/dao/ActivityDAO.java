@@ -376,7 +376,7 @@ public class ActivityDAO extends DynamoDAO {
         return new LinkedList<Activity>(orderedResults.values());
     }
 
-    private static List<Activity> itemsToActivities(ItemCollection<QueryOutcome> items) {
+    private List<Activity> itemsToActivities(ItemCollection<QueryOutcome> items) {
         LinkedList<Activity> result = new LinkedList<Activity>();
         Iterator<Item> itemsIt = items.iterator();
         while (itemsIt.hasNext()) {

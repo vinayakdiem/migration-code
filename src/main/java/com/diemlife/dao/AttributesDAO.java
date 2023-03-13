@@ -32,23 +32,22 @@ public class AttributesDAO {
         return sInstance;
     }
 
-	public Attribute getAttributeById(Connection c, long id) {
+	public Attribute getAttributeById(long id) {
 
-		try (PreparedStatement ps = c.prepareStatement("select quest_id, attribute_name, created_by, added_date, tags, unit from attributes where id = ?")) {
+		List<Object[]> results = entityManager.createNativeQuery("select quest_id, attribute_name, created_by, added_date, tags, unit from attributes where id = ?")
+			.setParameter(1, id)
+			.getResultList();
 
-			ps.setLong(1, id);
-
-			try (ResultSet rs = ps.executeQuery()) {
-				if (rs.next()) {
-					long questId = rs.getLong(1);
-					String attributeName = rs.getString(2);
-					long createdBy = rs.getLong(3);
-					java.sql.Timestamp addedDate = rs.getTimestamp(4);
-					String tags = rs.getString(5);
-					String unit = rs.getString(6);
+		try {
+		for(Object[] row : results) {		
+					long questId = (Long)row[0];
+					String attributeName =(String) row[1];
+					long createdBy = (Long)row[2];
+					java.sql.Timestamp addedDate = (java.sql.Timestamp)row[3];
+					String tags = (String)row[4];
+					String unit = (String)row[5];
 
 					return new Attribute(id, attributeName, questId, createdBy, new Date(addedDate.getTime()), tags, ((unit == null) ? null : ActivityUnit.valueOf(unit)));
-				}
 			}
 		} catch (Exception e) {
 			Logger.error("getAttributeById - error", e);
@@ -57,48 +56,43 @@ public class AttributesDAO {
 		return null;	
 	}
 
-	public List<Attribute> getAttributesByQuestId(Connection c, long questId) {
+	public List<Attribute> getAttributesByQuestId(long questId) {
 		List<Attribute> result = new LinkedList<Attribute>();
 
-		try (PreparedStatement ps = c.prepareStatement("select id, attribute_name, created_by, added_date, tags, unit from attributes where quest_id = ?")) {
+		List<Object[]> results = entityManager.createNativeQuery("select id, attribute_name, created_by, added_date, tags, unit from attributes where quest_id = ?")
+				.setParameter(1, questId)
+				.getResultList();
 
-			ps.setLong(1, questId);
-
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					long id = rs.getLong(1);
-					String attributeName = rs.getString(2);
-					long createdBy = rs.getLong(3);
-					java.sql.Timestamp addedDate = rs.getTimestamp(4);
-					String tags = rs.getString(5);
-					String unit = rs.getString(6);
-
-					result.add(new Attribute(id, attributeName, questId, createdBy, new Date(addedDate.getTime()), tags, ((unit == null) ? null : ActivityUnit.valueOf(unit))));
-				}
+		try {
+			for(Object[] row : results) {
+						long id = (Integer)row[0];
+						String attributeName = (String)row[1];
+						long createdBy = (Long)row[2];
+						java.sql.Timestamp addedDate = (java.sql.Timestamp)row[3];
+						String tags = (String)row[4];
+						String unit = (String)row[5];
+	
+						result.add(new Attribute(id, attributeName, questId, createdBy, new Date(addedDate.getTime()), tags, ((unit == null) ? null : ActivityUnit.valueOf(unit))));
+					}
+			} catch (Exception e) {
+				Logger.error("getAttributesByQuestId - error", e);
+				result.clear();
 			}
-		} catch (Exception e) {
-			Logger.error("getAttributesByQuestId - error", e);
-			result.clear();
-		}
 
 		return result;
     }
 
-    public boolean insertAttributeValue(Connection c, long attributeId, String attributeValue, long userId, String tag) {
+    public boolean insertAttributeValue(long attributeId, String attributeValue, long userId, String tag) {
 		boolean ret;
-		try (PreparedStatement ps = c.prepareStatement("insert into attribute_values (attribute_id, attribute_value, created_by, added_date, tag) values (?, ?, ?, ?, ?)")) {
-			ps.setLong(1, attributeId);
-			ps.setString(2, attributeValue);
-			ps.setLong(3, userId);
-			ps.setTimestamp(4, new java.sql.Timestamp(System.currentTimeMillis()));
-
-            if (tag == null) {
-			    ps.setNull(5, java.sql.Types.VARCHAR);
-			} else {
-                ps.setString(5, tag);
-            }
-
-			ps.executeUpdate();
+		
+		try {
+		entityManager.createNativeQuery("insert into attribute_values (attribute_id, attribute_value, created_by, added_date, tag) values (?, ?, ?, ?, ?)") 
+				.setParameter(1, attributeId)
+				.setParameter(2, attributeValue)
+				.setParameter(3, userId)
+				.setParameter(4, new java.sql.Timestamp(System.currentTimeMillis()))
+				.setParameter(5, tag)
+				.executeUpdate();
 			ret = true;
 		} catch (Exception e) {
 			Logger.error("insertAttributeValue - error", e);
